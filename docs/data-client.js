@@ -2,7 +2,7 @@
 export const publicMode=document.documentElement.dataset.runtime==='public';
 const cache=new Map();
 export async function getCatalog(name){
- if(!['reference','gear'].includes(name))throw Error('Unknown catalog');
+ if(!['reference','gear','maps'].includes(name))throw Error('Unknown catalog');
  if(cache.has(name))return cache.get(name);
  const promise=fetch(publicMode?new URL('./catalog/'+name+'.json'+(new URL(import.meta.url).searchParams.has('v')?'?v='+encodeURIComponent(new URL(import.meta.url).searchParams.get('v')):''),import.meta.url):'/api/'+name,{cache:'no-cache'}).then(async r=>{if(!r.ok)throw Error('Reference unavailable. Retry or check the connection.');return r.json();}).catch(e=>{cache.delete(name);throw e;});
  cache.set(name,promise);return promise;

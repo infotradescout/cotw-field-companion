@@ -8,6 +8,14 @@ An independent companion for **theHunter: Call of the Wild**. Free public refere
 
 Explore all 19 reserve rosters, 127 animal entries, score/weight/difficulty references, 1,771 species/sex fur-template entries, 129 weapon-variant rows, and 117 ammunition rows. Compare equipment or design a square, portrait or wide stat card/trophy collage with up to six photos. Reference counts describe the included snapshot, not a guarantee of future patch completeness.
 
+## Real reserve maps
+
+Open **Real reserve maps** on the website or local companion. All 19 included reserves now use the actual game topographic imagery streamed from DECA, with 1,615 named reference locations across outposts, lookouts, landmarks and hunting structures. Search a place, filter location types, pan/zoom, enter X/Z coordinates, toggle the grid, or expand the map. The local hunting view overlays saved zones and deployed equipment on the same coordinate geometry.
+
+The imagery is not bundled or rehosted. Opening online terrain sends ordinary image requests to `mathartbang.com`; that source can see the requested map tiles and the client IP. No save contents, account identifiers, photos or journal records are uploaded. Terrain can be switched off, and failures show a retry/last-available-map state rather than pretending the blank grid is a loaded map. Public reference points do not show player unlocks or live animal positions.
+
+Reserve image origins and tile extents come from DECA metadata, including negative and shifted-coordinate reserves. Coordinate and anchor tests cover this transform; this is not a claim that every point has been independently checked against every game patch. Attribution and source-map links are displayed in the map. Publisher approval and commercial redistribution rights are not claimed.
+
 ## Run the local companion
 
 Requires **Node.js 22.13+** on a compatible Windows PC. Download this repository, extract it, and double-click `START.cmd`, or run `node launcher.mjs --open` from its directory. The app listens on `http://127.0.0.1:47831`. Keep the process running while hunting. This is a source-based preview, not a signed installer.
