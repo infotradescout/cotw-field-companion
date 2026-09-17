@@ -40,8 +40,8 @@
     },
     {
       "path": "studio.js",
-      "bytes": 11485,
-      "sha256": "3935056bc334419e9b1ce172f433fef04ddc2b71289e32402b8f7020234058b9"
+      "bytes": 13141,
+      "sha256": "7f5003c04b3aca7b30028af3aa47921f5112f56f43302816a9d1187fdca6361a"
     },
     {
       "path": "style.css",
@@ -50,8 +50,8 @@
     },
     {
       "path": "field-theme.css",
-      "bytes": 9800,
-      "sha256": "75af74a0ff7e91d695e4e3519f2ff752f97649ff81abbb5ba9f2425baddfb30e"
+      "bytes": 10133,
+      "sha256": "c87af8e6c11567fcc63e415bb90e1a1d6d749268fd8e976bccb6778b63d2ef63"
     },
     {
       "path": "icon.svg",
