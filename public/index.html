@@ -1,19 +1,21 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COTW Field Companion</title><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COTW Field Companion</title><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/field-theme.css"></head>
 <body>
 <aside class="sidebar"><a class="brand" href="#map"><span class="brand-icon">F</span><span>FIELD<span class="brand-sub">COTW COMPANION</span></span></a>
 <div class="workspace-label">YOUR HUNTING WORKSPACE</div><nav aria-label="Companion navigation">
-<button data-view="map"><span>01</span> Hunting map</button>
-<button data-view="herds"><span>02</span> Herds & circuit</button>
-<button data-view="harvests"><span>03</span> Automatic harvests</button>
-<button data-view="reference"><span>04</span> Animal reference</button>
-<button data-view="overview"><span>05</span> Activity overview</button>
-<button data-view="insights"><span>06</span> Population insights</button>
-<div class="nav-separator">OPTIONAL TOOLS</div>
-<button data-view="recovery"><span>07</span> Manual notes & recovery</button>
-<button data-view="settings"><span>08</span> Connection & settings</button>
-</nav><div class="sidebar-foot"><span class="lock-dot"></span> Local data. Read-only saves.<p>Unofficial companion<br>Local build · 0.3.0</p></div></aside>
+<button data-view="map"><span>01</span>Hunting map</button>
+<button data-view="career"><span>02</span>Career & all reserves</button>
+<button data-view="harvests"><span>03</span>Automatic harvests</button>
+<button data-view="herds"><span>04</span>Herds & circuit</button>
+<button data-view="reference"><span>05</span>Animal reference</button>
+<button data-view="rares"><span>06</span>Rare-fur guide</button>
+<button data-view="gear"><span>07</span>Weapons & ammo</button>
+<button data-view="studio"><span>08</span>Share studio</button>
+<button data-view="insights"><span>09</span>Population insights</button>
+<button data-view="recovery"><span>10</span>Optional field notes</button>
+<button data-view="faq"><span>11</span>FAQs & project</button>
+<button data-view="settings"><span>12</span>Connection & settings</button></nav><div class="sidebar-foot"><span class="lock-dot"></span> Local data. Read-only saves.<p>Unofficial companion<br>Local preview · 0.4.0</p></div></aside>
 <div class="main-shell"><header class="topbar"><div class="reserve-picker"><label for="reserve">RESERVE</label><select id="reserve" aria-label="Reserve"></select></div><div class="top-right"><span id="connection" class="pill">Connecting…</span><button id="rescan" class="button subtle">Refresh saves</button><button id="logShotTop" class="button primary">Automatic harvests</button></div></header>
 <main id="content" tabindex="-1"><div class="loading">Connecting automatic tracking…</div></main>
 <footer class="page-foot">Reads your saves only. Automatic tracking is primary; manual notes are optional.</footer></div>

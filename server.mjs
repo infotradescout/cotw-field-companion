@@ -17,24 +17,27 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000}=
   if(saveDir&&process.permission?.has('fs.write',saveDir))throw Error('Refusing to start with save-folder write permission');
   const ratingFile=path.join(appDir,'lib/rating-data.json');
   const ratingCatalog=existsSync(ratingFile)?JSON.parse(readFileSync(ratingFile,'utf8')):null;
+  const gearCatalog=JSON.parse(readFileSync(path.join(appDir,'lib/gear-data.json'),'utf8'));
   const reference=JSON.parse(readFileSync(path.join(appDir,'lib/reference.json'),'utf8'));
+  reference.equipment=gearCatalog.equipmentNames||{};
   const store=new Store(path.join(dataDir,'journal.sqlite'));
   const observer=new Observer(store,saveDir,reference,{interval});await observer.start();
   const token=randomBytes(32).toString('hex');
   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
-  const assets=new Map(['/','/index.html','/app.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
+  const assets=new Map(['/','/index.html','/app.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
   const server=http.createServer(async(req,res)=>{
     const actualPort=server.address().port;
     const goodHosts=[`127.0.0.1:${actualPort}`,`localhost:${actualPort}`];
     const origin=req.headers.origin;
     const sameOrigin=!origin||goodHosts.some(h=>origin==='http://'+h);
     const allowedSite=!req.headers['sec-fetch-site']||['same-origin','none'].includes(req.headers['sec-fetch-site']);
-    const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
+    const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
     const json=(status,value)=>{res.writeHead(status,{...headers,'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(value));};
     if(!goodHosts.includes(req.headers.host)||!sameOrigin||!allowedSite)return json(403,{error:'Only same-origin local access is accepted'});
     try {
       const url=new URL(req.url,'http://127.0.0.1');
-      if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(200,{token,version:'0.3.0',selectedReserve:observer.source('reserveworlddata_adf')?.payload?.reserve??19});
+      if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(200,{token,version:'0.4.0',selectedReserve:observer.source('reserveworlddata_adf')?.payload?.reserve??19});
+      if(req.method==='GET'&&url.pathname==='/api/gear')return json(200,gearCatalog);
       if(req.method==='GET'&&url.pathname==='/api/reference')return ratingCatalog?json(200,ratingCatalog):json(503,{error:'The animal reference catalog has not been installed.'});
       if(req.method==='GET'&&url.pathname==='/api/state')return json(200,observer.state(reserveId(url.searchParams.get('reserve')??19)));
       if(req.method==='GET'&&url.pathname==='/api/export'){

@@ -1,0 +1,77 @@
+{
+  "schema": "field.public_build.v1",
+  "version": "0.4.0",
+  "mode": "public_no_player_data",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 2687,
+      "sha256": "31b8b23cf0c9a0f917d9aeba58313eaf37b32a38bdec0de602d08bbb46543279"
+    },
+    {
+      "path": "public.js",
+      "bytes": 2551,
+      "sha256": "1f43d600873f2f6f8ac7eb4417af82ba8cb261e7f59c51bcdccab4677b790f09"
+    },
+    {
+      "path": "data-client.js",
+      "bytes": 1174,
+      "sha256": "03b27eb845a12394c4e27cef6d7cb8c4efe4814bb11619d8bd7fbf8a0dc7bd98"
+    },
+    {
+      "path": "reference.js",
+      "bytes": 11568,
+      "sha256": "13138c7629a7c26d9c0b46a5ea27cbd9beddf411be3adc0db4ee1c69808d0c8e"
+    },
+    {
+      "path": "reference-core.js",
+      "bytes": 3058,
+      "sha256": "fa79ead86644ba47a72e55b7e074f7dffe2bc3b09d713759777d760a68842349"
+    },
+    {
+      "path": "field-library.js",
+      "bytes": 16077,
+      "sha256": "bc68f6745d97a6c6a1f20c588268c5c778f9730512f6ab4249b00d8b3d70cda5"
+    },
+    {
+      "path": "career.js",
+      "bytes": 6869,
+      "sha256": "239efad2557304244d62a5426bb23c14c28cc777a2de9c27d47d4d77f65d5efa"
+    },
+    {
+      "path": "studio.js",
+      "bytes": 11402,
+      "sha256": "523ae98e0560cf5aaa31dd8a3d7b01949976b52ba9b04ea4bde07fa37b4d94ca"
+    },
+    {
+      "path": "style.css",
+      "bytes": 25997,
+      "sha256": "885d17b2b997b1153b3abcb1eacfd3caaeec08236cec5d2d87dcf3a4b04e675b"
+    },
+    {
+      "path": "field-theme.css",
+      "bytes": 9800,
+      "sha256": "75af74a0ff7e91d695e4e3519f2ff752f97649ff81abbb5ba9f2425baddfb30e"
+    },
+    {
+      "path": "icon.svg",
+      "bytes": 179,
+      "sha256": "40476d2f01364dc1e9bbf2add7b853752cd025299fdcc60f3ee4aee296f2a0dd"
+    },
+    {
+      "path": "catalog/reference.json",
+      "bytes": 353864,
+      "sha256": "9640bec54bd58cad5786fc1a95f781e04a9dcbaa23c94d5a2eca306c001649ef"
+    },
+    {
+      "path": "catalog/gear.json",
+      "bytes": 120017,
+      "sha256": "180132644fcc3595535bc1330dc6303c1368119df9f17b2f79f41644cd11cd9d"
+    },
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
