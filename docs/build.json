@@ -2,26 +2,27 @@
   "schema": "field.public_build.v1",
   "version": "0.4.0",
   "mode": "public_no_player_data",
+  "buildTag": "dd9870cc1e8a40e7",
   "files": [
     {
       "path": "index.html",
-      "bytes": 2687,
-      "sha256": "31b8b23cf0c9a0f917d9aeba58313eaf37b32a38bdec0de602d08bbb46543279"
+      "bytes": 2763,
+      "sha256": "90e29a67b2afebd564219284fbb2d1cc9cf26aeee59790a45f6132e5b2e5e112"
     },
     {
       "path": "public.js",
-      "bytes": 2551,
-      "sha256": "1f43d600873f2f6f8ac7eb4417af82ba8cb261e7f59c51bcdccab4677b790f09"
+      "bytes": 2646,
+      "sha256": "f9b812a8b83627008d725e1c657515aab83ee8268c67555829aac57479dcad44"
     },
     {
       "path": "data-client.js",
-      "bytes": 1174,
-      "sha256": "03b27eb845a12394c4e27cef6d7cb8c4efe4814bb11619d8bd7fbf8a0dc7bd98"
+      "bytes": 1299,
+      "sha256": "d3409cd4ad6451039e318ee9c6b1d5d4a25e9b428db696e2875d5d78aafb5331"
     },
     {
       "path": "reference.js",
-      "bytes": 11568,
-      "sha256": "13138c7629a7c26d9c0b46a5ea27cbd9beddf411be3adc0db4ee1c69808d0c8e"
+      "bytes": 11606,
+      "sha256": "90eacb414f311f7ab8fd9734425d29e4af8ff6d009b86b1f11b017e585748e7c"
     },
     {
       "path": "reference-core.js",
@@ -30,18 +31,18 @@
     },
     {
       "path": "field-library.js",
-      "bytes": 16077,
-      "sha256": "bc68f6745d97a6c6a1f20c588268c5c778f9730512f6ab4249b00d8b3d70cda5"
+      "bytes": 16096,
+      "sha256": "b1f30ac7ba2b82547482f90e0f21654213015d5e1c4b18d2472e480f448bf3df"
     },
     {
       "path": "career.js",
-      "bytes": 6869,
-      "sha256": "239efad2557304244d62a5426bb23c14c28cc777a2de9c27d47d4d77f65d5efa"
+      "bytes": 6888,
+      "sha256": "71495805c2378ba76ada5920ea96e0ded38ffc81d5b86dc90df8bb93382617f6"
     },
     {
       "path": "studio.js",
-      "bytes": 13141,
-      "sha256": "7f5003c04b3aca7b30028af3aa47921f5112f56f43302816a9d1187fdca6361a"
+      "bytes": 13160,
+      "sha256": "22f7f1b292e576d85cc34c8748fe2af1b8960a4fdd1ccafc2f3d61c8d553d72f"
     },
     {
       "path": "style.css",

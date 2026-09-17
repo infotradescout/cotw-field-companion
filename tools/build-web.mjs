@@ -11,10 +11,12 @@ outputs['catalog/reference.json']=readFileSync(path.join(root,'lib/rating-data.j
 outputs['catalog/gear.json']=readFileSync(path.join(root,'lib/gear-data.json'));
 outputs['.nojekyll']=Buffer.from('');
 outputs['APC-MIT.txt']=readFileSync(path.join(root,'licenses/APC-MIT.txt')); 
+const buildTag=createHash('sha256').update(Object.entries(outputs).sort(([a],[b])=>a.localeCompare(b)).map(([n,b])=>n+':'+createHash('sha256').update(b).digest('hex')).join('\n')).digest('hex').slice(0,16);
+for(const [name,bytes]of Object.entries(outputs)){let text=bytes.toString();if(name.endsWith('.js'))text=text.replace(/(from\s*['"]\.\/[^'"]+\.js)(['"])/g,'$1?v='+buildTag+'$2');if(name==='index.html')text=text.replace(/((?:src|href)="\.\/[^"]+\.(?:js|css|svg))(")/g,'$1?v='+buildTag+'$2');if(name.endsWith('.js')||name==='index.html')outputs[name]=Buffer.from(text);}
 const forbidden=/765611\d{11}|[A-Za-z]:\\Users\\|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|journal\.sqlite|"sourceFolder"\s*:|"HarvestHistory"\s*:|"StatsData"\s*:/;
 for(const [name,bytes] of Object.entries(outputs)){if(forbidden.test(bytes.toString()))throw Error('Private content in public projection: '+name);}
 if(existsSync(out)){const walk=d=>readdirSync(d).flatMap(n=>{const p=path.join(d,n);if(lstatSync(p).isSymbolicLink())throw Error('No public symlinks');return lstatSync(p).isDirectory()?walk(p):[path.relative(out,p).replaceAll('\\','/')];});for(const n of walk(out))if(!Object.hasOwn(outputs,n)&&n!=='build.json')throw Error('Unreviewed public output: '+n);}
 mkdirSync(out,{recursive:true});const manifest=[];
 for(const [name,bytes]of Object.entries(outputs)){const p=path.join(out,name);mkdirSync(path.dirname(p),{recursive:true});writeFileSync(p,bytes);manifest.push({path:name,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});}
-writeFileSync(path.join(out,'build.json'),JSON.stringify({schema:'field.public_build.v1',version:JSON.parse(readFileSync(path.join(root,'package.json'))).version,mode:'public_no_player_data',files:manifest},null,2)+'\n');
+writeFileSync(path.join(out,'build.json'),JSON.stringify({schema:'field.public_build.v1',version:JSON.parse(readFileSync(path.join(root,'package.json'))).version,mode:'public_no_player_data',buildTag,files:manifest},null,2)+'\n');
 console.log(JSON.stringify({publicFiles:manifest.length,bytes:manifest.reduce((s,f)=>s+f.bytes,0),output:'docs',privateDataIncluded:false}));
