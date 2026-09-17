@@ -72,6 +72,11 @@
       "path": ".nojekyll",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "APC-MIT.txt",
+      "bytes": 1117,
+      "sha256": "2198bf76c85174d64504b035969357ecaaede035ab477aa827664facc4e9e3be"
     }
   ]
 }

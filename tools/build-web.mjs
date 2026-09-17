@@ -10,6 +10,7 @@ for(const name of files)outputs[name]=readFileSync(path.join(root,'public',name)
 outputs['catalog/reference.json']=readFileSync(path.join(root,'lib/rating-data.json'));
 outputs['catalog/gear.json']=readFileSync(path.join(root,'lib/gear-data.json'));
 outputs['.nojekyll']=Buffer.from('');
+outputs['APC-MIT.txt']=readFileSync(path.join(root,'licenses/APC-MIT.txt')); 
 const forbidden=/765611\d{11}|[A-Za-z]:\\Users\\|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|journal\.sqlite|"sourceFolder"\s*:|"HarvestHistory"\s*:|"StatsData"\s*:/;
 for(const [name,bytes] of Object.entries(outputs)){if(forbidden.test(bytes.toString()))throw Error('Private content in public projection: '+name);}
 if(existsSync(out)){const walk=d=>readdirSync(d).flatMap(n=>{const p=path.join(d,n);if(lstatSync(p).isSymbolicLink())throw Error('No public symlinks');return lstatSync(p).isDirectory()?walk(p):[path.relative(out,p).replaceAll('\\','/')];});for(const n of walk(out))if(!Object.hasOwn(outputs,n)&&n!=='build.json')throw Error('Unreviewed public output: '+n);}
