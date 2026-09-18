@@ -1,4 +1,4 @@
-import {tilePlan,tileUrl,validBounds} from './map-geometry.js?v=9ae7a7b0d2cbccb1';
+import {tilePlan,tileUrl,validBounds} from './map-geometry.js?v=2a4fce5fb354b076';
 const NS='http://www.w3.org/2000/svg';
 function group(){const n=document.createElementNS(NS,'g');n.setAttribute('pointer-events','none');return n;}
 /** Keep image nodes alive across save refreshes and panning; never refetch on every frame. */

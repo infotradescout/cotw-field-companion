@@ -1,6 +1,6 @@
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export class PhoneAccessUI {
-  constructor(token){this.token=token;this.info=null;this.pairing=null;this.qr='';this.busy=false;this.error='';this.loading=null;}
+  constructor(post){this.request=post;this.info=null;this.pairing=null;this.qr='';this.busy=false;this.error='';this.loading=null;}
   render(remote=false){
     if(remote)return '<section class="panel"><h2>Connected to your PC</h2><p>Keep your PC and companion running while you use your phone.</p><p class="small muted">To disconnect this phone, open Settings on your PC and turn off phone access.</p></section>';
     return `<section class="panel phone-access" id="phoneAccess">${this.content()}</section>`;
@@ -16,7 +16,7 @@ export class PhoneAccessUI {
     if(this.loading)return this.loading;
     this.loading=(async()=>{try{const r=await fetch('/api/phone/status',{cache:'no-store'});if(!r.ok)throw Error('Could not check phone access.');this.info=await r.json();}catch(e){this.error=e.message;}finally{this.loading=null;this.draw();}})();return this.loading;
   }
-  async post(action,body={}){const r=await fetch('/api/phone/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-Companion-Token':this.token()},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error||'Could not connect. Try again.');return data;}
+  async post(action,body={}){return this.request('/api/phone/'+action,body);}
   async run(action){if(this.busy)return;this.busy=true;this.error='';this.draw();try{return await action();}catch(e){this.error=e.message;throw e;}finally{this.busy=false;await this.load();}}
   async enable(){return this.run(async()=>{this.info=await this.post('enable',{consent:true});await this.newPair();});}
   async newPair(){const value=await this.post('pair');const {default:qrcode}=await import('./qrcode.js');const qr=qrcode(0,'M');qr.addData(value.url);qr.make();this.qr=qr.createSvgTag({cellSize:4,margin:16,scalable:true});this.pairing=value;this.draw();}
