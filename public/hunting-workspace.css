@@ -314,6 +314,7 @@ body.hunting-app {
 .hunting-app .harvest-result{min-width:86px;text-align:right;font-variant-numeric:tabular-nums}
 .hunting-app .harvest-result strong{display:block;color:var(--text);font-size:27px;line-height:1.2;font-weight:650}
 .hunting-app .harvest-result>span{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.hunting-app .harvest-medals{max-width:860px;margin:0 0 24px}.hunting-app .harvest-medals>p{font-size:14px;margin:0 0 10px}.hunting-app .harvest-medals>p span{color:var(--muted)}.hunting-app .medal-counts{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hunting-app .medal-count{padding:15px 17px;border:1px solid var(--line);border-radius:10px;background:var(--panel,#1c2b23)}.hunting-app .medal-count>span{display:block;font-size:14px;font-weight:600}.hunting-app .medal-count>strong{display:block;margin-top:7px;font-size:clamp(20px,5vw,30px);line-height:1.2}.hunting-app .medal-count.gold>span{color:#f0c76d}.hunting-app .medal-count.diamond>span{color:#a7deee}
 .hunting-app .harvest-notes{grid-column:1/-1;padding-top:4px;border-top:1px solid var(--line)}
 .hunting-app .harvest-notes>summary,.hunting-app .harvest-help>summary{min-height:44px;align-content:center;color:var(--muted);cursor:pointer;font-size:14px;line-height:1.5}
 .hunting-app .harvest-notes p,.hunting-app .harvest-help p{font-size:14px;line-height:1.6}
