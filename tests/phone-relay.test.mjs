@@ -196,7 +196,9 @@ test('disabled identity cannot read a newly provisioned PC connection',async t=>
 test('persistent signing key retains pairing across relay restart and PC reconnect',async t=>{
   const f=await fixture(t),pc=await f.pc('After restart'),p=await pair(f.relay,pc);const origin=f.relay.origin,port=f.relay.server.address().port;
   await f.relay.close();f.relay=await createPhoneRelay({key:f.key,publicOrigin:origin,port,allowInsecureLoopback:true});
-  await until(async()=>{try{return (await request(f.relay,'/api/bootstrap',{cookie:p.cookie})).value.phone?.online===true;}catch(e){if(e.cause?.code==='ECONNRESET'||e.cause?.code==='ECONNREFUSED')return false;throw e;}});
+  // A pooled GET connection can close during this deliberate same-port restart.
+  // Retry only expected transport failures within the existing readiness bound.
+  await until(async()=>{try{return (await request(f.relay,'/api/bootstrap',{cookie:p.cookie})).value.phone?.online===true;}catch(e){if(['ECONNRESET','ECONNREFUSED','UND_ERR_SOCKET'].includes(e.cause?.code))return false;throw e;}});
   assert.equal((await request(f.relay,'/api/state',{cookie:p.cookie})).value.zones[0].species,'After restart');
 });
 

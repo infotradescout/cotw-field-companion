@@ -12,6 +12,9 @@ outputs['catalog/gear.json']=readFileSync(path.join(root,'lib/gear-data.json'));
 outputs['catalog/maps.json']=readFileSync(path.join(root,'lib/maps-data.json'));
 outputs['.nojekyll']=Buffer.from('');
 outputs['APC-MIT.txt']=readFileSync(path.join(root,'licenses/APC-MIT.txt')); 
+// Every allowlisted asset is UTF-8 text. Normalize checkout line endings before
+// hashing so Windows and Linux publish the same files and cache identities.
+for(const name of Object.keys(outputs))outputs[name]=Buffer.from(outputs[name].toString('utf8').replace(/\r\n/g,'\n'));
 const buildTag=createHash('sha256').update(Object.entries(outputs).sort(([a],[b])=>a.localeCompare(b)).map(([n,b])=>n+':'+createHash('sha256').update(b).digest('hex')).join('\n')).digest('hex').slice(0,16);
 for(const [name,bytes]of Object.entries(outputs)){let text=bytes.toString();if(name.endsWith('.js'))text=text.replace(/(from\s*['"]\.\/[^'"]+\.js)(['"])/g,'$1?v='+buildTag+'$2');if(name==='index.html')text=text.replace(/((?:src|href)="\.\/[^"]+\.(?:js|css|svg))(")/g,'$1?v='+buildTag+'$2');if(name.endsWith('.js')||name==='index.html')outputs[name]=Buffer.from(text);}
 const forbidden=/765611\d{11}|[A-Za-z]:\\Users\\|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|journal\.sqlite|"sourceFolder"\s*:|"HarvestHistory"\s*:|"StatsData"\s*:/;
