@@ -1,64 +1,56 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260918T2201Z-github-inbox",
-  "createdAt": "2026-09-18T22:00:32.5348689Z",
-  "outcome": "Implemented and locally proved the COTW Companion public feedback form, private owner inbox, and a read-only GitHub Issues fallback. The existing GitHub Pages service now hosts the public synthetic preview and the local Companion surfaces public field notes without mixing another product's service or data.",
+  "checkpointId": "progress-20260918T2238Z-ui-density",
+  "createdAt": "2026-09-18T22:38:00Z",
+  "outcome": "Implemented and browser-proved a compact, phone-first presentation pass for the installed COTW Companion and public preview.",
   "scope": [
-    "public companion feedback intake",
-    "private owner notification inbox",
-    "GitHub Issues owner-inbox fallback",
-    "local package refresh and browser proof",
-    "GitHub Pages public preview deployment",
-    "hosting inventory and product boundary"
+    "mobile career hierarchy",
+    "weapon-category stat layout",
+    "public home vertical density",
+    "portable package refresh and browser proof"
   ],
   "prohibitions": [
-    "No hosted SQLite feedback delivery claim before a COTW-owned backend, durable storage, owner auth, and a synthetic live journey are accepted.",
-    "Do not deploy COTW data into the separate Skill Gaming World service or any unrelated product service.",
-    "The GitHub fallback is read-only; local Mark seen never mutates public issues."
+    "Keep player save data and account data out of the public build.",
+    "Do not claim the public Pages deployment changed until the branch is integrated and the Pages build is live.",
+    "Do not remove access to career detail; keep lower-value detail behind the More career details drawer."
   ],
   "progress": {
     "completedVerified": [
-      "Public build contains a bounded feedback path with an explicit hosted endpoint seam and a public Field note issue-form fallback.",
-      "Local Companion owner inbox proxies authenticated hosted reads and mark-as-read calls; its token stays server-side.",
-      "When the hosted origin is unavailable, local /api/feedback/github reads only bounded labeled issue summaries, drops pull requests, and validates issue URLs.",
-      "The owner dashboard shows GitHub Issues notes with local-browser Mark seen state and no external mutation.",
-      "The public issue form warns against save files, account IDs, and personal photos and applies the feedback label.",
+      "Career view removes the redundant subtitle, keeps the seven primary totals visible, and places shots, medals, reserve progress, reconciliation, and technical details behind one More career details drawer.",
+      "Weapon category cards stay visible in a two-column grid at a 390px phone viewport, reducing the weapon panel from 1,048px to 474px.",
+      "Installed Windows Companion was rebuilt from reviewed portable staging, refreshed, restarted, and loaded in a real 390x844 browser viewport.",
+      "Installed career document height measured 1,630px at 390x844, down from 2,645px before this pass.",
+      "Public home feature tiles use a horizontal phone rail; mobile copy and hero actions are shorter while reserve, gear, rare-fur, local companion, and community paths remain available.",
+      "Generated public build measured 1,614px at 390x844, with the feature rail at 214px instead of a 700px vertical stack.",
       "npm test: 168 passed, 0 failed, 1 host-only symlink skip.",
       "npm test --prefix cloud: 29 passed, 0 failed.",
       "npm run build:web: 23 public files, privateDataIncluded false.",
-      "Portable staging produced 48 reviewed files and matching server.mjs, public/app.js, and field-theme.css hashes were copied into the installed package.",
-      "Installed Windows Companion restarted from the reviewed package and the real browser shows the GitHub Issues owner inbox fallback with 0 new open issues.",
-      "PR #4 merged the fallback into main at f5feb35d0a0219bb232ce2c853a6243036900367; GitHub Pages reports built.",
-      "A fresh live browser loaded the deployed Feedback view and its Send a field note path."
+      "Portable staging produced 48 reviewed files and installed public/career.js, public/field-theme.css, and public/hunting-workspace.css hashes match source."
     ],
     "changedUnverified": [
-      "The optional hosted feedback origin is not deployed, so its public form and private SQLite delivery path remain unproven live.",
-      "The Render workspace has 109 services but no COTW-owned service or COTW database. Its only gaming-named service is skill-gaming-world, a separate Next/Postgres product.",
-      "The GitHub Actions Quality check fails before any steps are reported because no runner is assigned; local gates pass, but CI acceptance remains open."
+      "The UI commit is pushed to fix/hunting-workflow-20260918 at a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd but is not integrated into main.",
+      "GitHub Pages still requires integration and a successful Pages build before the live public URL can be called updated.",
+      "GitHub Actions Quality remains unavailable before steps because the repository has no assigned runner."
     ],
     "proof": [
-      "Feature branch source identity: c53e5c8d88262c3c6516a18fc852d9f842995cdd on fix/hunting-workflow-20260918.",
-      "Public merge identity: f5feb35d0a0219bb232ce2c853a6243036900367 on main.",
-      "Existing PR #2 was merged; superseded PR #3 was closed; clean PR #4 was merged.",
-      "Feedback API fallback has a synthetic token/privacy/URL projection test and the public build contains no player data.",
-      "Render service and Postgres inventory was read-only; no provider mutation occurred."
+      "Real installed browser proof: 390x844 local career view after restart.",
+      "Real static public build proof: 390x844 generated docs/index.html preview.",
+      "Source and installed hashes were compared for the reviewed UI files.",
+      "Root and cloud test suites were rerun after the final source changes."
     ],
     "externalEffects": [
-      "Pushed feature commits to origin/fix/hunting-workflow-20260918 and follow-up branch fix/github-feedback-inbox-20260918.",
-      "Merged PR #2 and PR #4 into main; closed superseded PR #3.",
-      "Created the repository feedback label and issue form.",
-      "GitHub Pages published the synthetic public build from main/docs.",
-      "Refreshed and restarted the local installed Companion only.",
-      "No Render service, database, hosted feedback endpoint, player data, or account data was changed."
+      "Pushed commit a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd to the existing feature branch.",
+      "Refreshed and restarted the local installed Companion.",
+      "No player saves, account data, Render services, databases, or hosted feedback data were changed."
     ],
-    "nextSafeAction": "If a hosted custom feedback form is still needed, select a COTW-owned host, durable storage, owner authentication, and provider-verified client identity. Otherwise the existing GitHub Pages plus GitHub Issues path is usable now; resolve the unavailable GitHub Actions runner before calling release fully accepted."
+    "nextSafeAction": "Integrate a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd into main through the existing review path, then wait for the Pages build and recheck the live phone layout."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "c53e5c8d88262c3c6516a18fc852d9f842995cdd",
-    "checkpointCommit": "pending",
+    "headBefore": "a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd",
+    "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
@@ -66,5 +58,5 @@
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [],
-  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, player data, screenshots, and secrets are excluded"
+  "privacyBoundary": "bounded UI identities and test measurements only; no player data, raw screenshots, save paths, or secrets"
 }
