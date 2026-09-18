@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "si.progress-checkpoint.v1",
+  "checkpointId": "progress-20260918T201413Z-02979047",
+  "createdAt": "2026-09-18T20:14:13.409274+00:00",
+  "outcome": "SI Step 1 handoff locked the corrected COTW Companion product intent: a shareable public demo, a simple hunter themed card and thumbnail studio with local screenshot attachments, honest medal whiff and shot placement analysis where evidence exists, and a feedback inbox boundary for the private dashboard.",
+  "scope": [
+    "SI Step 1 intent handoff",
+    "card and thumbnail studio",
+    "public demo boundary",
+    "feedback and shot analysis follow-up"
+  ],
+  "prohibitions": [
+    "Never publish raw journal, save, account, or user screenshot data; public demos use synthetic labeled examples.",
+    "Do not claim shot placement or feedback delivery without an authoritative source and live proof."
+  ],
+  "progress": {
+    "completedVerified": [
+      "Current installed local app and public GitHub Pages field library identities were verified before planning.",
+      "Latest local map and phone page repair is committed at eb97370 and the journal backup remains available."
+    ],
+    "changedUnverified": [
+      "Thumbnail layout and public demo mock data are not implemented yet.",
+      "Shot placement telemetry and public feedback delivery need a source and service boundary; do not infer them from existing saves.",
+      "Public Pages currently shows the existing public build until a new main-line deployment is accepted."
+    ],
+    "proof": [
+      "branch fix/hunting-workflow-20260918 at eb973700c7fc4c716a32f89ee8fb85a538f7f51c",
+      "public URL https://infotradescout.github.io/cotw-field-companion/"
+    ],
+    "externalEffects": [
+      "No product files or player data changed by this handoff checkpoint."
+    ],
+    "doNotRepeat": [
+      "Do not restart the broad audit; start with the studio owner and the existing public entrypoint."
+    ],
+    "nextSafeAction": "Implement the first bounded slice: repair the card studio and add the thumbnail creator using synthetic public demo data only; keep feedback transport as a separately gated backend slice."
+  },
+  "repository": {
+    "root": ".",
+    "rootKind": "repository_relative",
+    "branch": "fix/hunting-workflow-20260918",
+    "headBefore": "eb973700c7fc4c716a32f89ee8fb85a538f7f51c",
+    "checkpointCommit": "containing_commit",
+    "pushRequested": true,
+    "pushRemote": "origin",
+    "protectedBranchAuthorized": false,
+    "selectedStatusBefore": [],
+    "unrelatedChangeCountExcluded": 0
+  },
+  "savedFiles": [],
+  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
+}
