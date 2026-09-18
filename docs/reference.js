@@ -1,5 +1,5 @@
-import {getCatalog} from './data-client.js?v=d072a585bbd0f127';
-import {MEDALS,LEVEL_NAMES,weightRange,score,evaluateScore,filterSpecies,resolveSpecies} from './reference-core.js?v=d072a585bbd0f127';
+import {getCatalog} from './data-client.js?v=ba6bd185fc643d95';
+import {MEDALS,LEVEL_NAMES,weightRange,score,evaluateScore,filterSpecies,resolveSpecies} from './reference-core.js?v=ba6bd185fc643d95';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const title=s=>String(s).replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
 const option=(v,label,chosen)=>`<option value="${escape(v)}" ${String(v)===String(chosen)?'selected':''}>${escape(label)}</option>`;

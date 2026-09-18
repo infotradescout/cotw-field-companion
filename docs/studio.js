@@ -1,4 +1,4 @@
-import {esc,safePreference,savePreference} from './data-client.js?v=d072a585bbd0f127';
+import {esc,safePreference,savePreference} from './data-client.js?v=ba6bd185fc643d95';
 const SIZES={square:[1080,1080],portrait:[1080,1350],wide:[1920,1080]};
 const THEMES={trail:['#181c1a','#e5aa49','#f2eee3'],snow:['#e8ece9','#345c64','#192523'],night:['#10151d','#8aa9dc','#edf1f6']};
 const LABELS={lifetimeHarvests:'CAREER HARVESTS',shotsFired:'SHOTS FIRED',diamonds:'DIAMONDS',greatOnes:'GREAT ONES',longestShot:'LONGEST SHOT',accuracy:'ACCURACY',retainedHarvests:'RETAINED RECEIPTS'};

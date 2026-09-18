@@ -1,5 +1,5 @@
-import {homeBox,validBox,insideBounds,scaleBar} from './map-geometry.js?v=d072a585bbd0f127';
-import {TerrainLayer} from './terrain-layer.js?v=d072a585bbd0f127';
+import {homeBox,validBox,insideBounds,scaleBar} from './map-geometry.js?v=ba6bd185fc643d95';
+import {TerrainLayer} from './terrain-layer.js?v=ba6bd185fc643d95';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};

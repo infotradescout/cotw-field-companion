@@ -2,3 +2,16 @@
 @media(max-width:1150px){.atlas-layout{grid-template-columns:minmax(0,1fr) 245px}.atlas-toolbar{gap:8px}.atlas-toolbar>span{flex-basis:100%;order:4}.atlas-map-shell .field-map{min-height:570px}.atlas-sidebar{max-height:900px}.atlas-map-panel>p{font-size:9px}.atlas-caption{font-size:9px}}
 @media(max-width:800px){.atlas-layout{grid-template-columns:1fr}.atlas-map-shell .field-map{height:540px;min-height:400px}.atlas-sidebar{min-height:0;max-height:none;display:grid;grid-template-columns:1fr 1fr}.atlas-poi-list{max-height:300px;min-height:240px;grid-row:2/4;grid-column:1}.atlas-search{grid-column:1/-1}.atlas-details{grid-column:2}.atlas-goto{grid-column:2}.atlas-expanded{inset:4px;padding:6px}.atlas-expanded .atlas-sidebar{max-height:none}.atlas-expanded .atlas-map-shell .field-map{height:calc(100vh - 195px);min-height:280px}.atlas-toolbar .button{font-size:10px}.native-terrain-status{flex-wrap:wrap}.native-terrain-status>span{flex-basis:100%}}
 @media(max-width:500px){.atlas-map-shell .field-map{height:430px;min-height:320px}.atlas-sidebar{display:flex}.atlas-poi-list{max-height:235px;min-height:120px}.atlas-search{padding:14px}.atlas-search label{font-size:10px}.atlas-notice{font-size:10px}.atlas-toolbar label{font-size:10px}.atlas-toolbar{padding:9px}.atlas-caption span{display:block;width:100%}.atlas-details{padding:14px}.atlas-goto{padding:14px}.native-map-expanded .hunting-workspace .map-column{inset:5px;padding:5px}.native-map-expanded .map-column .field-map{height:calc(100vh - 190px)}}
+/* Keep the terrain as large as its available column, instead of capping it at 550px. */
+.main-shell:has(.atlas-layout),.main-shell:has(.hunting-workspace){max-width:none}
+.atlas-layout{grid-template-columns:minmax(0,1fr) 245px}
+.atlas-map-shell .field-map,.hunting-workspace .map-column .field-map{height:auto;min-height:0;max-height:none;aspect-ratio:1}
+.hunting-workspace{grid-template-columns:230px minmax(0,1fr);align-items:start}
+.hunting-workspace .zone-browser{grid-row:span 2}
+.hunting-workspace .map-detail{grid-column:2}
+.hunting-workspace .map-shell{min-height:0}
+.atlas-expanded .atlas-map-shell .field-map{height:calc(100dvh - 180px);min-height:280px;aspect-ratio:auto}
+.native-map-expanded .hunting-workspace .map-column .field-map{height:calc(100dvh - 145px);min-height:200px;aspect-ratio:auto}
+@media(max-width:900px){.hunting-workspace{display:flex;flex-direction:column}.hunting-workspace .map-column{width:100%}}
+@media(max-width:800px){.atlas-layout{grid-template-columns:1fr}.atlas-expanded .atlas-map-shell .field-map{height:calc(100dvh - 195px)}}
+@media(max-width:500px){.native-map-expanded .hunting-workspace .map-column .field-map{height:calc(100dvh - 190px)}}

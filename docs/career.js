@@ -1,4 +1,4 @@
-import {esc,pretty} from './data-client.js?v=d072a585bbd0f127';
+import {esc,pretty} from './data-client.js?v=ba6bd185fc643d95';
 const num=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:1}):'Not available';
 const date=v=>v?new Date(v).toLocaleString():'Not recorded';
 export function statValue(c){if(!Number.isFinite(c?.value))return 'Not available';if(c.display===1)return num(c.value*100)+'%';if(c.display===2)return num(c.value)+' m';return num(c.value);}
