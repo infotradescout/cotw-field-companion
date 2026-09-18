@@ -507,3 +507,43 @@ body.hunting-app {
 .hunting-app .pressure-key[hidden]{display:none}
 .hunting-app .pressure-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;background:#d13ade;border:1px solid #f0adf5}
 .hunting-app .pressure-key.unavailable,.hunting-app .pressure-key.empty{color:var(--muted)}
+
+/* Herds is a field checklist: route first, then a short set of readable choices. */
+.hunting-app .route-focus { margin-bottom: 14px; }
+.hunting-app .route-focus .panel-head { margin-bottom: 6px; }
+.hunting-app .route-focus .panel-head p { margin: 0; }
+.hunting-app .route-focus .empty { padding: 18px 10px 8px; }
+.hunting-app .route-focus .route-stop { align-items: center; }
+.hunting-app .route-focus .stop-controls { flex-wrap: wrap; justify-content: flex-end; }
+.hunting-app .route-focus .stop-controls .button { min-height: 40px; }
+.hunting-app .herd-list-panel { padding-bottom: 16px; }
+.hunting-app .herd-list-panel > .panel-head { margin-bottom: 12px; }
+.hunting-app .herd-list-panel > .panel-head h2 { margin-bottom: 4px; }
+.hunting-app .herd-list-panel > .panel-head p { margin: 0; }
+.hunting-app .herd-cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(235px,1fr)); gap: 10px; }
+.hunting-app .herd-card { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+.hunting-app .herd-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.hunting-app .herd-card-head .text-button { min-width: 0; padding: 0; color: var(--text); font-size: 16px; line-height: 1.25; }
+.hunting-app .herd-card-head .tiny { margin-top: 5px; }
+.hunting-app .need-badge { flex: 0 0 auto; padding: 4px 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 10px; text-transform: capitalize; }
+.hunting-app .need-badge.drinking { color: var(--blue); }
+.hunting-app .need-badge.feeding { color: #d9ba76; }
+.hunting-app .need-badge.resting { color: #c7afd8; }
+.hunting-app .herd-card-time { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.hunting-app .herd-card-stats { display: flex; gap: 18px; margin-top: 14px; padding-top: 11px; border-top: 1px solid var(--line); }
+.hunting-app .herd-card-stats div { min-width: 0; }
+.hunting-app .herd-card-stats strong { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+.hunting-app .herd-card-stats span { color: var(--muted); font-size: 10px; }
+.hunting-app .herd-card-actions { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 7px; margin-top: 14px; }
+.hunting-app .herd-card-actions .button { min-height: 42px; min-width: 0; padding-inline: 8px; white-space: normal; }
+.hunting-app .all-herds { margin-top: 13px; border-top: 1px solid var(--line); padding-top: 13px; }
+.hunting-app .all-herds > summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+.hunting-app .all-herds[open] > summary { margin-bottom: 12px; }
+@media (max-width: 600px) {
+  .hunting-app .route-focus, .hunting-app .herd-list-panel { padding: 13px; }
+  .hunting-app .route-focus .route-stop { align-items: flex-start; gap: 9px; }
+  .hunting-app .route-focus .stop-controls { width: 100%; justify-content: flex-start; }
+  .hunting-app .route-focus .stop-controls .button { flex: 1 1 auto; min-width: 0; }
+  .hunting-app .herd-cards { grid-template-columns: 1fr; gap: 8px; }
+  .hunting-app .herd-card { padding: 13px; }
+}
