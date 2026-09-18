@@ -1,4 +1,4 @@
-# FIELD — COTW Field Companion
+# COTW Companion
 
 An independent companion for **theHunter: Call of the Wild**. Free public reference tools, a local read-only career/harvest observer, and a private-in-browser share studio.
 
@@ -20,7 +20,7 @@ Reserve image origins and tile extents come from DECA metadata, including negati
 
 Requires **Node.js 22.13+** on a compatible Windows PC. Download this repository, extract it, and double-click `START.cmd`, or run `node launcher.mjs --open` from its directory. The app listens on `http://127.0.0.1:47831`. Keep the process running while hunting. This is a source-based preview, not a signed installer.
 
-The launcher discovers a single compatible save profile. It does not silently merge multiple player profiles. A nonstandard location can be selected with `COTW_SAVE_DIR`; companion storage remains separate. No third-party Node packages or paid service are required.
+The launcher discovers a single compatible save profile. It does not silently merge multiple player profiles. A nonstandard location can be selected with `COTW_SAVE_DIR`; companion storage remains separate. The local companion requires no third-party Node packages or paid service. Optional browser phone access requires a separately configured relay; see `cloud/README.md`.
 
 ## Automatic tracking — manual notes optional
 
@@ -32,7 +32,7 @@ Career includes game-defined shots fired (hit + missed), accuracy and weapon-typ
 
 ## Share studio & privacy
 
-Photos remain in browser memory. FIELD sends no photo upload, save upload, account identifier or journal data to the public site. PNG exports render a new image; the original photograph's file metadata is not copied. Review visible content before sharing. Custom stats are labeled player-reported; local career cards are labeled save-derived with their saved date. Neither is an official verified leaderboard record.
+Photos remain in browser memory. Photos stay in your browser and are not sent to the public site. Optional phone access uses a separate private relay after you enable it on your PC. PNG exports render a new image; the original photograph's file metadata is not copied. Review visible content before sharing. Custom stats are labeled player-reported; local career cards are labeled save-derived with their saved date. Neither is an official verified leaderboard record.
 
 ## Free preview, optional support, publisher ambition
 
@@ -50,7 +50,7 @@ Weapon/ammunition facts and statistic identifier mappings were independently nor
 
 ## Development
 
-`npm test` runs isolated synthetic tests. `npm run build:web` projects an explicit allowlist into `docs/` for GitHub Pages. It never reads the installed user's app, game saves, screenshots or database. The public website uses the same reference and share modules as the local app; its entrypoint never calls local save APIs.
+Install relay test dependencies with `npm ci --prefix cloud --ignore-scripts`, then run `npm test` for the complete isolated synthetic suite. The local desktop runtime has no npm runtime dependencies. `npm run build:web` projects an explicit allowlist into `docs/` for GitHub Pages. It never reads the installed user's app, game saves, screenshots or database. The public website uses the same reference and share modules as the local app; its entrypoint never calls local save APIs.
 
 Report bugs in [Issues](https://github.com/infotradescout/cotw-field-companion/issues). Do not attach full saves or account identifiers. See `ROADMAP.md` for the retained product scope and `PUBLISHER_BRIEF.md` for evaluation goals.
 
