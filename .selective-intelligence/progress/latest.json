@@ -48,8 +48,8 @@
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "a6323c5273e7f93a67086ca7f184684de4b166af",
-    "checkpointCommit": "pending",
+    "headBefore": "d00e962262cc9558013277b301e29c7f6827d391",
+    "checkpointCommit": "d00e962262cc9558013277b301e29c7f6827d391",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
@@ -59,3 +59,4 @@
   "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, player data, screenshots, and secrets are excluded"
 }
+
