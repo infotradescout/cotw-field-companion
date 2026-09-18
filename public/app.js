@@ -138,7 +138,7 @@ function renderMap(){
  const homeButton=$('[data-action="map-home"]');if(homeButton){homeButton.setAttribute('aria-label','Center reserve');homeButton.title='Center reserve';}
  const r=state.reserves.find(r=>r.id===reserve)||{id:reserve,name:'Reserve'},zones=filteredZones();
  updateHuntStatus();
- map.layers.poi=$('#layerPoi').checked;map.layers.pressure=pressureEnabled;
+ map.layers.equipment=$('#layerEquipment').checked;map.layers.poi=$('#layerPoi').checked;map.layers.pressure=pressureEnabled;
  if(selectedZone&&!zones.some(z=>z.id===selectedZone))clearZoneSelection();
  map.update({reserve:r,zones,pins:state.pins,equipment:state.equipment,terrain:state.settings.terrain,route:state.route,selectedZone,huntingPressure:state.huntingPressure});
  updatePressureControls();
