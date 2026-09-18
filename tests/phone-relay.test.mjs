@@ -53,6 +53,18 @@ test('relay refuses missing signing key and non-HTTPS production origin',async()
   await assert.rejects(()=>createPhoneRelay({key:randomBytes(32),publicOrigin:'http://example.invalid'}),/HTTPS/);
 });
 
+test('paired browser can load the complete app module graph',async t=>{
+  const f=await fixture(t),pc=await f.pc(),phone=await pair(f.relay,pc),pending=['/app.js'],seen=new Set();
+  while(pending.length){
+    const pathname=pending.pop();if(seen.has(pathname))continue;seen.add(pathname);
+    const response=await request(f.relay,pathname,{cookie:phone.cookie});
+    assert.equal(response.status,200,pathname+' must be served to the paired browser');
+    assert.match(response.headers.get('content-type'),/javascript/);
+    for(const match of response.value.matchAll(/(?:\bfrom\s+|\bimport\s*)['"](\.\/[^'"]+)['"]/g))pending.push(new URL(match[1],f.relay.origin+pathname).pathname);
+  }
+  assert.ok(seen.has('/route-stops.js'));assert.ok(seen.has('/harvest-view.js'));
+});
+
 test('provisioning requires a valid purpose-bound unexpired private installation permit',async t=>{
   let now=Date.now();const f=await fixture(t,{now:()=>now});
   for(const authorization of [undefined,'Bearer invalid','Bearer '+'a'.repeat(2100)])assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{},headers:authorization?{Authorization:authorization}:{}})).status,401);
