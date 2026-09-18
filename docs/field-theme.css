@@ -14,3 +14,34 @@ body{background:var(--bg)}.sidebar{background:#1c211e;border-right-color:#454b40
 .studio-intro{align-items:flex-start}.studio-demo-badge{color:#ffd08a;border-color:#9a6534;background:#3d2b1d}.studio-steps{display:flex;gap:10px;margin:-4px 0 18px;flex-wrap:wrap}.studio-steps>div{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:5px;background:#20271f;color:var(--muted);font-size:12px}.studio-steps b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#221a12}.studio-steps span{color:var(--text)}.studio-section{margin-top:17px;border-top:1px solid var(--line);padding-top:12px}.studio-section summary{cursor:pointer;font-weight:700;color:var(--text);font-size:12px}.studio-dropzone{display:grid;gap:7px;margin:16px 0 10px;padding:16px;border:1px dashed #8d633c;border-radius:6px;background:#2b241c;color:var(--muted)}.studio-dropzone strong{color:#ffd08a;font-size:13px}.studio-dropzone span{font-size:12px;line-height:1.5}.studio-dropzone small{font-size:10px}.studio-dropzone.dragging{border-color:var(--accent);background:#443020;outline:2px solid #ef8d3244}.studio-photo-button{justify-self:start}.studio-file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.great-one-hint{color:#f0c76d}.career-metric.gold strong{color:#f0c76d}.career-metric.diamond strong{color:#b9dfe5}.career-metric.great-one strong{color:#f0c76d}.demo-callout{border-color:#9a6534;background:#30251c;color:#ffe1ae}.demo-callout strong{color:#ffd08a}.studio-preview canvas{box-shadow:0 12px 34px #0008}.studio-photo{min-width:0}.studio-photo canvas{background:#111815}.studio-photo .button{min-width:30px}.studio-controls .actions{display:flex}
 .feedback-panel{max-width:760px}.feedback-panel h1{margin-bottom:8px}.feedback-form{display:grid;gap:16px;max-width:600px;margin-top:24px}.feedback-form label{display:grid;gap:7px;font-size:12px;color:var(--muted)}.feedback-form select,.feedback-form input,.feedback-form textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);padding:12px;font:inherit}.feedback-form textarea{min-height:170px;resize:vertical}.feedback-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important}.feedback-status{padding:12px;border-radius:8px}.feedback-status.success{background:#223b2c;color:#b9e7bd}.feedback-status.error{background:#4a2823;color:#ffd0c4}.feedback-panel .callout{margin-top:22px}.feedback-panel .callout p{max-width:620px}
 .feedback-inbox{max-width:900px}.feedback-inbox-list{display:grid;gap:10px;margin-top:16px}.feedback-inbox-item{padding:16px;border:1px solid var(--line);border-radius:6px;background:#1b211d}.feedback-inbox-item h3{margin:10px 0 6px;font-size:18px}.feedback-inbox-item h3 a,.feedback-inbox-item a{color:var(--text)}.feedback-inbox-item h3 a:hover,.feedback-inbox-item a:hover{color:var(--accent)}.feedback-inbox-item p{white-space:pre-wrap;line-height:1.6}.feedback-inbox-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* Compact field hierarchy: keep the hunting numbers visible and put the explanation behind one deliberate drawer. */
+.career-more{padding:0;overflow:hidden}.career-more>summary{padding:23px;cursor:pointer;font-weight:700}.career-more[open]>summary{border-bottom:1px solid var(--line)}.career-more-content{padding:0 23px}.career-more-content>.career-subsection{padding:17px 0;border-bottom:1px solid var(--line)}.career-more-content>.career-subsection:last-child{border-bottom:0}.career-more-content>.career-subsection>summary{cursor:pointer;font-weight:650}.career-more-content>.career-subsection[open]>summary{margin-bottom:12px}.career-more-content>.career-subsection h2{margin-top:18px}.career-note{margin:13px 0 0}.career-more .all-reserve-career{margin-top:0}
+
+@media(max-width:550px){
+ .hunting-app .career-more>summary{padding:17px}
+ .hunting-app .career-more-content{padding:0 17px}
+ .hunting-app .career-more-content>.career-subsection{padding:14px 0}
+ .hunting-app .career-note{font-size:10px;line-height:1.4}
+ .public-mode .sidebar nav{scrollbar-width:none;scroll-snap-type:x proximity}
+ .public-mode .sidebar nav::-webkit-scrollbar{display:none}
+ .public-mode .sidebar nav button{scroll-snap-align:start}
+ .public-mode .field-hero{min-height:0;padding:26px 20px 22px;margin-bottom:16px}
+ .public-mode .field-hero h1{font-size:34px;margin:12px 0;line-height:1.08}
+ .public-mode .field-hero p{font-size:15px;line-height:1.45;margin-bottom:14px}
+ .public-mode .field-hero .actions{display:flex;flex-wrap:wrap;gap:6px}
+ .public-mode .field-hero .actions .button{padding:8px 10px;font-size:11px}
+ .public-mode .hero-badges{gap:8px;margin-top:15px;font-size:10px;line-height:1.35}
+ .public-mode .feature-deck{display:flex;overflow-x:auto;gap:10px;margin:14px 0;padding-bottom:4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+ .public-mode .feature-deck::-webkit-scrollbar{display:none}
+ .public-mode .feature-tile{flex:0 0 min(82vw,320px);height:210px;min-height:0;padding:20px;scroll-snap-align:start}
+ .public-mode .feature-tile h2{font-size:20px;margin:12px 0 8px}
+ .public-mode .feature-tile p{font-size:12px;line-height:1.45}
+ .public-mode .feature-tile>b{margin-top:14px}
+ .public-mode .split-promo{padding:20px;gap:10px}
+ .public-mode .split-promo p{line-height:1.55}
+ .public-mode .feature-statement{padding:12px 0;display:grid;grid-template-columns:1fr 1fr;align-items:center}
+ .public-mode .feature-statement strong{font-size:27px}
+ .public-mode .feature-statement span{margin-top:0}
+ .public-mode .page-foot{padding:12px 18px}
+}
