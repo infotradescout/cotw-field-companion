@@ -38,6 +38,10 @@ await bridge.close();
 
 The **local-only**, existing token-protected routes are `GET /api/phone/status`, `POST /api/phone/enable`, `POST /api/phone/pair`, and `POST /api/phone/disable`. Phone relay configuration is never a remote command. Disable closes the bridge and deletes the stored device credential; the next enable provisions a fresh identity. `close()` alone is for normal app shutdown and permits reconnecting with the saved credential.
 
+## Public feedback service (separate candidate)
+
+`feedback-server.mjs` is a separate, opt-in service for the public companion's feedback loop. It does not run as part of the phone relay and it does not receive game saves, journal exports, screenshots, or account identifiers. It stores only bounded plain-text feedback in a configured SQLite database and exposes an authenticated owner inbox. See [`FEEDBACK-SERVICE.md`](../FEEDBACK-SERVICE.md) for the contract and [`render-feedback.yaml`](./render-feedback.yaml) for a candidate Render shape. Neither is deployed by the existing phone-relay Blueprint; the service URL, persistent disk, owner token, origin policy, and live owner journey must be accepted separately.
+
 Local persistence and enable/disable controls are owned by the main companion integration. The bridge library reads no files and does not enable itself. Its tests use disposable state.
 
 ## Privacy and credential model

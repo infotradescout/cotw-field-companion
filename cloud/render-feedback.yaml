@@ -1,0 +1,26 @@
+# Candidate only. This file does not create or deploy a Render service by itself.
+# A persistent disk and the operator's secret values must be reviewed first.
+services:
+  - type: web
+    name: cotw-feedback-service
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --prefix cloud --ignore-scripts
+    startCommand: node cloud/feedback-server.mjs
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: FEEDBACK_PUBLIC_ORIGIN
+        value: https://infotradescout.github.io
+      - key: FEEDBACK_OWNER_TOKEN
+        sync: false
+      - key: FEEDBACK_OWNER_ORIGIN
+        sync: false
+      - key: FEEDBACK_DB_PATH
+        value: /var/data/feedback.sqlite
+    disk:
+      name: cotw-feedback-data
+      mountPath: /var/data
+      sizeGB: 1

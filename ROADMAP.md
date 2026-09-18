@@ -18,7 +18,7 @@ Lifetime kills, individual shot/health identity, arbitrary reserve attribution o
 2. Correlate region IDs and saved harvests only where source evidence establishes the mapping; add reserve-specific harvest analytics with clear historical coverage.
 3. Validate outcome events without process injection or population inference. Add missing telemetry only with lawful supported access and reproducible identity.
 4. Improve map terrain/reference sourcing, coincident-zone selection, equipment naming, saved layouts and accessible controls.
-5. Add opt-in local share-template persistence and broader collage editing. No automatic social posting or public save upload. A durable public feedback inbox remains a separately gated service with authentication, abuse controls and an owner notification surface.
+5. Add opt-in local share-template persistence and broader collage editing. No automatic social posting or public save upload. The feedback service boundary is implemented on the feature branch; hosted origin, persistent storage, owner authentication and live inbox acceptance remain separately gated.
 6. Provide signed Windows distribution, supported setup/profile-selection UI and version/compatibility checks.
 7. Configure a verified owner donation destination. Keep core preview free; no dummy checkout or implied publisher endorsement.
 8. Gather opt-in feedback and reproducible quality evidence before publisher outreach. Rights review and separate written agreement precede any transfer or DLC arrangement.

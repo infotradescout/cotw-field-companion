@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "engines": {"node": ">=22.13.0"},
-  "scripts": {"start": "node server.mjs", "test": "node --test ../tests/phone*.test.mjs"},
+  "scripts": {"start": "node server.mjs", "start:feedback": "node feedback-server.mjs", "test": "node --test ../tests/phone*.test.mjs ../tests/feedback*.test.mjs"},
   "dependencies": {"ws": "8.21.3"}
 }
