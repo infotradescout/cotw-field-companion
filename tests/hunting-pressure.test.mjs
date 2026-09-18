@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,writeFileSync,statSync,rmSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,statSync,renameSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {normalizeHuntingPressure,huntingPressureView,projectPhonePressure} from '../lib/hunting-pressure.mjs';
@@ -13,6 +13,21 @@ const bounds=[[5696,4296],[13888,12488]],zeros=()=>Array(65536).fill(0);
 test('an all-zero saved raster is known empty, while absent or malformed pressure is unavailable',()=>{
  const empty=normalizeHuntingPressure(zeros());assert.equal(empty.status,'available');assert.equal(empty.width,256);assert.equal(empty.height,256);
  for(const value of [undefined,[],[0],zeros().map((v,i)=>i===123?256:v),zeros().map((v,i)=>i===4?.5:v)])assert.deepEqual(normalizeHuntingPressure(value),{status:'unavailable'});
+});
+
+test('a missing save folder keeps the last pressure visibly stale until scanning recovers',async()=>{
+ const root=mkdtempSync(path.join(tmpdir(),'cotw-pressure-')),save=path.join(root,'saves'),offline=path.join(root,'saves-offline');mkdirSync(save);
+ const pressureDefs={...defs,rootPopulation:{...defs.rootPopulation,HuntingPressureMap:'u8[]'}},raw={...pop(),HuntingPressureMap:zeros()};raw.HuntingPressureMap[257]=80;
+ writeFileSync(path.join(save,'animal_population_19'),fixture(pressureDefs,'rootPopulation',raw));
+ const store=new Store(path.join(root,'journal.sqlite')),observer=new Observer(store,save,{reserves:{19:{id:19,name:'Synthetic',bounds}},populations:{}});
+ try{
+  await observer.scan();assert.equal(observer.state(19).huntingPressure.stale,false);
+  for(const target of [save,offline])assert.ok(path.resolve(target).startsWith(path.resolve(root)+path.sep));
+  renameSync(save,offline);await observer.scan();
+  let state=observer.state(19);assert.ok(state.observer.error);assert.equal(state.huntingPressure.status,'available');assert.equal(state.huntingPressure.stale,true);assert.equal(state.huntingPressure.values[257],80);
+  renameSync(offline,save);await observer.scan();
+  state=observer.state(19);assert.equal(state.observer.error,null);assert.equal(state.huntingPressure.stale,false);assert.equal(state.huntingPressure.values[257],80);
+ }finally{observer.stop();store.close();assert.ok(path.resolve(root).startsWith(path.resolve(tmpdir())+path.sep+'cotw-pressure-'));rmSync(root,{recursive:true,force:true});}
 });
 
 test('pressure preserves row-major bytes, reserve AABB and save time without estimating kills',()=>{
