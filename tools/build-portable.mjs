@@ -8,7 +8,7 @@ export const portableFiles = Object.freeze([
   'package.json', 'START.cmd', 'launcher.mjs', 'server.mjs', 'README.md',
   'licenses/APC-MIT.txt',
   ...['career.mjs','core.mjs','decoder.mjs','gear-data.json','maps-data.json','observer.mjs','rating-data.json','reference.json','stat-definitions.json','store.mjs'].map(name => `lib/${name}`),
-  ...['app.js','career.js','data-client.js','field-library.js','field-theme.css','icon.svg','index.html','map-atlas.js','map-geometry.js','map.js','maps.css','public.html','public.js','reference-core.js','reference.js','studio.js','style.css','terrain-layer.js'].map(name => `public/${name}`),
+  ...['app.js','career.js','data-client.js','field-library.js','field-theme.css','hunting-workspace.css','icon.svg','index.html','map-atlas.js','map-geometry.js','map.js','maps.css','public.html','public.js','reference-core.js','reference.js','studio.js','style.css','terrain-layer.js'].map(name => `public/${name}`),
 ]);
 const sourceRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -36,7 +36,7 @@ export function buildPortable(root, destination) {
   }
   const receipt = {
     schema: 'field.portable-package.v1', version,
-    productName: 'FIELD — COTW Field Companion', finalNamePending: true,
+    productName: 'COTW Companion', finalNamePending: true,
     distribution: 'private-staged-local-preview', targetHub: 'Skill Gaming World',
     platform: 'Windows', requires: 'Node.js 22.13 or newer', entrypoint: 'START.cmd',
     price: 0, paymentRequired: false, donationUrl: null,

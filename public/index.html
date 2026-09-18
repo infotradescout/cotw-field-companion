@@ -1,25 +1,96 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COTW Field Companion</title><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/field-theme.css"><link rel="stylesheet" href="/maps.css"></head>
-<body>
-<aside class="sidebar"><a class="brand" href="#map"><span class="brand-icon">F</span><span>FIELD<span class="brand-sub">COTW COMPANION</span></span></a>
-<div class="workspace-label">YOUR HUNTING WORKSPACE</div><nav aria-label="Companion navigation">
-<button data-view="map"><span>01</span>Hunting map</button>
-<button data-view="career"><span>02</span>Career & all reserves</button>
-<button data-view="harvests"><span>03</span>Automatic harvests</button>
-<button data-view="herds"><span>04</span>Herds & circuit</button>
-<button data-view="maps"><span>05</span> Real reserve maps</button>
-<button data-view="reference"><span>06</span>Animal reference</button>
-<button data-view="rares"><span>07</span>Rare-fur guide</button>
-<button data-view="gear"><span>08</span>Weapons & ammo</button>
-<button data-view="studio"><span>09</span>Share studio</button>
-<button data-view="insights"><span>10</span>Population insights</button>
-<button data-view="recovery"><span>11</span>Optional field notes</button>
-<button data-view="faq"><span>12</span>FAQs & project</button>
-<button data-view="settings"><span>13</span>Connection & settings</button></nav><div class="sidebar-foot"><span class="lock-dot"></span> Local data. Read-only saves.<p>Unofficial companion<br>Local preview · 0.4.1</p></div></aside>
-<div class="main-shell"><header class="topbar"><div class="reserve-picker"><label for="reserve">RESERVE</label><select id="reserve" aria-label="Reserve"></select></div><div class="top-right"><span id="connection" class="pill">Connecting…</span><button id="rescan" class="button subtle">Refresh saves</button><button id="logShotTop" class="button primary">Automatic harvests</button></div></header>
-<main id="content" tabindex="-1"><div class="loading">Connecting automatic tracking…</div></main>
-<footer class="page-foot">Reads your saves only. Automatic tracking is primary; manual notes are optional.</footer></div>
-<dialog id="modal"><form id="modalForm" method="dialog"><div class="dialog-heading"><h2 id="dialogTitle"></h2><button type="button" id="closeDialog" class="icon-button" aria-label="Close dialog">×</button></div><div id="dialogBody"></div><p id="formError" class="error" role="alert"></p><div class="dialog-actions"><button type="button" id="cancelDialog" class="button">Cancel</button><button type="submit" id="submitDialog" class="button primary">Save</button></div></form></dialog>
-<div id="toast" class="toast" role="status" aria-live="polite" hidden></div><script type="module" src="/app.js"></script>
-</body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17221d">
+  <title>COTW Companion</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/field-theme.css">
+  <link rel="stylesheet" href="/maps.css">
+  <link rel="stylesheet" href="/hunting-workspace.css">
+</head>
+<body class="hunting-app">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <aside class="sidebar">
+    <a class="brand" href="#map" aria-label="COTW Companion home">
+      <svg class="companion-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="m4 23 8-14 5 8 3-5 8 11H4Z"/><path d="m10 13 2 3 2-3M19 15l2 3 2-1"/></svg>
+      <span>COTW<span class="brand-sub">Companion</span></span>
+    </a>
+    <nav class="desktop-navigation" aria-label="Companion navigation">
+      <div class="primary-navigation">
+        <button data-view="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg>Hunt map</button>
+        <button data-view="harvests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 9h8m-8 4h6"/></svg>Harvest log</button>
+        <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg>Career</button>
+        <button data-view="studio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-5 3h10m-8-3h6v3"/></svg>Trophy studio</button>
+      </div>
+      <details class="nav-group">
+        <summary>Library</summary>
+        <div class="nav-group-items">
+          <button data-view="maps">Reserve atlas</button>
+          <button data-view="reference">Animals</button>
+          <button data-view="rares">Rare furs</button>
+          <button data-view="gear">Weapons &amp; ammo</button>
+        </div>
+      </details>
+      <details class="nav-group">
+        <summary>More tools</summary>
+        <div class="nav-group-items">
+          <button data-view="herds">Herds &amp; routes</button>
+          <button data-view="insights">Population insights <small>Experimental</small></button>
+          <button data-view="recovery">Field notes</button>
+          <button data-view="faq">Help</button>
+          <button data-view="settings">Settings</button>
+        </div>
+      </details>
+    </nav>
+    <div class="sidebar-foot"><span class="lock-dot"></span> Automatic observation<p>Unofficial companion<br>Reads saves only</p></div>
+  </aside>
+  <div class="main-shell">
+    <header class="topbar">
+      <div class="reserve-picker"><label for="reserve">Reserve</label><select id="reserve" aria-label="Reserve"></select></div>
+      <div class="top-right">
+        <span id="connection" class="pill" role="status">Connecting…</span>
+        <button id="rescan" class="button subtle refresh-button" aria-label="Refresh saves" title="Refresh saves"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m-4.8-2A8 8 0 0 1 18 6l2 2M4 16l2 2a8 8 0 0 0 13.8-4"/></svg><span>Refresh</span></button>
+      </div>
+    </header>
+    <main id="content" tabindex="-1"><div class="loading">Connecting automatic tracking…</div></main>
+    <footer class="page-foot">Automatic observation from your game saves. Manual field notes are optional.</footer>
+  </div>
+  <nav class="mobile-nav" aria-label="Phone navigation">
+    <button data-view="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg><span>Hunt</span></button>
+    <button data-view="harvests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 9h8m-8 4h6"/></svg><span>Harvests</span></button>
+    <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg><span>Career</span></button>
+    <details id="mobileNavigation" class="mobile-more">
+      <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></summary>
+      <div class="mobile-menu">
+        <div class="mobile-menu-heading"><h2>More tools</h2><span>Tap More to close</span></div>
+        <button data-view="studio">Trophy studio</button>
+        <details class="nav-group" open>
+          <summary>Library</summary>
+          <div class="nav-group-items">
+            <button data-view="maps">Reserve atlas</button>
+            <button data-view="reference">Animals</button>
+            <button data-view="rares">Rare furs</button>
+            <button data-view="gear">Weapons &amp; ammo</button>
+          </div>
+        </details>
+        <details class="nav-group">
+          <summary>More tools</summary>
+          <div class="nav-group-items">
+            <button data-view="herds">Herds &amp; routes</button>
+            <button data-view="insights">Population insights <small>Experimental</small></button>
+            <button data-view="recovery">Field notes</button>
+            <button data-view="faq">Help</button>
+            <button data-view="settings">Settings</button>
+          </div>
+        </details>
+      </div>
+    </details>
+  </nav>
+  <dialog id="modal"><form id="modalForm" method="dialog"><div class="dialog-heading"><h2 id="dialogTitle"></h2><button type="button" id="closeDialog" class="icon-button" aria-label="Close dialog">×</button></div><div id="dialogBody"></div><p id="formError" class="error" role="alert"></p><div class="dialog-actions"><button type="button" id="cancelDialog" class="button">Cancel</button><button type="submit" id="submitDialog" class="button primary">Save</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

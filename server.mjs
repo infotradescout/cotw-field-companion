@@ -26,7 +26,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000}=
   const observer=new Observer(store,saveDir,reference,{interval});await observer.start();
   const token=randomBytes(32).toString('hex');
   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
-  const assets=new Map(['/','/index.html','/app.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
+  const assets=new Map(['/','/index.html','/app.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/hunting-workspace.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
   const server=http.createServer(async(req,res)=>{
     const actualPort=server.address().port;
     const goodHosts=[`127.0.0.1:${actualPort}`,`localhost:${actualPort}`];
