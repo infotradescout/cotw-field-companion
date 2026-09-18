@@ -1,0 +1,2 @@
+# Generated website assets have byte hashes; preserve those bytes on every OS.
+docs/** text=auto eol=lf

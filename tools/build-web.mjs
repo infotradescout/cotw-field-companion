@@ -4,15 +4,22 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url))),out=path.join(root,'docs');
-const files=['public.js','data-client.js','reference.js','reference-core.js','field-library.js','career.js','studio.js','style.css','field-theme.css','icon.svg','map.js','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css'];
+const files=['public.js','feedback.js','species-style.js','data-client.js','reference.js','reference-core.js','field-library.js','career.js','studio.js','style.css','field-theme.css','icon.svg','map.js','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css'];
 const outputs={'index.html':readFileSync(path.join(root,'public/public.html'))};
+const configuredFeedbackEndpoint=process.env.COTW_FEEDBACK_ENDPOINT?.trim()||'';
+let feedbackOrigin='';
+if(configuredFeedbackEndpoint){let parsed;try{parsed=new URL(configuredFeedbackEndpoint);}catch{throw Error('COTW_FEEDBACK_ENDPOINT must be an absolute HTTP(S) origin');}if(!['http:','https:'].includes(parsed.protocol)||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('COTW_FEEDBACK_ENDPOINT must be an origin without a path');feedbackOrigin=parsed.origin;}
+outputs['index.html']=Buffer.from(outputs['index.html'].toString().replace('__COTW_FEEDBACK_ENDPOINT__',configuredFeedbackEndpoint).replace("connect-src 'self'","connect-src 'self'"+(feedbackOrigin?' '+feedbackOrigin:'')));
 for(const name of files)outputs[name]=readFileSync(path.join(root,'public',name));
 outputs['catalog/reference.json']=readFileSync(path.join(root,'lib/rating-data.json'));
 outputs['catalog/gear.json']=readFileSync(path.join(root,'lib/gear-data.json'));
 outputs['catalog/maps.json']=readFileSync(path.join(root,'lib/maps-data.json'));
 outputs['.nojekyll']=Buffer.from('');
 outputs['APC-MIT.txt']=readFileSync(path.join(root,'licenses/APC-MIT.txt')); 
-const buildTag=createHash('sha256').update(Object.entries(outputs).sort(([a],[b])=>a.localeCompare(b)).map(([n,b])=>n+':'+createHash('sha256').update(b).digest('hex')).join('\n')).digest('hex').slice(0,16);
+// Every allowlisted asset is UTF-8 text. Normalize checkout line endings before
+// hashing so Windows and Linux publish the same files and cache identities.
+for(const name of Object.keys(outputs))outputs[name]=Buffer.from(outputs[name].toString('utf8').replace(/\r\n/g,'\n'));
+const buildTag=createHash('sha256').update(Object.entries(outputs).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([n,b])=>n+':'+createHash('sha256').update(b).digest('hex')).join('\n')).digest('hex').slice(0,16);
 for(const [name,bytes]of Object.entries(outputs)){let text=bytes.toString();if(name.endsWith('.js'))text=text.replace(/(from\s*['"]\.\/[^'"]+\.js)(['"])/g,'$1?v='+buildTag+'$2');if(name==='index.html')text=text.replace(/((?:src|href)="\.\/[^"]+\.(?:js|css|svg))(")/g,'$1?v='+buildTag+'$2');if(name.endsWith('.js')||name==='index.html')outputs[name]=Buffer.from(text);}
 const forbidden=/765611\d{11}|[A-Za-z]:\\Users\\|gh[pousr]_[A-Za-z0-9]{20}|github_pat_|journal\.sqlite|"sourceFolder"\s*:|"HarvestHistory"\s*:|"StatsData"\s*:/;
 for(const [name,bytes] of Object.entries(outputs)){if(forbidden.test(bytes.toString()))throw Error('Private content in public projection: '+name);}

@@ -1,0 +1,15 @@
+# Run Blueprint setup from the repository root using this file. Creates no database.
+services:
+  - type: web
+    name: cotw-phone-relay
+    runtime: node
+    plan: free
+    buildCommand: npm ci --prefix cloud --ignore-scripts
+    startCommand: node cloud/server.mjs
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: PHONE_RELAY_SIGNING_KEY
+        sync: false

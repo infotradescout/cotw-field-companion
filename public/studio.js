@@ -1,46 +1,496 @@
 import {esc,safePreference,savePreference} from './data-client.js';
-const SIZES={square:[1080,1080],portrait:[1080,1350],wide:[1920,1080]};
-const THEMES={trail:['#181c1a','#e5aa49','#f2eee3'],snow:['#e8ece9','#345c64','#192523'],night:['#10151d','#8aa9dc','#edf1f6']};
-const LABELS={lifetimeHarvests:'CAREER HARVESTS',shotsFired:'SHOTS FIRED',diamonds:'DIAMONDS',greatOnes:'GREAT ONES',longestShot:'LONGEST SHOT',accuracy:'ACCURACY',retainedHarvests:'RETAINED RECEIPTS'};
-const checked=(v,a)=>a.includes(v)?'checked':'';
-function fitted(ctx,text,x,y,width,size,style='bold'){ctx.font=`${style} ${size}px Bahnschrift, Arial, sans-serif`;while(ctx.measureText(text).width>width&&size>12){ctx.font=`${style} ${--size}px Bahnschrift, Arial, sans-serif`;}ctx.fillText(text,x,y);}
-function cover(ctx,img,x,y,w,h,fit='contain'){if(fit==='contain'){const r=Math.min(w/img.width,h/img.height),dw=img.width*r,dh=img.height*r;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);return;}const factor=Math.max(w/img.width,h/img.height),sw=w/factor,sh=h/factor;ctx.drawImage(img,(img.width-sw)/2,(img.height-sh)/2,sw,sh,x,y,w,h);}
-export class ShareStudio{
- constructor(root){this.root=root;this.photos=[];this.state=null;this.error='';this.busy=false;this.currentBlob=null;this.drawVersion=0;
-  const saved=safePreference('studio-design',{});this.design={title:'THE HUNT CONTINUES',subtitle:'',alias:'',layout:'stats',size:'square',theme:'trail',photoFit:'contain',source:'saved',metrics:['lifetimeHarvests','diamonds','shotsFired','accuracy'],custom:'',...saved};
-  if(!Array.isArray(this.design.metrics))this.design.metrics=['lifetimeHarvests','diamonds'];this.design.metrics=this.design.metrics.filter(k=>Object.hasOwn(LABELS,k)).slice(0,6);for(const k of ['title','subtitle','alias','custom'])if(typeof this.design[k]!=='string')this.design[k]='';if(!['stats','trophy','collage'].includes(this.design.layout))this.design.layout='stats';if(!['contain','cover'].includes(this.design.photoFit))this.design.photoFit='contain';if(!['saved','custom'].includes(this.design.source))this.design.source='custom';
-  if(!SIZES[this.design.size])this.design.size='square';if(!THEMES[this.design.theme])this.design.theme='trail';
-  root.addEventListener('input',e=>{if(!e.target.closest('#studioControls'))return;const key=e.target.dataset.design;if(key){this.design[key]=e.target.value;this.currentBlob=null;this.draw();this.persist();}if(e.target.name==='studioMetric'){this.design.metrics=[...root.querySelectorAll('[name=studioMetric]:checked')].map(i=>i.value).slice(0,6);this.draw();this.persist();}});
-  root.addEventListener('change',e=>{if(e.target.id==='studioPhotos')this.addPhotos(e.target.files);});
-  root.addEventListener('click',e=>{const remove=e.target.closest('[data-photo-remove]'),move=e.target.closest('[data-photo-left]');if(remove){const i=Number(remove.dataset.photoRemove);this.photos[i]?.close?.();this.photos.splice(i,1);this.draw();}if(move){const i=Number(move.dataset.photoLeft);if(i>0&&i<this.photos.length){[this.photos[i-1],this.photos[i]]=[this.photos[i],this.photos[i-1]];this.draw();}}if(e.target.closest('#studioDownload'))this.export(false);if(e.target.closest('#studioShare'))this.export(true);if(e.target.closest('#studioClearPhotos')){this.photos.forEach(p=>p.close?.());this.photos=[];this.draw();}if(e.target.closest('#studioClearDesign')){try{localStorage.removeItem('field:studio-design');}catch{};this.message('Saved layout removed. Photos were never stored.');}});
- }
- persist(){const {alias,subtitle,custom,...layout}=this.design;savePreference('studio-design',layout);}
- message(text,error=false){const el=this.root.querySelector('#studioMessage');if(el){el.textContent=text;el.className=error?'error':'muted small';}}
- async addPhotos(files){if(this.busy)return;this.busy=true;try{for(const f of [...files].slice(0,6-this.photos.length)){if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>20*1024*1024)throw Error('Use JPEG, PNG or WebP images, each under 20 MB.');const img=await createImageBitmap(f);if(img.width*img.height>40000000){img.close();throw Error('Image exceeds 40 megapixels; choose a smaller copy.');}this.photos.push(img);}this.message(`${this.photos.length} photo(s) ready. Images stay in this browser; nothing is uploaded.`);this.draw();}catch(e){this.message(e.message,true);}finally{this.busy=false;const input=this.root.querySelector('#studioPhotos');if(input)input.value='';}}
- render(state){this.state=state;const d=this.design;if(!state?.career?.summary)d.source='custom';
-  queueMicrotask(()=>this.draw());
-  return `<div class="intro"><div><div class="eyebrow">MAKE THE HUNT YOURS</div><h1>Share studio</h1><p>Build a career card, feature a trophy, or create a photo collage. Export a clean image—no account or upload required.</p></div><span class="pill">Local-only image processing</span></div><div class="studio-layout"><section id="studioControls" class="panel studio-controls"><h2>Your design</h2>
-  <label>LAYOUT<select data-design="layout">${[['stats','Career stat sheet'],['trophy','Trophy spotlight'],['collage','Trophy collage']].map(([k,n])=>`<option value="${k}" ${d.layout===k?'selected':''}>${n}</option>`).join('')}</select></label><div class="form-grid"><label>FORMAT<select data-design="size">${Object.entries(SIZES).map(([k,sz])=>`<option value="${k}" ${d.size===k?'selected':''}>${k} · ${sz.join(' × ')}</option>`).join('')}</select></label><label>THEME<select data-design="theme">${Object.keys(THEMES).map(k=>`<option ${d.theme===k?'selected':''}>${k}</option>`).join('')}</select></label></div>
-  <label>HEADLINE<input data-design="title" maxlength="70" value="${esc(d.title)}"></label><label>HUNTER NAME / HANDLE<input data-design="alias" maxlength="50" placeholder="Optional, only on your image" value="${esc(d.alias)}"></label><label>SUBTITLE / TROPHY DETAILS<input data-design="subtitle" maxlength="140" placeholder="Species, score, reserve, date…" value="${esc(d.subtitle)}"></label>
-  <label>STAT SOURCE<select data-design="source"><option value="custom" ${d.source==='custom'?'selected':''}>Custom / player reported</option>${state?.career?.summary?`<option value="saved" ${d.source==='saved'?'selected':''}>Your saved career counters</option>`:''}</select></label><fieldset class="studio-metrics" ${state?.career?.summary?'':'hidden'}><legend>CHOOSE SAVED METRICS · MAX 6</legend>${Object.entries(LABELS).map(([k,n])=>`<label><input type="checkbox" name="studioMetric" value="${k}" ${checked(k,d.metrics)}>${n.toLowerCase()}</label>`).join('')}</fieldset><label>CUSTOM STATS · LABEL: VALUE, ONE PER LINE<textarea data-design="custom" rows="4" maxlength="800" placeholder="Favorite reserve: Askiy Ridge&#10;Best trophy: Your score">${esc(d.custom)}</textarea></label>
-  <label>PHOTO FIT<select data-design="photoFit"><option value="contain" ${d.photoFit==='contain'?'selected':''}>Show the whole photo</option><option value="cover" ${d.photoFit==='cover'?'selected':''}>Center crop to fill</option></select></label><div id="studioPhotoStrip" class="studio-photo-strip"></div><label>YOUR TROPHY PHOTOS · UP TO 6<input id="studioPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple></label><div class="actions"><button id="studioClearPhotos" class="button subtle">Clear photos</button><button id="studioClearDesign" class="button subtle">Forget layout</button></div><p class="tiny muted">Use your own captures or images you have permission to share. Photos are not sent to the server or saved by this app. Export only what you want public.</p></section>
-  <section class="studio-preview"><div class="panel-head"><h2>Live preview</h2><span class="small muted">PNG export</span></div><canvas id="studioCanvas" width="1080" height="1080" aria-label="Customizable social stat card preview"></canvas><div class="studio-export"><button id="studioDownload" class="button primary">Export PNG</button><button id="studioShare" class="button">Share image</button></div><p id="studioMessage" role="status" class="muted small">Review the image before sharing. Custom values are labeled player reported.</p></section></div>`;
- }
- metrics(){const d=this.design;if(d.source==='custom')return d.custom.split(/\r?\n/).filter(x=>x.includes(':')).slice(0,6).map(line=>{const i=line.indexOf(':');return {label:line.slice(0,i).trim().slice(0,36),value:line.slice(i+1).trim().slice(0,48)};});const s={...this.state?.career?.summary,retainedHarvests:this.state?.career?.retainedHarvests};return d.metrics.slice(0,6).map(k=>({label:LABELS[k]||k,value:!Number.isFinite(s[k])?'Not available':k==='accuracy'?(s[k]*100).toFixed(1)+'%':k==='longestShot'?s[k].toFixed(1)+' m':s[k].toLocaleString()}));}
- renderPhotos(){const host=this.root.querySelector('#studioPhotoStrip');if(!host)return;host.innerHTML=this.photos.map((_,i)=>`<div class="studio-photo"><canvas width="160" height="100" data-photo-preview="${i}" aria-label="Photo ${i+1}"></canvas><div><button class="button small" data-photo-left="${i}" aria-label="Move photo ${i+1} left" ${i===0?'disabled':''}>←</button><button class="button small" data-photo-remove="${i}" aria-label="Remove photo ${i+1}">×</button></div></div>`).join('');host.querySelectorAll('canvas').forEach((canvas,i)=>{const c=canvas.getContext('2d');c.fillStyle='#101711';c.fillRect(0,0,160,100);cover(c,this.photos[i],0,0,160,100,'contain');});}
- draw(){this.renderPhotos();const canvas=this.root.querySelector('#studioCanvas');if(!canvas)return;this.drawVersion++;this.currentBlob=null;const d=this.design,[w,h]=SIZES[d.size]||SIZES.square,[bg,accent,ink]=THEMES[d.theme]||THEMES.trail;canvas.width=w;canvas.height=h;const c=canvas.getContext('2d'),pad=w*.055;
-  c.fillStyle=bg;c.fillRect(0,0,w,h);c.strokeStyle=accent;c.globalAlpha=.09;c.lineWidth=1.5;for(let i=0;i<11;i++){c.beginPath();c.ellipse(w*.86,h*.21,w*(.09+i*.035),h*(.08+i*.033),-.3,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
-  c.fillStyle=accent;c.fillRect(pad,pad,w*.09,7);c.fillStyle=ink;fitted(c,d.alias?d.alias.toUpperCase():'FIELD / COTW COMPANION',pad,pad+45,w-2*pad,Math.min(28,w*.025));
-  fitted(c,d.title||'THE HUNT CONTINUES',pad,pad+125,w-2*pad,Math.min(84,w*.06,h*.065));if(d.subtitle)fitted(c,d.subtitle,pad,pad+175,w-2*pad,w*.024,'normal');
-  const top=pad+210,bottom=h-110,available=bottom-top,metrics=this.metrics();
-  if(d.layout==='collage'||d.layout==='trophy'){
-   const n=d.layout==='trophy'?1:Math.max(2,Math.min(6,this.photos.length||4)),cols=d.layout==='trophy'?1:n>4?3:2,rows=Math.ceil(n/cols),gap=12,hh=metrics.length?available*.64:available;
-   for(let i=0;i<n;i++){const iw=(w-2*pad-gap*(cols-1))/cols,ih=(hh-gap*(rows-1))/rows,x=pad+(i%cols)*(iw+gap),y=top+Math.floor(i/cols)*(ih+gap);c.fillStyle=accent;c.globalAlpha=.13;c.fillRect(x,y,iw,ih);c.globalAlpha=1;if(this.photos[i])cover(c,this.photos[i],x,y,iw,ih,d.photoFit);else{c.fillStyle=ink;fitted(c,'ADD YOUR TROPHY PHOTO',x+20,y+ih/2,iw-40,w*.02);}}
-   if(metrics.length)this.drawMetrics(c,metrics,pad,top+hh+25,w-2*pad,available-hh-25,accent,ink,Math.min(3,metrics.length));
-  }else this.drawMetrics(c,metrics.length?metrics:[{label:'YOUR RECORD',value:'Choose stats in the editor'}],pad,top,w-2*pad,available,accent,ink,2);
-  c.strokeStyle=accent;c.globalAlpha=.45;c.beginPath();c.moveTo(pad,h-80);c.lineTo(w-pad,h-80);c.stroke();c.globalAlpha=1;c.fillStyle=ink;
-  const evidence=d.source==='saved'?'SAVE-DERIVED CAREER · '+(this.state?.career?.savedAt?new Date(this.state.career.savedAt).toLocaleDateString():'last available snapshot'):'PLAYER-CUSTOMIZED · SELF-REPORTED';fitted(c,evidence,pad,h-47,w*.68,w*.017,'normal');c.textAlign='right';fitted(c,'FIELD COMPANION',w-pad,h-47,w*.25,w*.017);c.textAlign='left';
- }
- drawMetrics(c,metrics,x,y,w,h,accent,ink,columns){const rows=Math.ceil(metrics.length/columns),gap=18,cw=(w-gap*(columns-1))/columns,ch=(h-gap*(rows-1))/rows;metrics.forEach((m,i)=>{const xx=x+(i%columns)*(cw+gap),yy=y+Math.floor(i/columns)*(ch+gap);c.strokeStyle=accent;c.globalAlpha=.45;c.strokeRect(xx,yy,cw,ch);c.globalAlpha=1;c.fillStyle=ink;fitted(c,String(m.label).toUpperCase(),xx+24,yy+38,cw-48,Math.min(22,ch*.16),'normal');c.fillStyle=accent;fitted(c,String(m.value),xx+24,yy+Math.max(75,ch*.66),cw-48,Math.min(72,ch*.40));});}
- async export(share){try{const canvas=this.root.querySelector('#studioCanvas');if(!canvas)throw Error('Open the studio preview first.');const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Could not create the image.');const file=new File([blob],'field-hunting-card.png',{type:'image/png'});if(share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:this.design.title});this.message('Image shared through your device.');return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);this.message(share?'Your browser has no file-share dialog. The PNG was exported instead.':'PNG exported. Photos and metadata were rendered into a new image.');}catch(e){if(e.name!=='AbortError')this.message(e.message,true);}}
+import {speciesName,isGreatOneSpecies,GREAT_ONE_COLOR} from './species-style.js';
+
+const SIZES = {
+  square: [1080, 1080],
+  portrait: [1080, 1350],
+  wide: [1920, 1080],
+  thumbnail: [1280, 720]
+};
+const THEMES = {
+  trail: ['#181c1a', '#e5aa49', '#f2eee3'],
+  snow: ['#e8ece9', '#345c64', '#192523'],
+  night: ['#10151d', '#8aa9dc', '#edf1f6']
+};
+const LABELS = {
+  lifetimeHarvests: 'CAREER HARVESTS',
+  shotsFired: 'SHOTS FIRED',
+  diamonds: 'DIAMONDS',
+  greatOnes: 'GREAT ONES',
+  longestShot: 'LONGEST SHOT',
+  accuracy: 'ACCURACY',
+  retainedHarvests: 'SAVED HARVESTS'
+};
+const DEFAULT_DESIGN = {
+  title: 'MY HUNT',
+  subtitle: '',
+  species: '',
+  alias: '',
+  layout: 'stats',
+  size: 'square',
+  theme: 'trail',
+  photoFit: 'contain',
+  source: 'saved',
+  metrics: ['lifetimeHarvests', 'diamonds', 'shotsFired', 'accuracy'],
+  custom: ''
+};
+const checked = (value, values) => values.includes(value) ? 'checked' : '';
+
+function fitted(ctx, text, x, y, width, size, style = 'bold', animal = false) {
+  let fontSize = Math.max(12, size);
+  ctx.font = style + ' ' + fontSize + 'px Bahnschrift, Arial, sans-serif';
+  while (ctx.measureText(text).width > width && fontSize > 12) {
+    ctx.font = style + ' ' + (--fontSize) + 'px Bahnschrift, Arial, sans-serif';
+  }
+  const previous = ctx.fillStyle;
+  if (animal && isGreatOneSpecies(text)) {
+    ctx.fillStyle = '#17221d';
+    ctx.fillRect(x - 6, y - fontSize - 4, Math.min(width, ctx.measureText(text).width) + 12, fontSize * 1.35);
+    ctx.fillStyle = GREAT_ONE_COLOR;
+  }
+  ctx.fillText(text, x, y);
+  ctx.fillStyle = previous;
+}
+
+function cover(ctx, img, x, y, width, height, fit = 'contain') {
+  if (!img) return;
+  if (fit === 'contain') {
+    const ratio = Math.min(width / img.width, height / img.height);
+    const drawWidth = img.width * ratio;
+    const drawHeight = img.height * ratio;
+    ctx.drawImage(img, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+    return;
+  }
+  const ratio = Math.max(width / img.width, height / img.height);
+  const sourceWidth = width / ratio;
+  const sourceHeight = height / ratio;
+  ctx.drawImage(img, (img.width - sourceWidth) / 2, (img.height - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
+}
+
+function selectOptions(values, current) {
+  return values.map(item => '<option value="' + esc(item[0]) + '"' + (current === item[0] ? ' selected' : '') + '>' + esc(item[1]) + '</option>').join('');
+}
+
+export class ShareStudio {
+  constructor(root) {
+    this.root = root;
+    this.photos = [];
+    this.state = null;
+    this.error = '';
+    this.busy = false;
+    this.currentBlob = null;
+    this.design = Object.assign({}, DEFAULT_DESIGN, safePreference('studio-design', {}));
+    this.normalize();
+
+    root.addEventListener('input', event => this.handleDesign(event));
+    root.addEventListener('change', event => {
+      if (event.target.id === 'studioPhotos') {
+        this.addPhotos(event.target.files);
+        return;
+      }
+      this.handleDesign(event);
+    });
+    root.addEventListener('dragover', event => {
+      const zone = event.target.closest('#studioDropzone');
+      if (!zone) return;
+      event.preventDefault();
+      zone.classList.add('dragging');
+    });
+    root.addEventListener('dragleave', event => {
+      const zone = event.target.closest('#studioDropzone');
+      if (zone && !zone.contains(event.relatedTarget)) zone.classList.remove('dragging');
+    });
+    root.addEventListener('drop', event => {
+      const zone = event.target.closest('#studioDropzone');
+      if (!zone) return;
+      event.preventDefault();
+      zone.classList.remove('dragging');
+      this.addPhotos(event.dataTransfer?.files || []);
+    });
+    root.addEventListener('paste', event => {
+      const files = [...(event.clipboardData?.files || [])].filter(file => file.type.startsWith('image/'));
+      if (files.length && event.target.closest('#studioControls')) this.addPhotos(files);
+    });
+    root.addEventListener('click', event => {
+      const remove = event.target.closest('[data-photo-remove]');
+      const move = event.target.closest('[data-photo-left]');
+      if (remove) {
+        const index = Number(remove.dataset.photoRemove);
+        this.photos[index]?.close?.();
+        this.photos.splice(index, 1);
+        this.draw();
+      }
+      if (move) {
+        const index = Number(move.dataset.photoLeft);
+        if (index > 0 && index < this.photos.length) {
+          [this.photos[index - 1], this.photos[index]] = [this.photos[index], this.photos[index - 1]];
+          this.draw();
+        }
+      }
+      if (event.target.closest('#studioDownload')) this.export(false);
+      if (event.target.closest('#studioShare')) this.export(true);
+      if (event.target.closest('#studioClearPhotos')) {
+        this.photos.forEach(photo => photo.close?.());
+        this.photos = [];
+        this.draw();
+        this.message('Photos cleared. Nothing was uploaded.');
+      }
+      if (event.target.closest('#studioClearDesign')) this.resetDesign();
+    });
+  }
+
+  normalize() {
+    if (!Array.isArray(this.design.metrics)) this.design.metrics = DEFAULT_DESIGN.metrics.slice();
+    this.design.metrics = this.design.metrics.filter(key => Object.hasOwn(LABELS, key)).slice(0, 6);
+    for (const key of ['title', 'subtitle', 'species', 'alias', 'custom']) {
+      if (typeof this.design[key] !== 'string') this.design[key] = '';
+    }
+    if (!['stats', 'trophy', 'collage', 'thumbnail'].includes(this.design.layout)) this.design.layout = 'stats';
+    if (!Object.hasOwn(SIZES, this.design.size)) this.design.size = 'square';
+    if (!Object.hasOwn(THEMES, this.design.theme)) this.design.theme = 'trail';
+    if (!['contain', 'cover'].includes(this.design.photoFit)) this.design.photoFit = 'contain';
+    if (!['saved', 'custom'].includes(this.design.source)) this.design.source = 'custom';
+  }
+
+  handleDesign(event) {
+    const target = event.target;
+    if (!target.closest('#studioControls')) return;
+    if (target.name === 'studioMetric') {
+      this.design.metrics = [...this.root.querySelectorAll('[name=studioMetric]:checked')].map(input => input.value).slice(0, 6);
+      this.draw();
+      this.persist();
+      return;
+    }
+    const key = target.dataset.design;
+    if (!key) return;
+    this.design[key] = target.value;
+    if (key === 'layout' && target.value === 'thumbnail') this.design.size = 'thumbnail';
+    if (key === 'layout' && target.value !== 'thumbnail' && this.design.size === 'thumbnail') this.design.size = 'square';
+    if (key === 'layout') {
+      const sizeSelect = this.root.querySelector('select[data-design="size"]');
+      if (sizeSelect) sizeSelect.value = this.design.size;
+    }
+    this.currentBlob = null;
+    this.draw();
+    this.persist();
+  }
+
+  persist() {
+    savePreference('studio-design', Object.assign({}, this.design, {metrics: this.design.metrics.slice()}));
+  }
+
+  resetDesign() {
+    this.design = Object.assign({}, DEFAULT_DESIGN, {metrics: DEFAULT_DESIGN.metrics.slice()});
+    this.persist();
+    this.draw();
+    this.message('Design reset. Your photos were not stored.');
+    const controls = this.root.querySelector('#studioControls');
+    if (controls) {
+      controls.querySelectorAll('[data-design]').forEach(input => {
+        const value = this.design[input.dataset.design];
+        if (input.type === 'checkbox') input.checked = this.design.metrics.includes(input.value);
+        else input.value = value || '';
+      });
+    }
+  }
+
+  message(text, error = false) {
+    const element = this.root.querySelector('#studioMessage');
+    if (element) {
+      element.textContent = text;
+      element.className = error ? 'error' : 'muted small';
+    }
+  }
+
+  async addPhotos(files) {
+    if (this.busy) return;
+    const selected = [...files].filter(file => file?.type?.startsWith('image/'));
+    if (!selected.length) {
+      this.message('Choose a screenshot or photo first.', true);
+      return;
+    }
+    this.busy = true;
+    try {
+      for (const file of selected.slice(0, 6 - this.photos.length)) {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 20 * 1024 * 1024) {
+          throw Error('Use a JPEG, PNG or WebP image under 20 MB.');
+        }
+        const image = await createImageBitmap(file);
+        if (image.width * image.height > 40000000) {
+          image.close();
+          throw Error('That image is too large. Try a smaller screenshot.');
+        }
+        this.photos.push(image);
+      }
+      this.message(this.photos.length + ' photo(s) ready. They stay on this device.');
+      this.draw();
+    } catch (error) {
+      this.message(error.message || 'That photo could not be opened.', true);
+    } finally {
+      this.busy = false;
+      const input = this.root.querySelector('#studioPhotos');
+      if (input) input.value = '';
+    }
+  }
+
+  render(state) {
+    this.state = state;
+    const design = this.design;
+    const hasStats = Boolean(state?.career?.summary);
+    const demo = state?.demo === true;
+    if (!hasStats && design.source === 'saved') design.source = 'custom';
+    const styleOptions = selectOptions([
+      ['stats', 'Career card'],
+      ['trophy', 'Trophy card'],
+      ['collage', 'Photo collage'],
+      ['thumbnail', 'Hunting thumbnail']
+    ], design.layout);
+    const sizeOptions = selectOptions([
+      ['square', 'Square · 1080 × 1080'],
+      ['portrait', 'Portrait · 1080 × 1350'],
+      ['wide', 'Wide · 1920 × 1080'],
+      ['thumbnail', 'Thumbnail · 1280 × 720']
+    ], design.size);
+    const themeOptions = selectOptions([
+      ['trail', 'Trail'],
+      ['snow', 'Snow'],
+      ['night', 'Night']
+    ], design.theme);
+    const metricOptions = Object.entries(LABELS).map(entry => {
+      const key = entry[0], label = entry[1];
+      return '<label><input type="checkbox" name="studioMetric" value="' + esc(key) + '" ' + checked(key, design.metrics) + '>' + esc(label.toLowerCase()) + '</label>';
+    }).join('');
+    const sourceOptions = hasStats
+      ? '<option value="custom"' + (design.source === 'custom' ? ' selected' : '') + '>What I enter</option><option value="saved"' + (design.source === 'saved' ? ' selected' : '') + '>' + (demo ? 'Sample hunter data · fictional' : 'My game saves') + '</option>'
+      : '<option value="custom" selected>What I enter</option>';
+    const demoBadge = demo ? '<span class="pill studio-demo-badge">DEMO DATA · FICTIONAL SAMPLE</span>' : '<span class="pill">Photos stay on this device</span>';
+
+    queueMicrotask(() => this.draw());
+    return [
+      '<div class="intro studio-intro"><div><div class="eyebrow">SHARE YOUR HUNT</div><h1>Trophy studio</h1><p>Make a card or a hunting thumbnail in three quick steps.</p></div>' + demoBadge + '</div>',
+      '<div class="studio-steps" aria-label="Studio steps"><div><b>1</b><span>Pick a style</span></div><div><b>2</b><span>Add a screenshot</span></div><div><b>3</b><span>Save or share</span></div></div>',
+      '<div class="studio-layout"><section id="studioControls" class="panel studio-controls"><h2>Build your image</h2>',
+      '<label>1. Pick a style<select data-design="layout">' + styleOptions + '</select></label>',
+      '<div class="form-grid"><label>Picture shape<select data-design="size">' + sizeOptions + '</select></label><label>Colors<select data-design="theme">' + themeOptions + '</select></label></div>',
+      '<label>Title<input data-design="title" maxlength="70" value="' + esc(design.title) + '"></label>',
+      '<label>Your name <span class="muted">(optional)</span><input data-design="alias" maxlength="50" placeholder="Only shown on your image" value="' + esc(design.alias) + '"></label>',
+      '<label>Animal <span class="muted">(optional)</span><input data-design="species" maxlength="70" placeholder="For example, Moose" value="' + esc(design.species) + '"></label>',
+      '<p id="studioSpeciesLabel" class="small great-one-hint" ' + (design.species ? '' : 'hidden') + '>' + (design.species ? speciesName(design.species) : '') + '</p>',
+      '<label>Extra details <span class="muted">(optional)</span><input data-design="subtitle" maxlength="140" placeholder="Score, reserve, date…" value="' + esc(design.subtitle) + '"></label>',
+      '<details class="studio-section"><summary>Stats on your image</summary><label>Use stats from<select data-design="source">' + sourceOptions + '</select></label>',
+      '<fieldset class="studio-metrics" ' + (hasStats ? '' : 'hidden') + '><legend>Choose up to 6 stats</legend>' + metricOptions + '</fieldset>',
+      '<label>Your own stats <span class="muted">(name: value)</span><textarea data-design="custom" rows="4" maxlength="800" placeholder="Favorite reserve: Askiy Ridge&#10;Best trophy: 9.6">' + esc(design.custom) + '</textarea></label></details>',
+      '<label>Photo fit<select data-design="photoFit"><option value="contain"' + (design.photoFit === 'contain' ? ' selected' : '') + '>Show the whole photo</option><option value="cover"' + (design.photoFit === 'cover' ? ' selected' : '') + '>Center crop to fill</option></select></label>',
+      '<div id="studioDropzone" class="studio-dropzone" tabindex="0"><strong>2. Add screenshots or trophy photos</strong><span>Tap choose, drag files here, or paste a screenshot.</span><label for="studioPhotos" class="button primary studio-photo-button">Choose images</label><input id="studioPhotos" class="studio-file-input" type="file" accept="image/png,image/jpeg,image/webp" capture="environment" multiple><small>Up to 6 images · JPEG, PNG or WebP · 20 MB each</small></div>',
+      '<div id="studioPhotoStrip" class="studio-photo-strip" aria-live="polite"></div>',
+      '<div class="actions"><button id="studioClearPhotos" class="button subtle" type="button">Clear images</button><button id="studioClearDesign" class="button subtle" type="button">Reset design</button></div>',
+      '<p class="tiny muted">Images are processed in this browser. They are not uploaded or saved by this companion.</p></section>',
+      '<section class="studio-preview"><div class="panel-head"><div><div class="eyebrow">LIVE PREVIEW</div><h2>Your image</h2></div><span class="small muted">PNG export</span></div><canvas id="studioCanvas" width="1080" height="1080" aria-label="Preview of your hunting image"></canvas><div class="studio-export"><button id="studioDownload" class="button primary" type="button">Save image</button><button id="studioShare" class="button" type="button">Share image</button></div><p id="studioMessage" role="status" class="muted small">Check the preview, then save or share. Stats you enter are labeled on the image.</p></section></div>'
+    ].join('');
+  }
+
+  metrics() {
+    const design = this.design;
+    if (design.source === 'custom') {
+      return design.custom.split(/\r?\n/).filter(line => line.includes(':')).slice(0, 6).map(line => {
+        const index = line.indexOf(':');
+        return {label: line.slice(0, index).trim().slice(0, 36), value: line.slice(index + 1).trim().slice(0, 48)};
+      });
+    }
+    const summary = Object.assign({}, this.state?.career?.summary, {retainedHarvests: this.state?.career?.retainedHarvests});
+    return design.metrics.slice(0, 6).map(key => {
+      const value = summary[key];
+      let formatted = 'Not available';
+      if (Number.isFinite(value)) {
+        if (key === 'accuracy') formatted = (value * 100).toFixed(1) + '%';
+        else if (key === 'longestShot') formatted = value.toFixed(1) + ' m';
+        else formatted = value.toLocaleString();
+      }
+      return {label: LABELS[key] || key, value: formatted};
+    });
+  }
+
+  renderPhotos() {
+    const host = this.root.querySelector('#studioPhotoStrip');
+    if (!host) return;
+    host.innerHTML = this.photos.map((photo, index) => {
+      return '<div class="studio-photo"><canvas width="160" height="100" data-photo-preview="' + index + '" aria-label="Photo ' + (index + 1) + '"></canvas><div><button type="button" class="button small" data-photo-left="' + index + '" aria-label="Move photo ' + (index + 1) + ' left"' + (index === 0 ? ' disabled' : '') + '>&larr;</button><button type="button" class="button small" data-photo-remove="' + index + '" aria-label="Remove photo ' + (index + 1) + '">&times;</button></div></div>';
+    }).join('');
+    host.querySelectorAll('canvas').forEach((canvas, index) => {
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#101711';
+      context.fillRect(0, 0, 160, 100);
+      cover(context, this.photos[index], 0, 0, 160, 100, 'contain');
+    });
+  }
+
+  draw() {
+    this.renderPhotos();
+    const canvas = this.root.querySelector('#studioCanvas');
+    if (!canvas) return;
+    this.currentBlob = null;
+    const design = this.design;
+    const speciesElement = this.root.querySelector('#studioSpeciesLabel');
+    if (speciesElement) {
+      speciesElement.hidden = !design.species;
+      speciesElement.innerHTML = design.species ? speciesName(design.species) : '';
+    }
+    const size = SIZES[design.size] || SIZES.square;
+    const palette = THEMES[design.theme] || THEMES.trail;
+    const width = size[0], height = size[1], background = palette[0], accent = palette[1], ink = palette[2];
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    const pad = width * 0.055;
+
+    context.fillStyle = background;
+    context.fillRect(0, 0, width, height);
+    context.strokeStyle = accent;
+    context.globalAlpha = 0.09;
+    context.lineWidth = 1.5;
+    for (let index = 0; index < 11; index += 1) {
+      context.beginPath();
+      context.ellipse(width * 0.86, height * 0.21, width * (0.09 + index * 0.035), height * (0.08 + index * 0.033), -0.3, 0, Math.PI * 2);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
+    context.fillStyle = accent;
+    context.fillRect(pad, pad, width * 0.09, 7);
+    context.fillStyle = ink;
+    fitted(context, design.alias ? design.alias.toUpperCase() : 'COTW COMPANION', pad, pad + 45, width - (2 * pad), Math.min(28, width * 0.025));
+    const metrics = this.metrics();
+
+    if (design.layout === 'thumbnail') {
+      this.drawThumbnail(context, metrics, width, height, pad, background, accent, ink);
+      return;
+    }
+
+    fitted(context, design.title || 'MY HUNT', pad, pad + 125, width - (2 * pad), Math.min(84, width * 0.06, height * 0.065));
+    if (design.species) fitted(context, design.species, pad, pad + 175, width - (2 * pad), width * 0.027, 'bold', true);
+    if (design.subtitle) fitted(context, design.subtitle, pad, pad + (design.species ? 216 : 175), width - (2 * pad), width * 0.024, 'normal');
+
+    const top = pad + (design.species && design.subtitle ? 250 : 210);
+    const bottom = height - 110;
+    const available = Math.max(120, bottom - top);
+    if (design.layout === 'collage' || design.layout === 'trophy') {
+      const count = design.layout === 'trophy' ? 1 : Math.max(2, Math.min(6, this.photos.length || 4));
+      const columns = design.layout === 'trophy' ? 1 : count > 4 ? 3 : 2;
+      const rows = Math.ceil(count / columns);
+      const gap = 12;
+      const imageHeight = metrics.length ? available * 0.64 : available;
+      for (let index = 0; index < count; index += 1) {
+        const imageWidth = (width - (2 * pad) - (gap * (columns - 1))) / columns;
+        const imageBoxHeight = (imageHeight - (gap * (rows - 1))) / rows;
+        const x = pad + (index % columns) * (imageWidth + gap);
+        const y = top + Math.floor(index / columns) * (imageBoxHeight + gap);
+        context.fillStyle = accent;
+        context.globalAlpha = 0.13;
+        context.fillRect(x, y, imageWidth, imageBoxHeight);
+        context.globalAlpha = 1;
+        if (this.photos[index]) cover(context, this.photos[index], x, y, imageWidth, imageBoxHeight, design.photoFit);
+        else {
+          context.fillStyle = ink;
+          fitted(context, 'ADD YOUR TROPHY PHOTO', x + 20, y + (imageBoxHeight / 2), imageWidth - 40, width * 0.02);
+        }
+      }
+      if (metrics.length) this.drawMetrics(context, metrics, pad, top + imageHeight + 25, width - (2 * pad), available - imageHeight - 25, accent, ink, Math.min(3, metrics.length));
+    } else {
+      this.drawMetrics(context, metrics.length ? metrics : [{label: 'YOUR RECORD', value: 'Choose stats in the editor'}], pad, top, width - (2 * pad), available, accent, ink, 2);
+    }
+    this.drawFooter(context, width, height, pad, accent, ink);
+  }
+
+  drawThumbnail(context, metrics, width, height, pad, background, accent, ink) {
+    const imageWidth = Math.round(width * 0.46);
+    const imageX = width - imageWidth;
+    context.fillStyle = '#0c1110';
+    context.fillRect(imageX, 0, imageWidth, height);
+    if (this.photos[0]) cover(context, this.photos[0], imageX, 0, imageWidth, height, 'cover');
+    context.fillStyle = background;
+    context.globalAlpha = 0.92;
+    context.fillRect(0, 0, imageX + 10, height);
+    context.globalAlpha = 1;
+    context.fillStyle = accent;
+    context.fillRect(pad, pad + 18, 110, 8);
+    fitted(context, 'THE HUNT', pad, pad + 72, imageX - (2 * pad), Math.min(28, width * 0.025), 'bold');
+    fitted(context, this.design.title || 'MY HUNT', pad, pad + 165, imageX - (2 * pad), Math.min(82, width * 0.075));
+    if (this.design.species) fitted(context, this.design.species, pad, pad + 220, imageX - (2 * pad), width * 0.034, 'bold', true);
+    if (this.design.subtitle) fitted(context, this.design.subtitle, pad, pad + 260, imageX - (2 * pad), width * 0.022, 'normal');
+    if (!this.photos.length) {
+      context.fillStyle = accent;
+      context.globalAlpha = 0.16;
+      context.fillRect(imageX + 22, 22, imageWidth - 44, height - 44);
+      context.globalAlpha = 1;
+      context.fillStyle = ink;
+      fitted(context, 'ADD A SCREENSHOT', imageX + 45, height / 2, imageWidth - 90, width * 0.02);
+    }
+    const thumbMetrics = metrics.slice(0, 3);
+    if (thumbMetrics.length) this.drawMetrics(context, thumbMetrics, pad, height - 170, imageX - (2 * pad), 120, accent, ink, Math.min(3, thumbMetrics.length));
+    this.drawFooter(context, width, height, pad, accent, ink);
+  }
+
+  drawMetrics(context, metrics, x, y, width, height, accent, ink, columns) {
+    const rows = Math.ceil(metrics.length / columns);
+    const gap = 18;
+    const cellWidth = (width - (gap * (columns - 1))) / columns;
+    const cellHeight = Math.max(54, (height - (gap * (rows - 1))) / rows);
+    metrics.forEach((metric, index) => {
+      const xx = x + (index % columns) * (cellWidth + gap);
+      const yy = y + Math.floor(index / columns) * (cellHeight + gap);
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.45;
+      context.strokeRect(xx, yy, cellWidth, cellHeight);
+      context.globalAlpha = 1;
+      context.fillStyle = ink;
+      fitted(context, String(metric.label).toUpperCase(), xx + 24, yy + 38, cellWidth - 48, Math.min(22, cellHeight * 0.16), 'normal');
+      const upper = String(metric.label).toUpperCase();
+      context.fillStyle = upper.includes('DIAMOND') ? '#b9dfe5' : upper.includes('GOLD') || upper.includes('GREAT ONE') ? '#f0c76d' : accent;
+      fitted(context, String(metric.value), xx + 24, yy + Math.max(75, cellHeight * 0.66), cellWidth - 48, Math.min(72, cellHeight * 0.40), 'bold');
+    });
+  }
+
+  drawFooter(context, width, height, pad, accent, ink) {
+    context.strokeStyle = accent;
+    context.globalAlpha = 0.45;
+    context.beginPath();
+    context.moveTo(pad, height - 80);
+    context.lineTo(width - pad, height - 80);
+    context.stroke();
+    context.globalAlpha = 1;
+    context.fillStyle = ink;
+    const source = this.design.source === 'saved'
+      ? (this.state?.demo ? 'DEMO DATA · FICTIONAL SAMPLE' : 'FROM GAME SAVES · ' + (this.state?.career?.savedAt ? new Date(this.state.career.savedAt).toLocaleDateString() : 'last update'))
+      : 'CUSTOM STATS · ENTERED BY PLAYER';
+    fitted(context, source, pad, height - 47, width * 0.68, width * 0.017, 'normal');
+    context.textAlign = 'right';
+    fitted(context, 'COTW COMPANION', width - pad, height - 47, width * 0.25, width * 0.017);
+    context.textAlign = 'left';
+  }
+
+  async export(share) {
+    try {
+      const canvas = this.root.querySelector('#studioCanvas');
+      if (!canvas) throw Error('Open the studio preview first.');
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw Error('Could not create the image.');
+      const filename = this.design.layout === 'thumbnail' ? 'cotw-hunting-thumbnail.png' : 'cotw-hunting-card.png';
+      const file = new File([blob], filename, {type: 'image/png'});
+      if (share && navigator.canShare?.({files: [file]})) {
+        await navigator.share({files: [file], title: this.design.title || 'COTW Companion'});
+        this.message('Image shared through your device.');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = file.name;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
+      this.message(share ? 'Sharing is not available in this browser. Your image is ready to save instead.' : 'Your image is ready to save. Your photos were not uploaded.');
+    } catch (error) {
+      if (error.name !== 'AbortError') this.message(error.message || 'Could not export this image.', true);
+    }
+  }
 }
