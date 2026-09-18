@@ -1,6 +1,6 @@
-import {isGreatOneSpecies} from './species-style.js?v=2a4fce5fb354b076';
-import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=2a4fce5fb354b076';
-import {TerrainLayer} from './terrain-layer.js?v=2a4fce5fb354b076';
+import {isGreatOneSpecies} from './species-style.js?v=38e6b6347cd71c19';
+import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=38e6b6347cd71c19';
+import {TerrainLayer} from './terrain-layer.js?v=38e6b6347cd71c19';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};
@@ -57,8 +57,8 @@ export class FieldMap{
  destroy(){this.disposed=true;this.abort.abort();this.resize?.disconnect();cancelAnimationFrame(this.frame);this.terrain.destroy();this.pressure.destroy();}
  schedule(){if(this.frame||this.disposed)return;this.frame=requestAnimationFrame(()=>{this.frame=null;this.draw();});}
  select(id){if(!this.data)return;this.data.selectedZone=id;this.svg.querySelectorAll('[data-zone]').forEach(n=>n.classList.toggle('active-zone',n.getAttribute('data-zone')===id));}
- viewportBox(box,contain=false){const rect=this.svg.getBoundingClientRect();if(!rect.width||!rect.height)return box;const aspect=rect.width/rect.height,w=contain?Math.max(box[2],box[3]*aspect):box[2],h=w/aspect;return [box[0]+(box[2]-w)/2,box[1]+(box[3]-h)/2,w,h];}
- home(){this.box=this.viewportBox(homeBox(this.data.reserve),true);this.point=null;this.draw();}
+ viewportBox(box,contain=false,cover=false){const rect=this.svg.getBoundingClientRect();if(!rect.width||!rect.height)return box;const aspect=rect.width/rect.height,w=contain?Math.max(box[2],box[3]*aspect):cover?Math.min(box[2],box[3]*aspect):box[2],h=w/aspect;return [box[0]+(box[2]-w)/2,box[1]+(box[3]-h)/2,w,h];}
+ home(){const box=homeBox(this.data.reserve),rect=this.svg.getBoundingClientRect(),phone=rect.width>0&&rect.height>rect.width*1.12;this.box=this.viewportBox(box,phone?false:true,phone);this.point=null;this.draw();}
  fitVisible(){const pts=[...this.data.zones,...this.data.equipment,...this.data.pins].filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.z));if(!pts.length)return this.home();const xs=pts.map(p=>p.x),zs=pts.map(p=>p.z),minX=Math.min(...xs),minZ=Math.min(...zs),w=Math.max(600,Math.max(...xs)-minX),h=Math.max(600,Math.max(...zs)-minZ);this.box=this.viewportBox([minX-w*.07,minZ-h*.07,w*1.14,h*1.14],true);this.draw();}
  setLayer(name,enabled){if(!Object.hasOwn(this.layers,name))return;this.layers[name]=!!enabled;this.draw();}
  setPoiFilter(value){this.poiFilter=value;this.draw();}
