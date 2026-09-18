@@ -1,5 +1,5 @@
-import {esc,pretty} from './data-client.js?v=6b391a6cb5f8520d';
-import {speciesName} from './species-style.js?v=6b391a6cb5f8520d';
+import {esc,pretty} from './data-client.js?v=9ae7a7b0d2cbccb1';
+import {speciesName} from './species-style.js?v=9ae7a7b0d2cbccb1';
 const num=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:1}):'Not available';
 const date=v=>v?new Date(v).toLocaleString():'Not recorded';
 export function statValue(c){if(!Number.isFinite(c?.value))return 'Not available';if(c.display===1)return num(c.value*100)+'%';if(c.display===2)return num(c.value)+' m';return num(c.value);}

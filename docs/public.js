@@ -1,9 +1,9 @@
-import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=6b391a6cb5f8520d';
-import {ReferencePanel} from './reference.js?v=6b391a6cb5f8520d';
-import {FieldLibrary} from './field-library.js?v=6b391a6cb5f8520d';
-import {ShareStudio} from './studio.js?v=6b391a6cb5f8520d';
-import {careerView} from './career.js?v=6b391a6cb5f8520d';
-import {MapAtlas} from './map-atlas.js?v=6b391a6cb5f8520d';
+import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=9ae7a7b0d2cbccb1';
+import {ReferencePanel} from './reference.js?v=9ae7a7b0d2cbccb1';
+import {FieldLibrary} from './field-library.js?v=9ae7a7b0d2cbccb1';
+import {ShareStudio} from './studio.js?v=9ae7a7b0d2cbccb1';
+import {careerView} from './career.js?v=9ae7a7b0d2cbccb1';
+import {MapAtlas} from './map-atlas.js?v=9ae7a7b0d2cbccb1';
 const root=document.querySelector('#content'),picker=document.querySelector('#reserve');
 const views=['home','maps','reserves','reference','rares','gear','studio','career','faq'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'home',reserve=19,catalog=null;

@@ -1,5 +1,5 @@
-import {getCatalog,esc,pretty,publicMode} from './data-client.js?v=6b391a6cb5f8520d';
-import {speciesName,isGreatOneSpecies} from './species-style.js?v=6b391a6cb5f8520d';
+import {getCatalog,esc,pretty,publicMode} from './data-client.js?v=9ae7a7b0d2cbccb1';
+import {speciesName,isGreatOneSpecies} from './species-style.js?v=9ae7a7b0d2cbccb1';
 export const REPO='https://github.com/infotradescout/cotw-field-companion';
 const n=v=>v===null||v===undefined?'—':typeof v==='number'?v.toLocaleString(undefined,{maximumFractionDigits:2}):String(v);
 const link=(url,label)=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
