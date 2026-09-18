@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createPhoneRelay} from '../cloud/server.mjs';
+import {createPhoneEnrollmentToken} from '../cloud/auth.mjs';
 import {createPhoneBridge,provisionPhoneDevice,projectPhoneState,validatePhoneCommand,PHONE_PROTOCOL} from '../lib/phone-bridge.mjs';
 import {Store} from '../lib/store.mjs';
 import {Observer} from '../lib/observer.mjs';
@@ -26,11 +27,12 @@ async function fixture(t,options={}){
   const key=randomBytes(32);let relay=await createPhoneRelay({key,publicOrigin:'http://127.0.0.1:0',allowInsecureLoopback:true,...options});
   const bridges=[];
   t.after(async()=>{for(const bridge of bridges)await bridge.close();await relay.close();});
-  return {key,get relay(){return relay;},set relay(value){relay=value;},async pc(marker='Owner A',overrides={}){
-    const credential=await provisionPhoneDevice({relayUrl:relay.origin,allowInsecureLoopback:true});
+  const enroll=(overrides={})=>createPhoneEnrollmentToken({key,now:options.now,...overrides});
+  return {key,enroll,get relay(){return relay;},set relay(value){relay=value;},async pc(marker='Owner A',overrides={}){
+    const enrollmentToken=enroll(),credential=await provisionPhoneDevice({relayUrl:relay.origin,enrollmentToken,allowInsecureLoopback:true});
     let reads=0;const commands=[];
     const bridge=createPhoneBridge({relayUrl:relay.origin,deviceToken:credential.deviceToken,allowInsecureLoopback:true,reconnectMs:20,connectTimeoutMs:2000,readState:()=>{reads++;return state(marker);},runCommand:body=>{commands.push(body);},...overrides});
-    bridges.push(bridge);await bridge.connect();return {credential,bridge,commands,get reads(){return reads;}};
+    bridges.push(bridge);await bridge.connect();return {credential,enrollmentToken,bridge,commands,get reads(){return reads;}};
   }};
 }
 async function pair(relay,pc){
@@ -40,15 +42,43 @@ async function pair(relay,pc){
   return {cookie,csrf:boot.value.token,link,token,paired};
 }
 async function nativePeer(relay,credential){
-  const socket=new WebSocket(relay.origin.replace(/^http/,'ws')+'/phone/bridge');
-  await new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});});
-  const ready=message(socket,m=>m.type==='ready');socket.send(JSON.stringify({type:'hello',protocol:PHONE_PROTOCOL,deviceToken:credential.deviceToken}));await ready;return socket;
+  const socket=new WebSocket(relay.origin.replace(/^http/,'ws')+'/phone/bridge',[PHONE_PROTOCOL,'cotw-auth.'+credential.deviceToken]);
+  await message(socket,m=>m.type==='ready');return socket;
 }
 function message(socket,predicate){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{socket.removeEventListener('message',handler);reject(Error('Expected socket message did not arrive'));},2000);function handler(e){const value=JSON.parse(e.data);if(predicate(value)){clearTimeout(timer);socket.removeEventListener('message',handler);resolve(value);}}socket.addEventListener('message',handler);});}
+function rejectedSocket(relay,credential){return new Promise((resolve,reject)=>{const socket=new WebSocket(relay.origin.replace(/^http/,'ws')+'/phone/bridge',credential?[PHONE_PROTOCOL,'cotw-auth.'+credential]:[]);const timer=setTimeout(()=>{socket.close();reject(Error('Unauthenticated socket was not rejected promptly'));},1000);socket.addEventListener('error',()=>{});socket.addEventListener('open',()=>{clearTimeout(timer);socket.close();reject(Error('Unexpected socket authorization'));},{once:true});socket.addEventListener('close',()=>{clearTimeout(timer);resolve();},{once:true});});}
 
 test('relay refuses missing signing key and non-HTTPS production origin',async()=>{
   await assert.rejects(()=>createPhoneRelay({publicOrigin:'https://example.invalid'}),/SIGNING_KEY/);
   await assert.rejects(()=>createPhoneRelay({key:randomBytes(32),publicOrigin:'http://example.invalid'}),/HTTPS/);
+});
+
+test('provisioning requires a valid purpose-bound unexpired private installation permit',async t=>{
+  let now=Date.now();const f=await fixture(t,{now:()=>now});
+  for(const authorization of [undefined,'Bearer invalid','Bearer '+'a'.repeat(2100)])assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{},headers:authorization?{Authorization:authorization}:{}})).status,401);
+  const expired=f.enroll({now:()=>now,expiresAt:now+1});now+=2;
+  assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{},headers:{Authorization:'Bearer '+expired}})).status,401);
+  const pc=await f.pc();assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{},headers:{Authorization:'Bearer '+pc.credential.deviceToken}})).status,401);
+  await assert.rejects(()=>provisionPhoneDevice({relayUrl:f.relay.origin,allowInsecureLoopback:true}),/private/);
+});
+
+test('anonymous WebSockets cannot consume authenticated PC capacity',async t=>{
+  const f=await fixture(t,{maxPeers:1});
+  for(let n=0;n<20;n++)await rejectedSocket(f.relay);
+  const owner=await f.pc(),paired=await pair(f.relay,owner);
+  assert.equal((await request(f.relay,'/api/state',{cookie:paired.cookie})).status,200);
+});
+
+test('valid device replacement works at full capacity and stale installation generations cannot displace it',async t=>{
+  const f=await fixture(t,{maxPeers:1}),enrollmentToken=f.enroll();
+  const provision=()=>provisionPhoneDevice({relayUrl:f.relay.origin,enrollmentToken,allowInsecureLoopback:true});
+  const oldCredential=await provision(),first=await nativePeer(f.relay,oldCredential);t.after(()=>first.close());
+  const sameIdentity=await nativePeer(f.relay,oldCredential);t.after(()=>sameIdentity.close());assert.equal(sameIdentity.protocol,PHONE_PROTOCOL);
+  const newerCredential=await provision(),newer=await nativePeer(f.relay,newerCredential);t.after(()=>newer.close());
+  assert.notEqual(newerCredential.deviceId,oldCredential.deviceId);
+  await rejectedSocket(f.relay,oldCredential.deviceToken);
+  const outsider=await provisionPhoneDevice({relayUrl:f.relay.origin,enrollmentToken:f.enroll(),allowInsecureLoopback:true});await rejectedSocket(f.relay,outsider.deviceToken);
+  const pairing=message(newer,m=>m.type==='pairing');newer.send(JSON.stringify({type:'pair',requestId:randomUUID()}));assert.match((await pairing).url,/#pair=/);
 });
 
 test('enable and handshake send no player data; every app API requires pairing',async t=>{
@@ -72,10 +102,10 @@ test('cookie and device credentials are purpose-bound and tampering fails closed
   assert.equal((await request(f.relay,'/api/state',{cookie:'__Host-cotw-phone='+pc.credential.deviceToken})).status,401);
   assert.equal((await request(f.relay,'/api/state',{cookie:p.cookie+'x'})).status,401);
   const split=p.cookie.lastIndexOf('.');assert.equal((await request(f.relay,'/api/state',{cookie:p.cookie.slice(0,split+1)+'é'.repeat(43)})).status,401);
-  const socket=new WebSocket(f.relay.origin.replace(/^http/,'ws')+'/phone/bridge');
+  const socket=new WebSocket(f.relay.origin.replace(/^http/,'ws')+'/phone/bridge',[PHONE_PROTOCOL,'cotw-auth.'+p.cookie.split('=')[1]]);
   const closed=new Promise(resolve=>socket.addEventListener('close',resolve,{once:true}));
-  socket.addEventListener('open',()=>socket.send(JSON.stringify({type:'hello',protocol:PHONE_PROTOCOL,deviceToken:p.cookie.split('=')[1]})),{once:true});
-  assert.equal((await closed).code,1008);
+  socket.addEventListener('error',()=>{});
+  assert.equal((await closed).code,1006);
 });
 
 test('two owners cannot select each others PC or mutation target',async t=>{
@@ -114,8 +144,8 @@ test('body, schema and provisioning caps reject before journal mutation',async t
   const oversized={op:'pin.create',requestId:randomUUID(),notes:'a'.repeat(40000)};
   assert.equal((await request(f.relay,'/api/command',{method:'POST',origin:f.relay.origin,cookie:p.cookie,csrf:p.csrf,body:oversized})).status,413);
   assert.throws(()=>validatePhoneCommand({op:'settings',requestId:randomUUID(),terrain:{path:'secret'}}),/field/);
-  await provisionPhoneDevice({relayUrl:f.relay.origin,allowInsecureLoopback:true});
-  assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{}})).status,429);assert.equal(pc.commands.length,0);
+  await provisionPhoneDevice({relayUrl:f.relay.origin,enrollmentToken:pc.enrollmentToken,allowInsecureLoopback:true});
+  assert.equal((await request(f.relay,'/phone/device',{method:'POST',body:{},headers:{Authorization:'Bearer '+pc.enrollmentToken}})).status,429);assert.equal(pc.commands.length,0);
 });
 
 test('journal request identity survives relay and preserves real Store idempotency',async t=>{
@@ -136,8 +166,8 @@ test('real Observer career shape renders through the existing career view and ma
   const view=await request(f.relay,'/api/state?reserve=19',{cookie:p.cookie});assert.equal(view.status,200);assert.equal(view.value.career.summary.shotsFired,10);assert.equal(view.value.career.profile.level,3);
   assert.equal(validBox(homeBox(view.value.reserves.find(r=>r.id===19))),true);
   const before=globalThis.document;globalThis.document={documentElement:{dataset:{runtime:'phone'}}};
-  try{const {careerView}=await import('../public/career.js');const html=careerView(view.value);assert.match(html,/Your hunting record/);assert.match(html,/All \d+ hunting reserves/);assert.doesNotMatch(html,/undefined|PRIVATE_/);}finally{if(before===undefined)delete globalThis.document;else globalThis.document=before;}
-  assert.equal((await request(f.relay,'/species-style.js',{cookie:p.cookie})).status,200);
+  try{const {careerView}=await import('../public/career.js');const html=careerView(view.value);assert.equal([...html.matchAll(/data-career-reserve="\d+"/g)].length,view.value.career.allMaps.length);assert.match(html,/data-career-reserve="19"/);assert.doesNotMatch(html,/undefined|PRIVATE_/);}finally{if(before===undefined)delete globalThis.document;else globalThis.document=before;}
+  for(const asset of ['species-style.js','commands.js','phone-ui.js','phone.css','qrcode.js'])assert.equal((await request(f.relay,'/'+asset,{cookie:p.cookie})).status,200,asset);
 });
 
 test('real route and encounter result shapes are preserved for optimistic phone UI',async t=>{
@@ -171,7 +201,7 @@ test('persistent signing key retains pairing across relay restart and PC reconne
 });
 
 test('authenticated socket replacement invalidates old pending requests',async t=>{
-  const f=await fixture(t),credential=await provisionPhoneDevice({relayUrl:f.relay.origin,allowInsecureLoopback:true}),old=await nativePeer(f.relay,credential);t.after(()=>old.close());
+  const f=await fixture(t),credential=await provisionPhoneDevice({relayUrl:f.relay.origin,enrollmentToken:f.enroll(),allowInsecureLoopback:true}),old=await nativePeer(f.relay,credential);t.after(()=>old.close());
   const pairing=message(old,m=>m.type==='pairing');old.send(JSON.stringify({type:'pair',requestId:randomUUID()}));const link=await pairing,token=new URLSearchParams(new URL(link.url).hash.slice(1)).get('pair');
   const paired=await request(f.relay,'/phone/pair',{method:'POST',origin:f.relay.origin,body:{token}}),cookie=paired.headers.get('set-cookie').split(';')[0];
   const pending=message(old,m=>m.type==='request');const response=request(f.relay,'/api/state',{cookie});const oldRequest=await pending;

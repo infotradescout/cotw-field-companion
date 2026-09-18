@@ -3,41 +3,28 @@ import http from 'node:http';
 import path from 'node:path';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {randomBytes,createHash,createHmac,timingSafeEqual} from 'node:crypto';
+import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {WebSocketServer} from 'ws';
 import {PHONE_PROTOCOL,PHONE_MAX_BYTES,phoneRelayOrigin,validatePhoneCommand} from '../lib/phone-bridge.mjs';
+import {phoneTokenCodec,PHONE_DAY as DAY} from './auth.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const DAY=86400000;
-const assets=['app.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js'];
+const assets=['app.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','phone-ui.js','phone.css','qrcode.js'];
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
 
-function signingKey(input){
-  if(Buffer.isBuffer(input)&&input.length>=32)return input;
-  if(typeof input==='string'&&/^[A-Za-z0-9_-]{43}$/.test(input)){const key=Buffer.from(input,'base64url');if(key.length===32)return key;}
-  throw Error('PHONE_RELAY_SIGNING_KEY must be a persistent, randomly generated 32-byte base64url secret');
-}
-
 export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1',allowInsecureLoopback=false,now=Date.now,requestTimeoutMs=10000,pairTtlMs=300000,maxPeers=16,maxPending=4,pairAttemptLimit=30,provisionLimit=20}={}){
-  const secret=signingKey(key);
+  const {mac,issue,verify}=phoneTokenCodec({key,now});
   let origin=phoneRelayOrigin(publicOrigin,{allowInsecureLoopback});
-  const peers=new Map(),pairs=new Map(),pending=new Map(),rates=new Map(),sessionReserve=new Map();
+  const peers=new Map(),pairs=new Map(),pending=new Map(),rates=new Map(),sessionReserve=new Map(),installationGenerations=new Map();
   const files=new Map(assets.map(name=>['/'+name,readFileSync(path.join(root,'public',name))]));
   const index=readFileSync(path.join(root,'public/index.html'),'utf8').replace('<html','<html data-runtime="phone"');
   const connectPage=readFileSync(new URL('./connect.html',import.meta.url));
   const connectScript=readFileSync(new URL('./connect.js',import.meta.url));
   const catalogs=Object.fromEntries([['maps','maps-data'],['gear','gear-data'],['reference','rating-data']].map(([name,file])=>[name,JSON.parse(readFileSync(path.join(root,'lib',file+'.json'),'utf8'))]));
-  const mac=value=>createHmac('sha256',secret).update(value).digest('base64url');
-  function issue(purpose,deviceId,lifetime,extra={}){const payload=Buffer.from(JSON.stringify({v:1,purpose,deviceId,iat:now(),exp:now()+lifetime,...extra})).toString('base64url');return payload+'.'+mac(payload);}
-  function verify(token,purpose){
-    if(typeof token!=='string'||token.length>2048)return null;
-    const [payload,signature,...extra]=token.split('.');if(extra.length||!payload||!equal(signature,mac(payload)))return null;
-    try{const value=JSON.parse(Buffer.from(payload,'base64url').toString());return value.v===1&&value.purpose===purpose&&/^[A-Za-z0-9_-]{43}$/.test(value.deviceId)&&Number.isFinite(value.exp)&&value.exp>now()&&Number.isFinite(value.iat)&&value.iat<=now()+30000?value:null;}catch{return null;}
-  }
   function limited(key,limit,windowMs=60000){
     let r=rates.get(key);if(!r||r.until<=now()){if(rates.size>=2048){for(const [k,v]of rates)if(v.until<=now())rates.delete(k);if(rates.size>=2048)return true;}r={count:0,until:now()+windowMs};rates.set(key,r);}return ++r.count>limit;
   }
@@ -68,9 +55,16 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       if(req.headers.host!==new URL(origin).host)return json(res,403,{error:'This address is not accepted'});
       if(req.headers.origin&&req.headers.origin!==origin||req.headers['sec-fetch-site']&&['cross-site','same-site'].includes(req.headers['sec-fetch-site']))return json(res,403,{error:'Use the phone companion directly'});
       if(req.method==='POST'&&url.pathname==='/phone/device'){
-        if(limited('provision',provisionLimit)||limited('provision:'+req.socket.remoteAddress,provisionLimit))return json(res,429,{error:'Connection setup is busy. Try again later.'});
+        const authorization=req.headers.authorization;
+        const enrollment=typeof authorization==='string'&&authorization.length<=2055&&authorization.startsWith('Bearer ')?verify(authorization.slice(7),'enrollment'):null;
+        if(!enrollment)return json(res,401,{error:'This installation has not been enrolled for phone access.'});
+        if(limited('provision:'+enrollment.installationId,provisionLimit))return json(res,429,{error:'Connection setup is busy. Try again later.'});
         const input=await body(req);if(Object.keys(input).length)return json(res,400,{error:'No profile or save data is accepted during setup'});
-        const deviceId=random();return json(res,201,{deviceId,deviceToken:issue('device',deviceId,365*DAY)});
+        const previous=installationGenerations.get(enrollment.installationId);if(!previous&&installationGenerations.size>=2048)return json(res,429,{error:'Installation capacity has been reached.'});
+        const deviceId=random(),generation=Math.max(now(),(previous?.generation??0)+1),lifetime=Math.min(365*DAY,enrollment.exp-now());
+        installationGenerations.set(enrollment.installationId,{generation,deviceId,expiresAt:now()+lifetime});
+        const active=[...peers.values()].find(p=>p.installationId===enrollment.installationId);if(active){invalidatePeer(active);active.socket.terminate();}
+        return json(res,201,{deviceId,deviceToken:issue('device',{deviceId,installationId:enrollment.installationId,generation},lifetime)});
       }
       if(req.method==='GET'&&url.pathname==='/phone/connect'){res.writeHead(200,{...headers,'Content-Type':types['.html']});return res.end(connectPage);}
       if(req.method==='GET'&&url.pathname==='/phone/connect.js'){res.writeHead(200,{...headers,'Content-Type':types['.js']});return res.end(connectScript);}
@@ -79,7 +73,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
         if(limited('pair-attempts',pairAttemptLimit)||limited('pair-attempts:'+req.socket.remoteAddress,pairAttemptLimit))return json(res,429,{error:'Too many pairing attempts. Try again later.'});
         const input=await body(req),pair=typeof input.token==='string'&&/^[A-Za-z0-9_-]{43}$/.test(input.token)?pairs.get(hash(input.token)):null;
         if(!pair||pair.expiresAt<=now()||peers.get(pair.peer.deviceId)!==pair.peer)return json(res,400,{error:'This pairing link is unavailable. Request a new one on the PC.'});
-        pairs.delete(hash(input.token));const cookie=issue('phone',pair.peer.deviceId,30*DAY,{sid:random()});
+        pairs.delete(hash(input.token));const cookie=issue('phone',{deviceId:pair.peer.deviceId,sid:random()},30*DAY);
         return json(res,200,{paired:true},{'Set-Cookie':'__Host-cotw-phone='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=2592000'});
       }
       const session=auth(req);
@@ -111,27 +105,34 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
     }catch(e){return json(res,[400,403,409,413,415,429,503,504].includes(e.status)?e.status:500,{error:[400,403,409,413,415,429,503,504].includes(e.status)?e.message:'The phone service could not complete the request.'});}
   });
   server.requestTimeout=15000;server.headersTimeout=10000;
-  const wss=new WebSocketServer({noServer:true,maxPayload:PHONE_MAX_BYTES,perMessageDeflate:false});
+  const wss=new WebSocketServer({noServer:true,maxPayload:PHONE_MAX_BYTES,perMessageDeflate:false,handleProtocols:protocols=>protocols.has(PHONE_PROTOCOL)?PHONE_PROTOCOL:false});
   const connections=new Set();
   server.on('upgrade',(req,socket,head)=>{
-    if(req.url!=='/phone/bridge'||req.headers.host!==new URL(origin).host||req.headers.origin||connections.size>=maxPeers||limited('upgrades',120))return socket.destroy();
-    wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req));
+    const reject=(code=401)=>socket.end('HTTP/1.1 '+code+' Rejected\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+    if(req.url!=='/phone/bridge'||req.headers.host!==new URL(origin).host||req.headers.origin)return reject();
+    const header=req.headers['sec-websocket-protocol'];if(typeof header!=='string'||header.length>2100)return reject();
+    const protocols=header.split(',').map(s=>s.trim());
+    if(protocols.length!==2||!protocols.includes(PHONE_PROTOCOL))return reject();
+    const credential=protocols.find(s=>s.startsWith('cotw-auth.'))?.slice(10),identity=verify(credential,'device');
+    if(!identity)return reject();
+    if(limited('upgrades:'+identity.installationId,120))return reject(429);
+    const known=installationGenerations.get(identity.installationId);
+    if(known&&(identity.generation<known.generation||identity.generation===known.generation&&identity.deviceId!==known.deviceId))return reject();
+    const previous=[...peers.values()].find(p=>p.installationId===identity.installationId);
+    if(!previous&&peers.size>=maxPeers||!known&&installationGenerations.size>=2048)return reject(503);
+    wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws,req,identity));
   });
-  wss.on('connection',socket=>{
-    connections.add(socket);let peer=null;
-    const helloTimer=setTimeout(()=>socket.close(1008,'Authentication required'),5000);helloTimer.unref?.();
+  wss.on('connection',(socket,req,identity)=>{
+    connections.add(socket);
+    const peer={deviceId:identity.deviceId,installationId:identity.installationId,generation:identity.generation,socket,alive:true,expiresAt:identity.exp};
+    const previous=[...peers.values()].find(p=>p.installationId===peer.installationId);if(previous){invalidatePeer(previous);previous.socket.terminate();}
+    installationGenerations.set(peer.installationId,{generation:peer.generation,deviceId:peer.deviceId,expiresAt:peer.expiresAt});
+    peers.set(peer.deviceId,peer);socket.send(JSON.stringify({type:'ready',deviceId:peer.deviceId}));
     socket.on('error',()=>{});
     socket.on('message',(bytes,isBinary)=>{
       try{
         if(isBinary||bytes.length>PHONE_MAX_BYTES)return socket.close(1009);
         let m;try{m=JSON.parse(bytes.toString());}catch{return socket.close(1008);}
-        if(!peer){
-          const identity=m.type==='hello'&&m.protocol===PHONE_PROTOCOL?verify(m.deviceToken,'device'):null;
-          if(!identity)return socket.close(1008,'Invalid device credential');
-          clearTimeout(helloTimer);peer={deviceId:identity.deviceId,socket,alive:true,expiresAt:identity.exp};
-          const previous=peers.get(peer.deviceId);if(previous){invalidatePeer(previous);previous.socket.close(1012,'PC reconnected');}
-          peers.set(peer.deviceId,peer);socket.send(JSON.stringify({type:'ready',deviceId:peer.deviceId}));return;
-        }
         if(peers.get(peer.deviceId)!==peer)return socket.close(1008);
         if(peer.expiresAt<=now())return socket.close(1008,'Device credential expired');
         if(limited('messages:'+peer.deviceId,120))return socket.close(1008,'Too many messages');
@@ -153,12 +154,13 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
         socket.close(1008,'Unsupported message');
       }catch{socket.close(1008,'Invalid message');}
     });
-    socket.on('close',()=>{clearTimeout(helloTimer);connections.delete(socket);if(peer)invalidatePeer(peer);});
+    socket.on('close',()=>{connections.delete(socket);invalidatePeer(peer);});
   });
   const cleanup=setInterval(()=>{
     for(const [k,p]of pairs)if(p.expiresAt<=now())pairs.delete(k);
     for(const [k,r]of rates)if(r.until<=now())rates.delete(k);
     for(const [k,s]of sessionReserve)if(s.expiresAt<=now())sessionReserve.delete(k);
+    for(const [k,s]of installationGenerations)if(s.expiresAt<=now())installationGenerations.delete(k);
     for(const p of peers.values()){if(!p.alive||p.expiresAt<=now()){p.socket.terminate();continue;}p.alive=false;p.socket.send(JSON.stringify({type:'ping'}));}
   },30000);cleanup.unref();
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,resolve);});
