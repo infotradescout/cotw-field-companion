@@ -2,17 +2,22 @@
   "schema": "field.public_build.v1",
   "version": "0.4.1",
   "mode": "public_no_player_data",
-  "buildTag": "ba6bd185fc643d95",
+  "buildTag": "566e324c69bd7aa0",
   "files": [
     {
       "path": "index.html",
-      "bytes": 2920,
-      "sha256": "b7d8e80af8627c88eac65840ce3eacfc176cf0d3d4a544dde0c1238400b10bd4"
+      "bytes": 2909,
+      "sha256": "83e0ff3ff9bcb0a9ccb23ccad0d9ab223ff0af734ffcd3a9fd2468c3d38b2930"
     },
     {
       "path": "public.js",
-      "bytes": 2890,
-      "sha256": "b89d09dc17e582b13ebd3922452084504ce64b724138a5eda77a668d883c8f6e"
+      "bytes": 2884,
+      "sha256": "1bb61d74e8d63cc62fa020171489251d0174d1cf228d9b593e35ba65787bafb6"
+    },
+    {
+      "path": "species-style.js",
+      "bytes": 1167,
+      "sha256": "94f1fb9c9ae0a93c13c7a9103a8e5eba8f4a6b6c2222091648de3302818bed8d"
     },
     {
       "path": "data-client.js",
@@ -21,8 +26,8 @@
     },
     {
       "path": "reference.js",
-      "bytes": 11659,
-      "sha256": "b168c74a5c4195a319e0e8457dfb103c2500d4c44f7abaab4be118e7703b4ecd"
+      "bytes": 11737,
+      "sha256": "1880dd9abdcb0680c34b474e01c87612b7c1a1d7c23815e961832a7bce9adbaf"
     },
     {
       "path": "reference-core.js",
@@ -31,23 +36,23 @@
     },
     {
       "path": "field-library.js",
-      "bytes": 16618,
-      "sha256": "b3b907246c690c5e4f58763abe97d4533a0b649292e24d93f8ddb4b77fbff0dd"
+      "bytes": 16479,
+      "sha256": "51f4a3acefbb3689c939aeac0b22b37bd5e4280d2fdf9b3f6b8d8d3b59bd85e6"
     },
     {
       "path": "career.js",
-      "bytes": 6908,
-      "sha256": "a6a666551806da57a4cfd0945a1eb9996c67c943912b789d7d24a185cd3df070"
+      "bytes": 6625,
+      "sha256": "f489589b0c8bd7d97b0f8fd067cbffb88c585ff15c64bc0dee6d3635a0d65739"
     },
     {
       "path": "studio.js",
-      "bytes": 13206,
-      "sha256": "c5c28f9330a1a349cfe27447b004a6761722df2f64cdcf19d9044ac8352bc664"
+      "bytes": 13913,
+      "sha256": "be8ebe204fff3975ba834744f44fd3ca44835986786caed7df2eb76596009f68"
     },
     {
       "path": "style.css",
-      "bytes": 26023,
-      "sha256": "1efd815a01e12f0e8371b2101f805eb35e48eae92fbeed92d024d9d5816869fb"
+      "bytes": 26374,
+      "sha256": "419188f3d643c764a866a375b87130b30214e57123c94dec3318cbc9b17890a7"
     },
     {
       "path": "field-theme.css",
@@ -61,8 +66,8 @@
     },
     {
       "path": "map.js",
-      "bytes": 11544,
-      "sha256": "c6d35fb7b85d66e0ddb2228816c7e82d5b42028c6126d3e02a29878c52a50632"
+      "bytes": 13529,
+      "sha256": "5b4b5ff2910caf0b9bee36984ed266048192b8cc50a51dbae430f4ffd8eb7f17"
     },
     {
       "path": "map-geometry.js",
@@ -72,17 +77,17 @@
     {
       "path": "terrain-layer.js",
       "bytes": 4116,
-      "sha256": "7ef0c5308189669e906122a3f9ba7b04fa5d9842352f372f9c9f9b684eb6d921"
+      "sha256": "1afdad3bcf7167ccbf09a76669cd04b9299452d5c1ada1a43ee253500d0dac96"
     },
     {
       "path": "map-atlas.js",
       "bytes": 10043,
-      "sha256": "d5ac2b820d2a694c71dd6d8f6c526eee73e7961f55c8aad73da5b79f15c02c83"
+      "sha256": "03ed00780472f550df5985979eac93713305a672d20aaf0055b6e52e5c757136"
     },
     {
       "path": "maps.css",
-      "bytes": 7246,
-      "sha256": "b6c14edcd1f713601d31777b939103cea49b1ddeb901219b54186c620babe5ba"
+      "bytes": 7259,
+      "sha256": "a9936022f0d0872819cb70b718e716ee6bef9713e1f2aefea4bf1db8020c6a21"
     },
     {
       "path": "catalog/reference.json",
