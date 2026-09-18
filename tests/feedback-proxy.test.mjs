@@ -23,3 +23,24 @@ test('local owner inbox proxies to the hosted feedback origin without exposing i
   assert.equal(marked.status,200);assert.equal((await marked.json()).unreadCount,0);
   assert.equal((await fetch(app.url+'/api/feedback/not-a-feedback-id/read',{method:'POST',headers:{'X-Companion-Token':token}})).status,404);
 });
+
+test('local owner inbox can read a bounded GitHub Issues fallback without credentials',async t=>{
+  const originalFetch=globalThis.fetch;
+  const mockedFetch=async(input,init)=>{
+    if(String(input).startsWith('http://127.0.0.1:'))return originalFetch(input,init);
+    assert.equal(String(input),'https://api.github.test/repos/infotradescout/cotw-field-companion/issues?state=open&labels=feedback&per_page=20');
+    assert.equal(init.headers['User-Agent'],'COTW-Companion');
+    return new Response(JSON.stringify([
+      {number:7,title:'The map is hard to read',body:'Please make the pressure layer clearer.',html_url:'https://github.com/infotradescout/cotw-field-companion/issues/7',created_at:'2026-09-18T20:00:00Z',updated_at:'2026-09-18T20:05:00Z',user:{login:'hunter'}},
+      {number:8,title:'Pull request must not appear',body:'implementation',html_url:'https://github.com/infotradescout/cotw-field-companion/pull/8',created_at:'2026-09-18T20:00:00Z',updated_at:'2026-09-18T20:05:00Z',user:{login:'builder'},pull_request:{url:'https://api.github.test/pulls/8'}}
+    ]),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  const dir=mkdtempSync(path.join(tmpdir(),'cotw-github-feedback-'));let app;
+  t.after(async()=>{globalThis.fetch=originalFetch;if(app)await app.close();rmSync(dir,{recursive:true,force:true});});
+  app=await createApp({dataDir:dir,port:0,phoneRelayUrl:null,githubFeedbackUrl:'https://api.github.test/repos/infotradescout/cotw-field-companion/issues?state=open&labels=feedback&per_page=20'});
+  const token=(await (await fetch(app.url+'/api/bootstrap')).json()).token;
+  globalThis.fetch=mockedFetch;
+  assert.equal((await fetch(app.url+'/api/feedback/github')).status,403);
+  const response=await fetch(app.url+'/api/feedback/github',{headers:{'X-Companion-Token':token}});
+  assert.equal(response.status,200);assert.deepEqual(await response.json(),{source:'github',feedback:[{id:'7',title:'The map is hard to read',message:'Please make the pressure layer clearer.',url:'https://github.com/infotradescout/cotw-field-companion/issues/7',createdAt:'2026-09-18T20:00:00Z',updatedAt:'2026-09-18T20:05:00Z',author:'hunter'}]});
+});

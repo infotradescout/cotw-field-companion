@@ -1,0 +1,30 @@
+name: Field note
+description: Tell the COTW Companion what broke or what would make a grind easier.
+title: "[Field note] "
+labels:
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not attach save files, account IDs, or personal photos. This note is public in the project repository.
+  - type: dropdown
+    id: category
+    attributes:
+      label: What kind of note is this?
+      options:
+        - Something is broken
+        - The screen is confusing
+        - The data looks wrong
+        - I have an idea
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: What happened?
+      description: Tell us what you were trying to do and what you expected.
+      placeholder: I was trying to…
+    validations:
+      required: true
