@@ -4,9 +4,11 @@ import {FieldLibrary} from './field-library.js';
 import {ShareStudio} from './studio.js';
 import {careerView} from './career.js';
 import {MapAtlas} from './map-atlas.js';
+import {FeedbackPanel} from './feedback.js';
 const root=document.querySelector('#content'),picker=document.querySelector('#reserve');
-const views=['home','maps','reserves','reference','rares','gear','studio','career','faq'];
+const views=['home','maps','reserves','reference','rares','gear','studio','career','faq','feedback'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'home',reserve=19,catalog=null,demoState=null;
+const feedback=new FeedbackPanel(root,()=>{if(view==='feedback')render();},{endpoint:globalThis.COTW_FEEDBACK_ENDPOINT||document.querySelector('meta[name="cotw-feedback-endpoint"]')?.content||''});
 
 function demoCounter(key,label,value,display=0,extra={}){return {key,label,value,display,computed:false,...extra};}
 function makePublicDemoState(source){
@@ -36,7 +38,7 @@ const library=new FieldLibrary(root,()=>{if(['home','reserves','gear','rares','f
 const studio=new ShareStudio(root);
 const atlas=new MapAtlas(root,()=>{if(view==='maps')render();});
 function navigate(next,r){if(!views.includes(next))return;if(r!==undefined){reserve=Number(r);picker.value=String(reserve);}view=next;const url=new URL(location.href);url.hash=view;url.searchParams.set('reserve',reserve);history.replaceState(null,'',url);render();window.scrollTo({top:0,behavior:'smooth'});}
-function render(){if(view!=='maps')atlas.suspend();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===view?'page':'false'));if(view==='maps')root.innerHTML=atlas.render(reserve);else if(view==='reference')root.innerHTML=reference.render(reserve);else if(view==='studio')root.innerHTML=studio.render(demoState||{publicMode:true});else if(view==='career')root.innerHTML=careerView(demoState||{publicMode:true});else root.innerHTML=library.render(view,reserve);}
+function render(){if(view!=='maps')atlas.suspend();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===view?'page':'false'));if(view==='maps')root.innerHTML=atlas.render(reserve);else if(view==='reference')root.innerHTML=reference.render(reserve);else if(view==='studio')root.innerHTML=studio.render(demoState||{publicMode:true});else if(view==='career')root.innerHTML=careerView(demoState||{publicMode:true});else if(view==='feedback')root.innerHTML=feedback.render();else root.innerHTML=library.render(view,reserve);}
 root.addEventListener('click',e=>{const b=e.target.closest('[data-action="view-studio"]');if(b)navigate('studio');});
 document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)navigate(b.dataset.view);});
 picker.addEventListener('change',()=>{reserve=Number(picker.value);savePreference('reference-reserve',reserve);navigate(view,reserve);});

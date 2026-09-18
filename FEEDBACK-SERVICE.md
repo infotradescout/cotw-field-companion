@@ -1,6 +1,6 @@
 # Feedback service boundary
 
-This branch now contains the service boundary needed for the public companion to collect player feedback and show it in an owner inbox. It is a separate service from the GitHub Pages projection and from the save-reading Companion process.
+This branch now contains the service boundary needed for the public companion to collect player feedback and show it in the owner's private Companion inbox. The feedback origin is separate from the GitHub Pages projection. The local save-reading Companion is the only browser-facing owner client; the multi-user phone relay never exposes this inbox.
 
 ## What is implemented
 
@@ -37,9 +37,9 @@ FEEDBACK_DB_PATH=/var/data/feedback.sqlite
 PORT=<provider port>
 ```
 
-When the owner inbox is a different browser origin, set `FEEDBACK_OWNER_ORIGIN` and use the authenticated owner CORS preflight. The service allows only that exact origin and the `Authorization` header. If it is not set, owner reads are intended for a same-origin or server-side caller.
+When the owner inbox is a different browser origin, set `FEEDBACK_OWNER_ORIGIN` and use the authenticated owner CORS preflight. The service allows only that exact origin and the `Authorization` header. If it is not set, owner reads are intended for a same-origin or server-side caller. In the Companion, configure `COMPANION_FEEDBACK_URL`, `COMPANION_FEEDBACK_OWNER_TOKEN`, and (when the service has an owner-origin allowlist) `COMPANION_FEEDBACK_OWNER_ORIGIN`; the local server keeps the bearer token out of browser code and proxies only the owner's inbox. Do not place those values in the public build or phone relay.
 
-`FEEDBACK_PUBLIC_ORIGIN` is an origin, not the `/cotw-field-companion/` path. The current public site must be rebuilt with the eventual service URL before the form can submit. Until that URL and owner authentication are configured, the public Pages build must continue to link to GitHub Issues rather than pretending delivery is active.
+`FEEDBACK_PUBLIC_ORIGIN` is an origin, not the `/cotw-field-companion/` path. The public build accepts an optional `COTW_FEEDBACK_ENDPOINT` build variable, also as an origin. The current public site must be rebuilt with the eventual service URL before the form can submit. Until that URL and owner authentication are configured, the public Pages build links to GitHub Issues rather than pretending delivery is active.
 
 ## Proof and remaining release gate
 

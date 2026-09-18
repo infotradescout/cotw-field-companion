@@ -4,8 +4,12 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url))),out=path.join(root,'docs');
-const files=['public.js','species-style.js','data-client.js','reference.js','reference-core.js','field-library.js','career.js','studio.js','style.css','field-theme.css','icon.svg','map.js','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css'];
+const files=['public.js','feedback.js','species-style.js','data-client.js','reference.js','reference-core.js','field-library.js','career.js','studio.js','style.css','field-theme.css','icon.svg','map.js','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css'];
 const outputs={'index.html':readFileSync(path.join(root,'public/public.html'))};
+const configuredFeedbackEndpoint=process.env.COTW_FEEDBACK_ENDPOINT?.trim()||'';
+let feedbackOrigin='';
+if(configuredFeedbackEndpoint){let parsed;try{parsed=new URL(configuredFeedbackEndpoint);}catch{throw Error('COTW_FEEDBACK_ENDPOINT must be an absolute HTTP(S) origin');}if(!['http:','https:'].includes(parsed.protocol)||parsed.pathname!=='/'||parsed.search||parsed.hash)throw Error('COTW_FEEDBACK_ENDPOINT must be an origin without a path');feedbackOrigin=parsed.origin;}
+outputs['index.html']=Buffer.from(outputs['index.html'].toString().replace('__COTW_FEEDBACK_ENDPOINT__',configuredFeedbackEndpoint).replace("connect-src 'self'","connect-src 'self'"+(feedbackOrigin?' '+feedbackOrigin:'')));
 for(const name of files)outputs[name]=readFileSync(path.join(root,'public',name));
 outputs['catalog/reference.json']=readFileSync(path.join(root,'lib/rating-data.json'));
 outputs['catalog/gear.json']=readFileSync(path.join(root,'lib/gear-data.json'));

@@ -7,7 +7,7 @@ import {Store} from './lib/store.mjs';
 import {Observer,inside} from './lib/observer.mjs';
 import {reserveId} from './lib/core.mjs';
 import {createPhoneAccess} from './lib/phone-access.mjs';
-export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,phoneRelayUrl=process.env.COMPANION_PHONE_RELAY_URL,phoneEnrollmentToken=process.env.COMPANION_PHONE_ENROLLMENT_TOKEN,allowInsecurePhoneLoopback=false}={}) {
+export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,phoneRelayUrl=process.env.COMPANION_PHONE_RELAY_URL,phoneEnrollmentToken=process.env.COMPANION_PHONE_ENROLLMENT_TOKEN,allowInsecurePhoneLoopback=false,feedbackUrl=process.env.COMPANION_FEEDBACK_URL,feedbackOwnerToken=process.env.COMPANION_FEEDBACK_OWNER_TOKEN,feedbackOwnerOrigin=process.env.COMPANION_FEEDBACK_OWNER_ORIGIN}={}) {
   const appDir=path.dirname(fileURLToPath(import.meta.url));
   if(!dataDir)throw Error('Companion data directory is required');
   saveDir=saveDir?realpathSync(saveDir):null;dataDir=path.resolve(dataDir);
@@ -30,6 +30,9 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
   const configuredRelay=phoneRelayUrl??(existsSync(phoneServiceFile)?JSON.parse(readFileSync(phoneServiceFile,'utf8')).relayUrl:null);
   const phone=createPhoneAccess({store,observer,relayUrl:configuredRelay,enrollmentToken:phoneEnrollmentToken,runCommand,allowInsecureLoopback:allowInsecurePhoneLoopback});
   void phone.start().catch(()=>{});
+  const feedbackEndpoint=feedbackUrl?new URL(feedbackUrl):null;
+  if(feedbackEndpoint&&!['https:','http:'].includes(feedbackEndpoint.protocol))throw Error('Companion feedback URL must use HTTP or HTTPS');
+  if(feedbackEndpoint){feedbackEndpoint.pathname=feedbackEndpoint.pathname.replace(/\/+$/,'')+'/';feedbackEndpoint.search='';feedbackEndpoint.hash='';}
   const token=randomBytes(32).toString('hex');
   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
   const assets=new Map(['/','/index.html','/app.js','/species-style.js','/commands.js','/route-stops.js','/harvest-view.js','/phone-ui.js','/phone.css','/qrcode.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/hunting-workspace.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
@@ -41,6 +44,17 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
     const allowedSite=!req.headers['sec-fetch-site']||['same-origin','none'].includes(req.headers['sec-fetch-site']);
     const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
     const json=(status,value)=>{res.writeHead(status,{...headers,'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(value));};
+    const localTokenOk=()=>typeof req.headers['x-companion-token']==='string'&&req.headers['x-companion-token']===token;
+    const feedbackOrigin=()=>feedbackOwnerOrigin||`http://127.0.0.1:${server.address()?.port??port}`;
+    const feedbackProxy=async(pathname,method='GET')=>{
+      if(!feedbackEndpoint||typeof feedbackOwnerToken!=='string'||feedbackOwnerToken.length<32)return json(503,{error:'Hosted feedback is not configured for this companion.'});
+      const target=new URL(pathname,feedbackEndpoint);
+      let upstream;
+      try{upstream=await fetch(target,{method,headers:{Authorization:`Bearer ${feedbackOwnerToken}`,...(feedbackOwnerOrigin?{Origin:feedbackOrigin()}:{})},signal:AbortSignal.timeout(5000)});}
+      catch{return json(503,{error:'Hosted feedback is temporarily unavailable.'});}
+      const text=await upstream.text();let value;try{value=JSON.parse(text);}catch{value={error:'Hosted feedback returned an invalid response.'};}
+      return json(upstream.status,value);
+    };
     if(!goodHosts.includes(req.headers.host)||!sameOrigin||!allowedSite)return json(403,{error:'Only same-origin local access is accepted'});
     try {
       const url=new URL(req.url,'http://127.0.0.1');
@@ -49,6 +63,15 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
       if(req.method==='GET'&&url.pathname==='/api/maps')return json(200,mapsCatalog);
       if(req.method==='GET'&&url.pathname==='/api/gear')return json(200,gearCatalog);
       if(req.method==='GET'&&url.pathname==='/api/reference')return ratingCatalog?json(200,ratingCatalog):json(503,{error:'The animal reference catalog has not been installed.'});
+      if(req.method==='GET'&&url.pathname==='/api/feedback/inbox'){
+        if(!localTokenOk())return json(403,{error:'Missing local session token'});
+        return feedbackProxy('/v1/owner/feedback?status=new&limit=20');
+      }
+      const feedbackRead=url.pathname.match(/^\/api\/feedback\/([0-9a-f-]{36})\/read$/i);
+      if(req.method==='POST'&&feedbackRead){
+        if(!localTokenOk())return json(403,{error:'Missing local session token'});
+        return feedbackProxy(`/v1/owner/feedback/${feedbackRead[1]}/read`,'POST');
+      }
       if(req.method==='GET'&&url.pathname==='/api/state')return json(200,observer.state(reserveId(url.searchParams.get('reserve')??19)));
       if(req.method==='GET'&&url.pathname==='/api/export'){
         res.writeHead(200,{...headers,'Content-Type':'application/json','Content-Disposition':'attachment; filename="COTW-field-journal.json"'});return res.end(JSON.stringify(store.exportJournal(observer.profile),null,2));

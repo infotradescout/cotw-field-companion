@@ -53,6 +53,7 @@ test('relay refuses missing signing key and non-HTTPS production origin',async()
   await assert.rejects(()=>createPhoneRelay({key:randomBytes(32),publicOrigin:'http://example.invalid'}),/HTTPS/);
 });
 
+
 test('paired browser can load the complete app module graph',async t=>{
   const f=await fixture(t),pc=await f.pc(),phone=await pair(f.relay,pc),pending=['/app.js'],seen=new Set();
   while(pending.length){
@@ -95,10 +96,11 @@ test('valid device replacement works at full capacity and stale installation gen
 
 test('enable and handshake send no player data; every app API requires pairing',async t=>{
   const f=await fixture(t),pc=await f.pc();assert.equal(pc.reads,0);
-  for(const path of ['/api/bootstrap','/api/state','/api/maps','/api/gear','/api/reference','/api/export'])assert.equal((await request(f.relay,path)).status,401,path);
+  for(const path of ['/api/bootstrap','/api/state','/api/maps','/api/gear','/api/reference','/api/export','/api/feedback/inbox'])assert.equal((await request(f.relay,path)).status,401,path);
   assert.equal(pc.reads,0);assert.equal((await request(f.relay,'/')).status,302);
   const paired=await pair(f.relay,pc);assert.match(paired.paired.headers.get('set-cookie'),/HttpOnly; Secure; SameSite=Strict/);
   const view=await request(f.relay,'/api/state?reserve=19',{cookie:paired.cookie});assert.equal(view.status,200);assert.equal(view.value.zones[0].species,'Owner A');assert.ok(view.value.reserves[0].bounds);assert.equal(pc.reads,1);
+  assert.equal((await request(f.relay,'/api/feedback/inbox',{cookie:paired.cookie})).status,404,'paired players never receive the project owner inbox');
 });
 
 test('pairing is one-use, expires, and has a bounded guessing rate',async t=>{

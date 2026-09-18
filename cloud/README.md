@@ -40,7 +40,7 @@ The **local-only**, existing token-protected routes are `GET /api/phone/status`,
 
 ## Public feedback service (separate candidate)
 
-`feedback-server.mjs` is a separate, opt-in service for the public companion's feedback loop. It does not run as part of the phone relay and it does not receive game saves, journal exports, screenshots, or account identifiers. It stores only bounded plain-text feedback in a configured SQLite database and exposes an authenticated owner inbox. See [`FEEDBACK-SERVICE.md`](../FEEDBACK-SERVICE.md) for the contract and [`render-feedback.yaml`](./render-feedback.yaml) for a candidate Render shape. Neither is deployed by the existing phone-relay Blueprint; the service URL, persistent disk, owner token, origin policy, and live owner journey must be accepted separately.
+`feedback-server.mjs` is the bounded feedback origin for the public companion. It is intentionally separate from the multi-user phone relay: pairing proves access to a player's own PC, not project-owner authority, so the relay never exposes the owner inbox. The owner inbox is available only through the configured local Companion process. The service does not receive game saves, journal exports, screenshots, or account identifiers. It stores only bounded plain-text feedback in a configured SQLite database and exposes an authenticated owner inbox. See [`FEEDBACK-SERVICE.md`](../FEEDBACK-SERVICE.md) for the contract. The feedback origin still requires durable storage, exact origins, owner authentication, and a synthetic live journey before public claims.
 
 Local persistence and enable/disable controls are owned by the main companion integration. The bridge library reads no files and does not enable itself. Its tests use disposable state.
 
