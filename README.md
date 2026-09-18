@@ -16,6 +16,10 @@ The imagery is not bundled or rehosted. Opening online terrain sends ordinary im
 
 Reserve image origins and tile extents come from DECA metadata, including negative and shifted-coordinate reserves. Coordinate and anchor tests cover this transform; this is not a claim that every point has been independently checked against every game patch. Attribution and source-map links are displayed in the map. Publisher approval and commercial redistribution rights are not claimed.
 
+In **Hunt**, purple shading shows hunting pressure from the selected reserve's last game save. It updates automatically when saved pressure changes. Open **Map layers** to switch it on or off; zones and equipment remain above the shading. This private layer is available in the local companion and paired phone view, not the public reference maps.
+
+An empty saved map shows **No saved pressure**. Missing data shows **Pressure unavailable**, and a read failure labels retained shading as an earlier save. The companion does not estimate pressure from harvest counts or invent a timer for it to disappear. The saved grid uses reserve bounds and the orientation documented by [DECA's map renderer](https://mathartbang.com/deca/hp/map.html); its shading is not a prediction of the next kill or zone deletion.
+
 ## Run the local companion
 
 Requires **Node.js 22.13+** on a compatible Windows PC. Download this repository, extract it, and double-click `START.cmd`, or run `node launcher.mjs --open` from its directory. The app listens on `http://127.0.0.1:47831`. Keep the process running while hunting. This is a source-based preview, not a signed installer.

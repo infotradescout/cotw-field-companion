@@ -1,9 +1,9 @@
-import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=566e324c69bd7aa0';
-import {ReferencePanel} from './reference.js?v=566e324c69bd7aa0';
-import {FieldLibrary} from './field-library.js?v=566e324c69bd7aa0';
-import {ShareStudio} from './studio.js?v=566e324c69bd7aa0';
-import {careerView} from './career.js?v=566e324c69bd7aa0';
-import {MapAtlas} from './map-atlas.js?v=566e324c69bd7aa0';
+import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=6b391a6cb5f8520d';
+import {ReferencePanel} from './reference.js?v=6b391a6cb5f8520d';
+import {FieldLibrary} from './field-library.js?v=6b391a6cb5f8520d';
+import {ShareStudio} from './studio.js?v=6b391a6cb5f8520d';
+import {careerView} from './career.js?v=6b391a6cb5f8520d';
+import {MapAtlas} from './map-atlas.js?v=6b391a6cb5f8520d';
 const root=document.querySelector('#content'),picker=document.querySelector('#reserve');
 const views=['home','maps','reserves','reference','rares','gear','studio','career','faq'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'home',reserve=19,catalog=null;

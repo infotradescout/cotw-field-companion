@@ -1,17 +1,60 @@
-import {isGreatOneSpecies} from './species-style.js?v=566e324c69bd7aa0';
-import {homeBox,validBox,insideBounds,scaleBar} from './map-geometry.js?v=566e324c69bd7aa0';
-import {TerrainLayer} from './terrain-layer.js?v=566e324c69bd7aa0';
+import {isGreatOneSpecies} from './species-style.js?v=6b391a6cb5f8520d';
+import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=6b391a6cb5f8520d';
+import {TerrainLayer} from './terrain-layer.js?v=6b391a6cb5f8520d';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};
 function el(tag,attrs={},text){const n=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;}
+/** Saved 256×256 pressure, in the game's row-major X/Z order. No inferred circles. */
+export class HuntingPressureLayer {
+ constructor(node=el('image'),createCanvas=()=>document.createElement('canvas')) {
+  this.node=node;this.createCanvas=createCanvas;this.cache=new Map();this.state={status:'unavailable'};
+  for(const [key,value] of Object.entries({class:'hunting-pressure-layer',preserveAspectRatio:'none','pointer-events':'none','aria-hidden':'true',visibility:'hidden'}))node.setAttribute(key,value);
+ }
+ clear(){this.node.setAttribute('visibility','hidden');this.node.removeAttribute('href');this.state={status:'unavailable'};return this.state;}
+ update(pressure,enabled=true) {
+  if(pressure?.status!=='available'||pressure.width!==256||pressure.height!==256||!validBounds(pressure.bounds)||
+     !Array.isArray(pressure.values)&&!(pressure.values instanceof Uint8Array)||pressure.values?.length!==65536||
+     typeof pressure.sourceHash!=='string'||!/^[a-f0-9]{64}$/i.test(pressure.sourceHash))return this.clear();
+  const key=JSON.stringify([pressure.sourceHash,pressure.width,pressure.height,pressure.bounds]);
+  let raster=this.cache.get(key);
+  if(!raster){
+   if(!pressure.values.every(value=>Number.isInteger(value)&&value>=0&&value<=255))return this.clear();
+   const hasPressure=pressure.values.some(value=>value>0);
+   raster={hasPressure,url:null};
+   if(hasPressure){
+    try{
+     const canvas=this.createCanvas();canvas.width=256;canvas.height=256;
+     const context=canvas.getContext('2d');if(!context)return this.clear();
+     const image=context.createImageData(256,256);
+     // Column zero is minX and row zero is minZ, as in DECA's pressure renderer.
+     for(let i=0;i<pressure.values.length;i++){
+      const pixel=i*4;image.data[pixel]=209;image.data[pixel+1]=58;image.data[pixel+2]=222;
+      image.data[pixel+3]=Math.round(pressure.values[i]*.8);
+     }
+     context.putImageData(image,0,0);raster.url=canvas.toDataURL('image/png');
+    }catch{return this.clear();}
+   }
+   this.cache.set(key,raster);
+   while(this.cache.size>2)this.cache.delete(this.cache.keys().next().value);
+  }else{this.cache.delete(key);this.cache.set(key,raster);}
+  const [[minX,minZ],[maxX,maxZ]]=pressure.bounds;
+  for(const [name,value] of Object.entries({x:minX,y:minZ,width:maxX-minX,height:maxZ-minZ}))this.node.setAttribute(name,String(value));
+  if(raster.url){if(this.node.getAttribute('href')!==raster.url)this.node.setAttribute('href',raster.url);}
+  else this.node.removeAttribute('href');
+  this.node.setAttribute('visibility',enabled&&raster.hasPressure?'visible':'hidden');
+  this.state={status:'available',hasPressure:raster.hasPressure,stale:pressure.stale===true,savedAt:pressure.savedAt??null};
+  return this.state;
+ }
+ destroy(){this.cache.clear();this.clear();this.node.remove();}
+}
 export class FieldMap{
- constructor(svg,onSelect=()=>{},onPoint=()=>{},onStatus=()=>{}){this.svg=svg;this.onSelect=onSelect;this.onPoint=onPoint;this.onStatus=onStatus;this.box=null;this.reserve=null;this.drag=null;this.point=null;this.pointers=new Map();this.pinch=null;this.layers={zones:true,equipment:true,poi:true,grid:false};this.poiFilter='all';this.abort=new AbortController();this.disposed=false;
-  this.background=el('rect',{fill:'#17241d'});this.overlay=el('g');this.terrain=new TerrainLayer(s=>{this.status=s;this.svg.dispatchEvent(new CustomEvent('terrainstatus',{detail:s}));this.onStatus(s);});svg.replaceChildren(this.background,this.terrain.node,this.overlay);svg.setAttribute('tabindex','0');this.setEvents();
+ constructor(svg,onSelect=()=>{},onPoint=()=>{},onStatus=()=>{}){this.svg=svg;this.onSelect=onSelect;this.onPoint=onPoint;this.onStatus=onStatus;this.box=null;this.reserve=null;this.drag=null;this.point=null;this.pointers=new Map();this.pinch=null;this.layers={zones:true,equipment:true,poi:true,grid:false,pressure:true};this.poiFilter='all';this.abort=new AbortController();this.disposed=false;
+  this.background=el('rect',{fill:'#17241d'});this.overlay=el('g');this.pressure=new HuntingPressureLayer();this.terrain=new TerrainLayer(s=>{this.status=s;this.svg.dispatchEvent(new CustomEvent('terrainstatus',{detail:s}));this.onStatus(s);});svg.replaceChildren(this.background,this.terrain.node,this.pressure.node,this.overlay);svg.setAttribute('tabindex','0');this.setEvents();
   if(typeof ResizeObserver!=='undefined'){this.resize=new ResizeObserver(()=>this.schedule());this.resize.observe(svg);}
  }
- update({reserve,zones=[],pins=[],equipment=[],terrain=true,route=[],selectedZone=null}){this.data={reserve,zones,pins,equipment,terrain,route,selectedZone};if(this.reserve!==reserve.id){this.reserve=reserve.id;this.point=null;this.home();}else this.draw();}
- destroy(){this.disposed=true;this.abort.abort();this.resize?.disconnect();cancelAnimationFrame(this.frame);this.terrain.destroy();}
+ update({reserve,zones=[],pins=[],equipment=[],terrain=true,route=[],selectedZone=null,huntingPressure=null}){this.data={reserve,zones,pins,equipment,terrain,route,selectedZone,huntingPressure:huntingPressure?.reserve===reserve.id?huntingPressure:null};if(this.reserve!==reserve.id){this.reserve=reserve.id;this.point=null;this.home();}else this.draw();}
+ destroy(){this.disposed=true;this.abort.abort();this.resize?.disconnect();cancelAnimationFrame(this.frame);this.terrain.destroy();this.pressure.destroy();}
  schedule(){if(this.frame||this.disposed)return;this.frame=requestAnimationFrame(()=>{this.frame=null;this.draw();});}
  select(id){if(!this.data)return;this.data.selectedZone=id;this.svg.querySelectorAll('[data-zone]').forEach(n=>n.classList.toggle('active-zone',n.getAttribute('data-zone')===id));}
  viewportBox(box,contain=false){const rect=this.svg.getBoundingClientRect();if(!rect.width||!rect.height)return box;const aspect=rect.width/rect.height,w=contain?Math.max(box[2],box[3]*aspect):box[2],h=w/aspect;return [box[0]+(box[2]-w)/2,box[1]+(box[3]-h)/2,w,h];}
@@ -33,7 +76,7 @@ export class FieldMap{
   this.svg.addEventListener('keydown',e=>{if(e.target!==this.svg||!this.box)return;const b=this.box,k=e.key;if(['+','=','-','Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k))e.preventDefault();if(k==='+'||k==='=')this.zoom(1/1.4);else if(k==='-')this.zoom(1.4);else if(k==='Home')this.home();else if(k.startsWith('Arrow')){const dx=k==='ArrowLeft'?-.12:k==='ArrowRight'?.12:0,dz=k==='ArrowUp'?-.12:k==='ArrowDown'?.12:0;this.box=[b[0]+b[2]*dx,b[1]+b[3]*dz,b[2],b[3]];this.draw();}},options);
  }
  draw(){if(this.disposed||!this.data||!validBox(this.box))return;this.box=this.viewportBox(this.box);const b=this.box,{reserve,terrain,route}=this.data,rect=this.svg.getBoundingClientRect(),screen=rect.width||850,scale=1/Math.min(screen/b[2],(rect.height||screen)/b[3]);this.svg.setAttribute('viewBox',b.join(' '));for(const [k,v]of Object.entries({x:b[0],y:b[1],width:b[2],height:b[3]}))this.background.setAttribute(k,String(v));
-  this.terrain.update(reserve,b,terrain,screen);this.overlay.replaceChildren();const out=this.overlay;
+  this.terrain.update(reserve,b,terrain,screen);this.pressure.update(this.data.huntingPressure,this.layers.pressure);this.overlay.replaceChildren();const out=this.overlay;
   if(this.layers.grid||!terrain){const step=b[2]>6000?1000:b[2]>2500?500:200;for(let x=Math.ceil(b[0]/step)*step;x<b[0]+b[2];x+=step){out.append(el('line',{x1:x,y1:b[1],x2:x,y2:b[1]+b[3],stroke:'#b3bdac','stroke-width':scale,opacity:.24}));out.append(el('text',{x:x+5*scale,y:b[1]+20*scale,fill:'#ebeadc','font-size':10*scale,'paint-order':'stroke',stroke:'#172218','stroke-width':2*scale},Math.round(x)));}for(let z=Math.ceil(b[1]/step)*step;z<b[1]+b[3];z+=step)out.append(el('line',{x1:b[0],y1:z,x2:b[0]+b[2],y2:z,stroke:'#b3bdac','stroke-width':scale,opacity:.24}));}
   const visible=p=>p.x>=b[0]-60*scale&&p.x<=b[0]+b[2]+60*scale&&p.z>=b[1]-60*scale&&p.z<=b[1]+b[3]+60*scale;
   const zones=(this.layers.zones?this.data.zones:[]).filter(visible),equipment=this.layers.equipment?this.data.equipment:[],pins=this.layers.equipment?this.data.pins:[];
