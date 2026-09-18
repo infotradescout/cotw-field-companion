@@ -514,6 +514,7 @@ body.hunting-app {
 .hunting-app .route-focus .panel-head p { margin: 0; }
 .hunting-app .route-focus .empty { padding: 18px 10px 8px; }
 .hunting-app .route-focus .route-stop { align-items: center; }
+.hunting-app .route-focus .route-stop-missing { background: #2a261e; border: 1px solid #66533b; border-radius: 8px; padding: 11px; }
 .hunting-app .route-focus .stop-controls { flex-wrap: wrap; justify-content: flex-end; }
 .hunting-app .route-focus .stop-controls .button { min-height: 40px; }
 .hunting-app .herd-list-panel { padding-bottom: 16px; }
