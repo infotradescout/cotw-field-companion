@@ -300,3 +300,32 @@ body.hunting-app {
 @media (prefers-reduced-motion: reduce) {
   .hunting-app *, .hunting-app *::before, .hunting-app *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* A harvest is one readable card, with optional notes below it. */
+.hunting-app .harvest-summary{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;max-width:860px;margin:12px 0 18px;color:var(--muted);font-size:15px}
+.hunting-app .harvest-summary strong{color:var(--text);font-size:28px;font-weight:650;line-height:1.2}
+.hunting-app .harvest-search{display:block;max-width:860px;margin:14px 0 18px;color:var(--muted);font-size:14px}
+.hunting-app #harvestSearch{display:block;width:100%;min-height:48px;margin-top:7px;padding:11px 13px;font-size:16px;border-radius:8px}
+.hunting-app .harvest-list{display:grid;gap:12px;max-width:860px}
+.hunting-app .harvest-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 20px;padding:18px 20px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.hunting-app .harvest-main{min-width:0}
+.hunting-app .harvest-main h2{margin:0 0 5px;font-size:21px;line-height:1.3;overflow-wrap:anywhere}
+.hunting-app .harvest-main time{display:block;color:var(--muted);font-size:13px;line-height:1.5}
+.hunting-app .harvest-result{min-width:86px;text-align:right;font-variant-numeric:tabular-nums}
+.hunting-app .harvest-result strong{display:block;color:var(--text);font-size:27px;line-height:1.2;font-weight:650}
+.hunting-app .harvest-result>span{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.hunting-app .harvest-notes{grid-column:1/-1;padding-top:4px;border-top:1px solid var(--line)}
+.hunting-app .harvest-notes>summary,.hunting-app .harvest-help>summary{min-height:44px;align-content:center;color:var(--muted);cursor:pointer;font-size:14px;line-height:1.5}
+.hunting-app .harvest-notes p,.hunting-app .harvest-help p{font-size:14px;line-height:1.6}
+.hunting-app .harvest-notes .button{min-height:44px;margin:5px 0;font-size:14px}
+.hunting-app .harvest-help{max-width:860px;margin:18px 0;padding:4px 15px;border:1px solid var(--line);border-radius:8px;background:transparent}
+@media(max-width:900px),(max-width:1000px) and (max-height:500px){
+  .hunting-app .harvest-card{gap:10px 13px;padding:16px}
+  .hunting-app .harvest-main h2{font-size:18px}
+  .hunting-app .harvest-main time{font-size:13px}
+  .hunting-app .harvest-result{min-width:76px}
+  .hunting-app .harvest-result strong{font-size:24px}
+  .hunting-app .harvest-summary{margin:8px 0 14px;font-size:14px}
+  .hunting-app .harvest-summary strong{font-size:25px}
+  .hunting-app .harvest-search{margin:12px 0 16px}
+}
