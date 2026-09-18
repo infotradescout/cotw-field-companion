@@ -1,9 +1,9 @@
-import {esc,pretty} from './data-client.js?v=38e6b6347cd71c19';
-import {speciesName} from './species-style.js?v=38e6b6347cd71c19';
+import {esc,pretty} from './data-client.js?v=a2018463263bdf30';
+import {speciesName} from './species-style.js?v=a2018463263bdf30';
 const num=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:1}):'Not available';
 const date=v=>v?new Date(v).toLocaleString():'Not recorded';
 export function statValue(c){if(!Number.isFinite(c?.value))return 'Not available';if(c.display===1)return num(c.value*100)+'%';if(c.display===2)return num(c.value)+' m';return num(c.value);}
-function card(label,value,detail=''){return `<article class="career-metric"><span>${esc(label)}</span><strong>${esc(value)}</strong>${detail?`<small>${esc(detail)}</small>`:''}</article>`;}
+function card(label,value,detail=''){const tone=/diamond/i.test(label)?' diamond':/gold/i.test(label)?' gold':/great one/i.test(label)?' great-one':'';return `<article class="career-metric${tone}"><span>${esc(label)}</span><strong>${esc(value)}</strong>${detail?`<small>${esc(detail)}</small>`:''}</article>`;}
 export function medalCounts(state){
  const value=key=>{const count=state?.career?.counters?.find(c=>c.key===key)?.value;return Number.isFinite(count)?count:null;};
  return {gold:value('harvests_gold'),diamond:value('harvests_platinum')};
@@ -14,7 +14,9 @@ export function careerView(state){
  const s=c.summary,profile=c.profile||{},byKey=Object.fromEntries(c.counters.map(r=>[r.key,r])),medals=medalCounts(state);
  const huntingTotals=`<details class="panel"><summary>Shots, tracking and multiplayer</summary><div class="kv">${[['shots_hit','Shots hit'],['shots_missed','Shots missed'],['animals_spooked_hearing','Animals scared by noise'],['animals_spooked_eyesight','Animals scared by sight'],['animals_spooked_scent','Animals scared by scent'],['mp_competitions','Multiplayer competitions won'],['mp_coop_harvests','Cooperative harvests']].map(([key,label])=>`<span>${label}</span><b>${statValue(byKey[key])}</b>`).join('')}</div></details>`;
  const mapRows=c.allMaps.map(r=>{const v=suffix=>r.stats.find(s=>s.key.endsWith('_'+suffix));return `<tr><td><button class="button text-button" data-career-reserve="${r.id}">${esc(r.name)}</button><span class="small muted">${r.available?'Save found':'No save found'}</span></td><td>${statValue(v('world_explored'))}</td><td>${statValue(v('distance_walked'))}</td><td>${statValue(v('missions_main'))} / ${statValue(v('missions_side'))}</td><td>${statValue(v('outposts'))}</td><td>${num(r.zoneCount)}</td><td>${num(r.equipmentCount)}</td></tr>`;}).join('');
- return `<div class="intro"><div><h1>Your career</h1><p>Your progress, read from your game saves.</p></div><button class="button primary" data-action="view-studio">Make a career card</button></div>
+ const demoBanner=state?.demo?'<div class="callout demo-callout"><strong>Fictional sample data.</strong> This public page is a safe preview. It never reads or publishes a player save.</div>':'';
+ return `<div class="intro"><div><h1>${state?.demo?'Sample career':'Your career'}</h1><p>${state?.demo?'A fictional hunter profile showing what the companion can track.':'Your progress, read from your game saves.'}</p></div><button class="button primary" data-action="view-studio">Make a career card</button></div>
+ ${demoBanner}
  ${c.sourceStatus!=='ok'?'<div class="callout warning">The latest update is unavailable. These are your last saved totals.</div>':''}
  ${huntingTotals}
  <div class="career-grid">${card('Animals harvested',num(s.lifetimeHarvests))}${card('Gold',num(medals.gold))}${card('Diamond',num(medals.diamond))}${card('Great Ones',num(s.greatOnes))}${card('Shots fired',num(s.shotsFired))}${card('Accuracy',Number.isFinite(s.accuracy)?num(s.accuracy*100)+'%':'Not available')}${card('Longest shot',Number.isFinite(s.longestShot)?num(s.longestShot)+' m':'Not available')}</div>

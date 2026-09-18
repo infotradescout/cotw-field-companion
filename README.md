@@ -6,7 +6,7 @@ An independent companion for **theHunter: Call of the Wild**. Free public refere
 
 **[Open the web app](https://infotradescout.github.io/cotw-field-companion/)** — no account or player save required. Publication status is recorded in the latest GitHub activity; a source push alone is not proof the site is live.
 
-Explore all 19 reserve rosters, 127 animal entries, score/weight/difficulty references, 1,771 species/sex fur-template entries, 129 weapon-variant rows, and 117 ammunition rows. Compare equipment or design a square, portrait or wide stat card/trophy collage with up to six photos. Reference counts describe the included snapshot, not a guarantee of future patch completeness.
+Explore all 19 reserve rosters, 127 animal entries, score/weight/difficulty references, 1,771 species/sex fur-template entries, 129 weapon-variant rows, and 117 ammunition rows. Compare equipment or design a square, portrait, wide card, trophy collage, or 1280 × 720 hunting thumbnail with up to six photos. The public career and studio use clearly labeled fictional sample data. Reference counts describe the included snapshot, not a guarantee of future patch completeness.
 
 ## Real reserve maps
 
@@ -36,7 +36,7 @@ Career includes game-defined shots fired (hit + missed), accuracy and weapon-typ
 
 ## Share studio & privacy
 
-Photos remain in browser memory. Photos stay in your browser and are not sent to the public site. Optional phone access uses a separate private relay after you enable it on your PC. PNG exports render a new image; the original photograph's file metadata is not copied. Review visible content before sharing. Custom stats are labeled player-reported; local career cards are labeled save-derived with their saved date. Neither is an official verified leaderboard record.
+Photos remain in browser memory. Photos stay in your browser and are not sent to the public site. Optional phone access uses a separate private relay after you enable it on your PC. PNG exports render a new card or hunting thumbnail; the original photograph's file metadata is not copied. Review visible content before sharing. Custom stats are labeled player-reported; local career cards are labeled save-derived with their saved date. Public demo cards are labeled fictional sample data. Neither is an official verified leaderboard record.
 
 ## Free preview, optional support, publisher ambition
 

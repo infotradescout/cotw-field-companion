@@ -5,7 +5,7 @@
 - Public browser library: reserve rosters, species thresholds/weights/difficulty, rare-fur templates, weapon and ammunition comparisons, FAQs.
 - Local automatic saved harvests, zones/equipment, linked groups and career counters. Optional field notes remain separate.
 - Career overview for all 19 hunting reserves with supported progress/exploration fields. Global hits/misses/accuracy/harvest buckets have explicit evidence scope.
-- Share studio: three layouts, three pixel formats, three themes, custom labels/values/handle, selected career metrics, up to six browser-local photos, PNG and device-share export.
+- Share studio: career, trophy, collage and hunting-thumbnail layouts; four pixel formats; three themes; custom labels/values/handle; selected career metrics; up to six browser-local screenshots/photos with paste, drag/drop and mobile capture; PNG/device-share export. Public pages use fictional demo data and label it in the UI.
 - One canonical local journal; the old address redirects rather than running another collector.
 
 ## Must not be invented
@@ -18,7 +18,7 @@ Lifetime kills, individual shot/health identity, arbitrary reserve attribution o
 2. Correlate region IDs and saved harvests only where source evidence establishes the mapping; add reserve-specific harvest analytics with clear historical coverage.
 3. Validate outcome events without process injection or population inference. Add missing telemetry only with lawful supported access and reproducible identity.
 4. Improve map terrain/reference sourcing, coincident-zone selection, equipment naming, saved layouts and accessible controls.
-5. Add opt-in local share-template persistence and broader collage editing. No automatic social posting or public save upload.
+5. Add opt-in local share-template persistence and broader collage editing. No automatic social posting or public save upload. A durable public feedback inbox remains a separately gated service with authentication, abuse controls and an owner notification surface.
 6. Provide signed Windows distribution, supported setup/profile-selection UI and version/compatibility checks.
 7. Configure a verified owner donation destination. Keep core preview free; no dummy checkout or implied publisher endorsement.
 8. Gather opt-in feedback and reproducible quality evidence before publisher outreach. Rights review and separate written agreement precede any transfer or DLC arrangement.

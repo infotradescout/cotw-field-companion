@@ -1,52 +1,160 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260918T201413Z-02979047",
-  "createdAt": "2026-09-18T20:14:13.409274+00:00",
-  "outcome": "SI Step 1 handoff locked the corrected COTW Companion product intent: a shareable public demo, a simple hunter themed card and thumbnail studio with local screenshot attachments, honest medal whiff and shot placement analysis where evidence exists, and a feedback inbox boundary for the private dashboard.",
+  "checkpointId": "progress-20260918T203741Z-591e5523",
+  "createdAt": "2026-09-18T20:37:41.339474+00:00",
+  "outcome": "Implemented the corrected first COTW delivery slice: a simpler hunter-orange card studio with a hunting-thumbnail format, screenshot-first local image workflow, honest gold/diamond/Great One presentation, and a clearly labeled synthetic public career/studio demo.",
   "scope": [
-    "SI Step 1 intent handoff",
+    "SI Step 1 handoff",
     "card and thumbnail studio",
-    "public demo boundary",
-    "feedback and shot analysis follow-up"
+    "public fictional demo",
+    "hunter-orange visual system",
+    "feedback backend boundary"
   ],
   "prohibitions": [
     "Never publish raw journal, save, account, or user screenshot data; public demos use synthetic labeled examples.",
-    "Do not claim shot placement or feedback delivery without an authoritative source and live proof."
+    "Do not claim shot placement telemetry or feedback delivery without an authoritative source and live proof."
   ],
   "progress": {
     "completedVerified": [
-      "Current installed local app and public GitHub Pages field library identities were verified before planning.",
-      "Latest local map and phone page repair is committed at eb97370 and the journal backup remains available."
+      "Studio live-tested on installed Companion: screenshot attachment, 1280x720 thumbnail selection, synchronized shape control, and hunter-orange computed styles.",
+      "Public docs preview live-tested: fictional demo banner, career totals, per-weapon category stats, and no private identifier in rendered content.",
+      "Independent objector passed the bounded source/privacy review."
     ],
     "changedUnverified": [
-      "Thumbnail layout and public demo mock data are not implemented yet.",
-      "Shot placement telemetry and public feedback delivery need a source and service boundary; do not infer them from existing saves.",
-      "Public Pages currently shows the existing public build until a new main-line deployment is accepted."
+      "No durable public feedback endpoint or owner notification inbox is implemented; this remains the next gated service slice.",
+      "GitHub Pages still serves the prior main-line build until a main-line deployment is accepted."
     ],
     "proof": [
-      "branch fix/hunting-workflow-20260918 at eb973700c7fc4c716a32f89ee8fb85a538f7f51c",
-      "public URL https://infotradescout.github.io/cotw-field-companion/"
+      "npm test: 163 passed, 0 failed, 1 host-only symlink skip.",
+      "npm run build:web: 22 files, mode public_no_player_data, privateDataIncluded false.",
+      "Installed local API http://127.0.0.1:47831/api/state returned COTW Field Companion with retained harvest state after restart.",
+      "Browser tab 8 showed #studio with Hunting thumbnail, screenshot dropzone, and orange primary controls.",
+      "Public docs preview on http://127.0.0.1:47835/#career showed fictional sample banner and weapon stats."
     ],
     "externalEffects": [
-      "No product files or player data changed by this handoff checkpoint."
+      "Replaced the installed Companion runtime from a journal-backed-up private package; journal.sqlite was not replaced.",
+      "No public deployment, feedback submission, or player-data upload was performed."
     ],
     "doNotRepeat": [
-      "Do not restart the broad audit; start with the studio owner and the existing public entrypoint."
+      "Do not treat the existing public URL as proof of this branch deployment.",
+      "Do not infer shot placement direction or cause from current save records."
     ],
-    "nextSafeAction": "Implement the first bounded slice: repair the card studio and add the thumbnail creator using synthetic public demo data only; keep feedback transport as a separately gated backend slice."
+    "nextSafeAction": "Design and authorize the feedback service boundary: authenticated public feedback intake, abuse limits, durable owner notification storage, and a private companion inbox; then separately accept a main-line Pages deployment."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "eb973700c7fc4c716a32f89ee8fb85a538f7f51c",
+    "headBefore": "fbb5f7c41811a78b6107de31f084d29f29261ee8",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
+    "selectedStatusBefore": [
+      " M README.md",
+      " M ROADMAP.md",
+      " M docs/build.json",
+      " M docs/career.js",
+      " M docs/field-library.js",
+      " M docs/field-theme.css",
+      " M docs/index.html",
+      " M docs/map-atlas.js",
+      " M docs/map.js",
+      " M docs/public.js",
+      " M docs/reference.js",
+      " M docs/studio.js",
+      " M docs/style.css",
+      " M docs/terrain-layer.js",
+      " M public/career.js",
+      " M public/field-theme.css",
+      " M public/hunting-workspace.css",
+      " M public/public.js",
+      " M public/studio.js",
+      " M public/style.css"
+    ],
     "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [],
+  "savedFiles": [
+    {
+      "path": "README.md",
+      "sha256": "8d4bad7193da7bf77b4a9d4438c257ca4285d54eac0f9588ebdb567039e9b2af"
+    },
+    {
+      "path": "ROADMAP.md",
+      "sha256": "1925812ff3b5006866a9065ca01613d66fb38e6ceb5993f913674c7a3f3efd2a"
+    },
+    {
+      "path": "public/career.js",
+      "sha256": "2ec7e5ceff9cf6dcc65be5437295dc33dd9e389266db44c299d273ed0b57df01"
+    },
+    {
+      "path": "public/field-theme.css",
+      "sha256": "ee6e298097160955cb65a378620ed84fad23ebf6db209a050c82df634fd5b720"
+    },
+    {
+      "path": "public/hunting-workspace.css",
+      "sha256": "752e84d3750ebf9e76ad4b7e70139c74eb842c048653e165fa4b0aca9e7068c4"
+    },
+    {
+      "path": "public/public.js",
+      "sha256": "8ed0fe74db0bea84891af032c8d193d5a6d0263f6f81313ad8761163c206fb74"
+    },
+    {
+      "path": "public/studio.js",
+      "sha256": "ae4301a22e56df060d4cce9bdd48aafbe8a1c528c4c0841913b144c59afcf1f1"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "2044c5b600e0cafc17411ab89e31fca4714eb3157b847ecc83cd9562f9e0c9c4"
+    },
+    {
+      "path": "docs/build.json",
+      "sha256": "da05823b910875a5b5433fb57f4554a991aa86ffb2d7ecbb3a18700d0b38fcf8"
+    },
+    {
+      "path": "docs/career.js",
+      "sha256": "ff057ca8a55d7df73b0a63205d42a3a6875d7ff1b5fc5e5c5f59d4d8b568b26d"
+    },
+    {
+      "path": "docs/field-library.js",
+      "sha256": "eacb9fc74dd9e5017911256224f6e719e8718b4368a047aa7ed7368b4bc6a827"
+    },
+    {
+      "path": "docs/field-theme.css",
+      "sha256": "f44d66b728f06b6fe49de1e6996337095c6797eecd9630cb56c7da801499b68e"
+    },
+    {
+      "path": "docs/index.html",
+      "sha256": "fd2e7eeb744a56fe16a07ff4c12e824dac259aaf2e360f6e54804f02bfcd31b7"
+    },
+    {
+      "path": "docs/map-atlas.js",
+      "sha256": "59e3a758f61d94af91b23fe9e2c1bcd45eb94387b8c239ec1ba87b7ccffacf4e"
+    },
+    {
+      "path": "docs/map.js",
+      "sha256": "811703635909bd2fe36ec2129beee5b4cfb472fdf2bdca93566e92352ccc5779"
+    },
+    {
+      "path": "docs/public.js",
+      "sha256": "da0627193d7b351479b3446f0370fc682f51519c56cb96d64c74afb303eccc90"
+    },
+    {
+      "path": "docs/reference.js",
+      "sha256": "d43e19a68b16020d0e5a7c8b547039a6ae7dd45003399ebc8052cdc40d3ee996"
+    },
+    {
+      "path": "docs/studio.js",
+      "sha256": "2a2f24966d990848a31b1625faeb2575c28d33c2f3984270a6c5ccbd1014890b"
+    },
+    {
+      "path": "docs/style.css",
+      "sha256": "178222f33521260701b66d0668620f67b7dc55b945fbdf6fbee7ad3593e95a1a"
+    },
+    {
+      "path": "docs/terrain-layer.js",
+      "sha256": "c89e42b5fff0e606578f857433adf9e01dbd792128bf5d07b5ff1a78e4c62998"
+    }
+  ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }
