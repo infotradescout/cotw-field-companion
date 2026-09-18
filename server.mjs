@@ -7,7 +7,8 @@ import {Store} from './lib/store.mjs';
 import {Observer,inside} from './lib/observer.mjs';
 import {reserveId} from './lib/core.mjs';
 import {createPhoneAccess} from './lib/phone-access.mjs';
-export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,phoneRelayUrl=process.env.COMPANION_PHONE_RELAY_URL,phoneEnrollmentToken=process.env.COMPANION_PHONE_ENROLLMENT_TOKEN,allowInsecurePhoneLoopback=false,feedbackUrl=process.env.COMPANION_FEEDBACK_URL,feedbackOwnerToken=process.env.COMPANION_FEEDBACK_OWNER_TOKEN,feedbackOwnerOrigin=process.env.COMPANION_FEEDBACK_OWNER_ORIGIN}={}) {
+const DEFAULT_GITHUB_FEEDBACK_URL='https://api.github.com/repos/infotradescout/cotw-field-companion/issues?state=open&labels=feedback&per_page=20';
+export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,phoneRelayUrl=process.env.COMPANION_PHONE_RELAY_URL,phoneEnrollmentToken=process.env.COMPANION_PHONE_ENROLLMENT_TOKEN,allowInsecurePhoneLoopback=false,feedbackUrl=process.env.COMPANION_FEEDBACK_URL,feedbackOwnerToken=process.env.COMPANION_FEEDBACK_OWNER_TOKEN,feedbackOwnerOrigin=process.env.COMPANION_FEEDBACK_OWNER_ORIGIN,githubFeedbackUrl=process.env.COMPANION_FEEDBACK_GITHUB_URL||DEFAULT_GITHUB_FEEDBACK_URL}={}) {
   const appDir=path.dirname(fileURLToPath(import.meta.url));
   if(!dataDir)throw Error('Companion data directory is required');
   saveDir=saveDir?realpathSync(saveDir):null;dataDir=path.resolve(dataDir);
@@ -55,6 +56,20 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
       const text=await upstream.text();let value;try{value=JSON.parse(text);}catch{value={error:'Hosted feedback returned an invalid response.'};}
       return json(upstream.status,value);
     };
+    const githubFeedbackProxy=async()=>{
+      let upstream;
+      try{upstream=await fetch(githubFeedbackUrl,{headers:{Accept:'application/vnd.github+json','User-Agent':'COTW-Companion'},signal:AbortSignal.timeout(5000)});}
+      catch{return json(503,{error:'GitHub feedback is temporarily unavailable.'});}
+      if(!upstream.ok)return json(503,{error:'GitHub feedback is temporarily unavailable.'});
+      const payload=await upstream.json().catch(()=>null);
+      if(!Array.isArray(payload))return json(503,{error:'GitHub feedback returned an invalid response.'});
+      const feedback=payload.filter(issue=>issue&&typeof issue==='object'&&!issue.pull_request).slice(0,20).map(issue=>({
+        id:String(issue.number??''),title:String(issue.title??'Feedback').slice(0,200),message:String(issue.body??'').slice(0,4000),
+        url:(typeof issue.html_url==='string'&&/^https:\/\/github\.com\/infotradescout\/cotw-field-companion\/issues\/\d+$/.test(issue.html_url))?issue.html_url:'',createdAt:issue.created_at??null,updatedAt:issue.updated_at??null,
+        author:typeof issue.user?.login==='string'?issue.user.login:''
+      }));
+      return json(200,{source:'github',feedback});
+    };
     if(!goodHosts.includes(req.headers.host)||!sameOrigin||!allowedSite)return json(403,{error:'Only same-origin local access is accepted'});
     try {
       const url=new URL(req.url,'http://127.0.0.1');
@@ -66,6 +81,10 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
       if(req.method==='GET'&&url.pathname==='/api/feedback/inbox'){
         if(!localTokenOk())return json(403,{error:'Missing local session token'});
         return feedbackProxy('/v1/owner/feedback?status=new&limit=20');
+      }
+      if(req.method==='GET'&&url.pathname==='/api/feedback/github'){
+        if(!localTokenOk())return json(403,{error:'Missing local session token'});
+        return githubFeedbackProxy();
       }
       const feedbackRead=url.pathname.match(/^\/api\/feedback\/([0-9a-f-]{36})\/read$/i);
       if(req.method==='POST'&&feedbackRead){

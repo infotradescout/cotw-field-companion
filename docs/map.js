@@ -1,6 +1,6 @@
-import {isGreatOneSpecies} from './species-style.js?v=bb924205995e1365';
-import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=bb924205995e1365';
-import {TerrainLayer} from './terrain-layer.js?v=bb924205995e1365';
+import {isGreatOneSpecies} from './species-style.js?v=515340782ab024ae';
+import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=515340782ab024ae';
+import {TerrainLayer} from './terrain-layer.js?v=515340782ab024ae';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};

@@ -39,7 +39,7 @@ PORT=<provider port>
 
 When the owner inbox is a different browser origin, set `FEEDBACK_OWNER_ORIGIN` and use the authenticated owner CORS preflight. The service allows only that exact origin and the `Authorization` header. If it is not set, owner reads are intended for a same-origin or server-side caller. In the Companion, configure `COMPANION_FEEDBACK_URL`, `COMPANION_FEEDBACK_OWNER_TOKEN`, and (when the service has an owner-origin allowlist) `COMPANION_FEEDBACK_OWNER_ORIGIN`; the local server keeps the bearer token out of browser code and proxies only the owner's inbox. Do not place those values in the public build or phone relay.
 
-`FEEDBACK_PUBLIC_ORIGIN` is an origin, not the `/cotw-field-companion/` path. The public build accepts an optional `COTW_FEEDBACK_ENDPOINT` build variable, also as an origin. The current public site must be rebuilt with the eventual service URL before the form can submit. Until that URL and owner authentication are configured, the public Pages build links to GitHub Issues rather than pretending delivery is active.
+`FEEDBACK_PUBLIC_ORIGIN` is an origin, not the `/cotw-field-companion/` path. The public build accepts an optional `COTW_FEEDBACK_ENDPOINT` build variable, also as an origin. Until that URL and owner authentication are configured, the public Pages build links to the repository's public Field note issue form. The local Companion reads those bounded `feedback` issues through the GitHub API as a read-only fallback; “Mark seen” is local to that browser and does not close or mutate an issue.
 
 ## Proof and remaining release gate
 
