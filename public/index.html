@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/field-theme.css">
   <link rel="stylesheet" href="/maps.css">
   <link rel="stylesheet" href="/hunting-workspace.css">
+  <link rel="stylesheet" href="/phone.css">
 </head>
 <body class="hunting-app">
   <a class="skip-link" href="#content">Skip to content</a>
@@ -21,14 +22,14 @@
     <nav class="desktop-navigation" aria-label="Companion navigation">
       <div class="primary-navigation">
         <button data-view="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg>Hunt map</button>
-        <button data-view="harvests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 9h8m-8 4h6"/></svg>Harvest log</button>
-        <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg>Career</button>
-        <button data-view="studio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-5 3h10m-8-3h6v3"/></svg>Trophy studio</button>
+        <button data-view="harvests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 9h8m-8 4h6"/></svg>Harvests</button>
+        <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg>Stats</button>
+        <button data-view="studio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-5 3h10m-8-3h6v3"/></svg>Trophy cards</button>
       </div>
       <details class="nav-group">
-        <summary>Library</summary>
+        <summary>Game guide</summary>
         <div class="nav-group-items">
-          <button data-view="maps">Reserve atlas</button>
+          <button data-view="maps">All maps</button>
           <button data-view="reference">Animals</button>
           <button data-view="rares">Rare furs</button>
           <button data-view="gear">Weapons &amp; ammo</button>
@@ -37,7 +38,7 @@
       <details class="nav-group">
         <summary>More tools</summary>
         <div class="nav-group-items">
-          <button data-view="herds">Herds &amp; routes</button>
+          <button data-view="herds">Herds &amp; route</button>
           <button data-view="insights">Population insights <small>Experimental</small></button>
           <button data-view="recovery">Field notes</button>
           <button data-view="faq">Help</button>
@@ -45,47 +46,37 @@
         </div>
       </details>
     </nav>
-    <div class="sidebar-foot"><span class="lock-dot"></span> Automatic observation<p>Unofficial companion<br>Reads saves only</p></div>
+    <div class="sidebar-foot"><span class="lock-dot"></span> Tracks your game saves<p>Unofficial companion<br>Reads saves only</p></div>
   </aside>
   <div class="main-shell">
     <header class="topbar">
-      <div class="reserve-picker"><label for="reserve">Reserve</label><select id="reserve" aria-label="Reserve"></select></div>
+      <div class="reserve-picker"><label for="reserve">Map</label><select id="reserve" aria-label="Map"></select></div>
       <div class="top-right">
         <span id="connection" class="pill" role="status">Connecting…</span>
         <button id="rescan" class="button subtle refresh-button" aria-label="Refresh saves" title="Refresh saves"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m-4.8-2A8 8 0 0 1 18 6l2 2M4 16l2 2a8 8 0 0 0 13.8-4"/></svg><span>Refresh</span></button>
       </div>
     </header>
     <main id="content" tabindex="-1"><div class="loading">Connecting automatic tracking…</div></main>
-    <footer class="page-foot">Automatic observation from your game saves. Manual field notes are optional.</footer>
+    <footer class="page-foot">Your companion updates when your game saves.</footer>
   </div>
   <nav class="mobile-nav" aria-label="Phone navigation">
     <button data-view="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg><span>Hunt</span></button>
     <button data-view="harvests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 3h8v4H8V3Zm0 9h8m-8 4h6"/></svg><span>Harvests</span></button>
-    <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg><span>Career</span></button>
+    <button data-view="career"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-6h4v6m2 0V9h4v11m2 0V4h4v16M3 20h18"/></svg><span>Stats</span></button>
     <details id="mobileNavigation" class="mobile-more">
       <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></summary>
       <div class="mobile-menu">
         <div class="mobile-menu-heading"><h2>More tools</h2><span>Tap More to close</span></div>
-        <button data-view="studio">Trophy studio</button>
-        <details class="nav-group" open>
-          <summary>Library</summary>
-          <div class="nav-group-items">
-            <button data-view="maps">Reserve atlas</button>
-            <button data-view="reference">Animals</button>
-            <button data-view="rares">Rare furs</button>
-            <button data-view="gear">Weapons &amp; ammo</button>
-          </div>
-        </details>
-        <details class="nav-group">
-          <summary>More tools</summary>
-          <div class="nav-group-items">
-            <button data-view="herds">Herds &amp; routes</button>
-            <button data-view="insights">Population insights <small>Experimental</small></button>
-            <button data-view="recovery">Field notes</button>
-            <button data-view="faq">Help</button>
-            <button data-view="settings">Settings</button>
-          </div>
-        </details>
+        <button data-view="studio">Trophy cards</button>
+        <button data-view="settings">Settings</button>
+        <section aria-label="Game guide"><h3>Game guide</h3>
+          <button data-view="maps">All maps</button><button data-view="reference">Animals</button>
+          <button data-view="rares">Rare furs</button><button data-view="gear">Weapons &amp; ammo</button>
+        </section>
+        <section aria-label="More tools"><h3>More tools</h3>
+          <button data-view="herds">Herds &amp; route</button><button data-view="recovery">Field notes</button>
+          <button data-view="insights">Population insights</button><button data-view="faq">Help</button>
+        </section>
       </div>
     </details>
   </nav>
