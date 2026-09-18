@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 export const portableFiles = Object.freeze([
   'package.json', 'START.cmd', 'launcher.mjs', 'server.mjs', 'README.md',
   'licenses/APC-MIT.txt', 'licenses/qrcode-generator-MIT.txt',
-  ...['career.mjs','core.mjs','decoder.mjs','gear-data.json','maps-data.json','observer.mjs','phone-access.mjs','phone-bridge.mjs','phone-service.json','rating-data.json','reference.json','stat-definitions.json','store.mjs'].map(name => `lib/${name}`),
+  ...['career.mjs','core.mjs','decoder.mjs','gear-data.json','hunting-pressure.mjs','maps-data.json','observer.mjs','phone-access.mjs','phone-bridge.mjs','phone-service.json','rating-data.json','reference.json','stat-definitions.json','store.mjs'].map(name => `lib/${name}`),
   ...['app.js','commands.js','phone-ui.js','phone.css','qrcode.js','species-style.js','career.js','data-client.js','field-library.js','field-theme.css','hunting-workspace.css','icon.svg','index.html','map-atlas.js','map-geometry.js','map.js','maps.css','public.html','public.js','reference-core.js','reference.js','studio.js','style.css','terrain-layer.js'].map(name => `public/${name}`),
 ]);
 const sourceRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
