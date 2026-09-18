@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FieldMap} from '../public/map.js';
+import {createHash} from 'node:crypto';
+import {FieldMap,HuntingPressureLayer} from '../public/map.js';
 
 const screens = [
   {name: '390px portrait', width: 390, height: 844},
@@ -168,3 +169,102 @@ for (const screen of screens) {
     }
   });
 }
+
+function pressurePacket(values=new Uint8Array(65536),overrides={}) {
+  return {status:'available',reserve:19,width:256,height:256,values,
+    bounds:[[250,-300],[850,900]],sourceHash:createHash('sha256').update(values).digest('hex'),
+    savedAt:'2026-09-18T12:00:00Z',stale:false,...overrides};
+}
+function pressureHarness() {
+  const attributes=new Map(),images=[];
+  let canvases=0;
+  const node={setAttribute:(name,value)=>attributes.set(name,String(value)),
+    getAttribute:name=>attributes.get(name),removeAttribute:name=>attributes.delete(name),remove(){}};
+  const layer=new HuntingPressureLayer(node,()=>{
+    canvases++;
+    return {getContext:()=>({
+      createImageData:(width,height)=>({data:new Uint8ClampedArray(width*height*4)}),
+      putImageData:image=>images.push(image.data),
+    }),toDataURL:()=>`data:image/png;base64,synthetic-${canvases}`};
+  });
+  return {layer,attributes,images,canvasCount:()=>canvases};
+}
+
+test('saved pressure raster keeps each corner and cell in its original X/Z position',()=>{
+  const h=pressureHarness(),values=new Uint8Array(65536);
+  values[0]=32;values[255]=96;values[255*256]=160;values[65535]=255;values[7*256+3]=200;
+  const result=h.layer.update(pressurePacket(values));
+  assert.equal(result.status,'available');assert.equal(result.hasPressure,true);
+  assert.equal(h.attributes.get('x'),'250');assert.equal(h.attributes.get('y'),'-300');
+  assert.equal(h.attributes.get('width'),'600');assert.equal(h.attributes.get('height'),'1200');
+  assert.equal(h.attributes.get('preserveAspectRatio'),'none');
+  assert.equal(h.attributes.has('transform'),false,'no axis flip or transpose');
+  const pixels=h.images[0],alpha=index=>pixels[index*4+3];
+  assert.ok(alpha(0)>0&&alpha(0)<alpha(255)&&alpha(255)<alpha(255*256)&&alpha(255*256)<alpha(65535),'saved intensities stay in their four distinct corners');
+  assert.ok(alpha(7*256+3)>0,'the saved row/column cell is visible');
+  assert.equal(alpha(3*256+7),0,'rows and columns are not swapped');
+  assert.equal(alpha(7*256+2),0,'no guessed radius spreads pressure into another cell');
+  assert.ok(pixels[0]>pixels[1]&&pixels[2]>pixels[1],'pressure uses purple/magenta');
+  assert.equal(h.attributes.get('pointer-events'),'none','pressure cannot block marker taps');
+});
+
+test('an all-zero pressure save is valid and draws no invented pressure',()=>{
+  const h=pressureHarness(),state=h.layer.update(pressurePacket());
+  assert.equal(state.status,'available');assert.equal(state.hasPressure,false);
+  assert.equal(h.attributes.get('visibility'),'hidden');assert.equal(h.attributes.has('href'),false);
+  assert.equal(h.canvasCount(),0,'an empty grid needs no raster image');
+});
+
+test('unchanged pressure across polling, filtering, and toggles reuses one raster',()=>{
+  const h=pressureHarness(),values=new Uint8Array(65536);values[1234]=220;
+  const packet=pressurePacket(values);h.layer.update(packet);
+  const originalImage=h.attributes.get('href');
+  const later={...packet,values:Array.from(values),savedAt:'2026-09-18T12:05:00Z',stale:true};
+  h.layer.update(later,false);
+  assert.equal(h.attributes.get('visibility'),'hidden');
+  const state=h.layer.update({...later},true);
+  assert.equal(state.stale,true);assert.equal(state.savedAt,later.savedAt);
+  assert.equal(h.attributes.get('visibility'),'visible');assert.equal(h.attributes.get('href'),originalImage);
+  assert.equal(h.canvasCount(),1);assert.equal(h.images.length,1);
+});
+
+test('missing or invalid pressure clears the previous overlay rather than reusing it',()=>{
+  const positive=pressurePacket(new Uint8Array(65536).fill(80));
+  const invalidValues=new Uint8Array(65536).fill(40);
+  const badBytes=Array.from(invalidValues);badBytes[50]=256;
+  const invalid=[null,{status:'unavailable',reserve:19},{...positive,values:[]},
+    {...positive,width:128},{...positive,bounds:[[0,0],[0,100]]},
+    {...pressurePacket(invalidValues),values:badBytes}];
+  for(const packet of invalid){
+    const h=pressureHarness();h.layer.update(positive);
+    assert.equal(h.layer.update(packet).status,'unavailable');
+    assert.equal(h.attributes.get('visibility'),'hidden');assert.equal(h.attributes.has('href'),false);
+  }
+});
+
+test('pressure raster memory is bounded as newer saves arrive',()=>{
+  const h=pressureHarness();
+  for(let i=1;i<=12;i++)h.layer.update(pressurePacket(new Uint8Array(65536).fill(i)));
+  assert.ok(h.layer.cache.size<=2,'only a bounded number of recent rasters remains');
+  h.layer.destroy();assert.equal(h.layer.cache.size,0);assert.equal(h.attributes.has('href'),false);
+});
+
+test('a pressure map from another reserve is never attached to the current hunt',()=>{
+  const map=Object.assign(Object.create(FieldMap.prototype),{reserve:19,draw(){},home(){}});
+  map.update({reserve:{id:19},huntingPressure:pressurePacket(undefined,{reserve:18})});
+  assert.equal(map.data.huntingPressure,null);
+  const own=pressurePacket();map.update({reserve:{id:19},huntingPressure:own});
+  assert.equal(map.data.huntingPressure,own);
+});
+
+test('the pressure image sits above terrain and below interactive markers',t=>{
+  const previous=globalThis.document;
+  const node=()=>({children:[],setAttribute(){},append(...children){this.children.push(...children);},
+    replaceChildren(...children){this.children=children;},addEventListener(){},style:{}});
+  globalThis.document={createElementNS:()=>node()};
+  t.after(()=>{if(previous===undefined)delete globalThis.document;else globalThis.document=previous;});
+  const svg=node(),map=new FieldMap(svg);
+  assert.ok(svg.children.indexOf(map.terrain.node)<svg.children.indexOf(map.pressure.node));
+  assert.ok(svg.children.indexOf(map.pressure.node)<svg.children.indexOf(map.overlay));
+  map.abort.abort();
+});

@@ -330,3 +330,12 @@ body.hunting-app {
   .hunting-app .harvest-summary strong{font-size:25px}
   .hunting-app .harvest-search{margin:12px 0 16px}
 }
+
+/* Saved pressure cells remain beneath interactive map markers. */
+.hunting-app .hunting-pressure-layer{pointer-events:none;image-rendering:pixelated}
+.hunting-app .map-layer-controls label[for="layerPressure"]{min-height:44px}
+.hunting-app .map-layer-controls .pressure-state{flex:1 1 100%;margin:0 0 3px;color:var(--muted);font-size:12px;line-height:1.5}
+.hunting-app .pressure-key{display:inline-flex;align-items:center;gap:6px}
+.hunting-app .pressure-key[hidden]{display:none}
+.hunting-app .pressure-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;background:#d13ade;border:1px solid #f0adf5}
+.hunting-app .pressure-key.unavailable,.hunting-app .pressure-key.empty{color:var(--muted)}
