@@ -34,7 +34,7 @@ const needTypes=['drinking','feeding','resting'];
 const phoneUI=new PhoneAccessUI((url,body)=>postJSON(url,body));
 let isPhone=false,connectionReady=false;
 let state=null,token=null,reserve=19,view='map',signature='',map=null,selectedZone=null,selectedPoint=null,dialogHandler=null,submitting=false,loading=false;
-let feedbackInbox={status:'unavailable',items:[],unreadCount:0,error:null},feedbackLoading=false,feedbackAttempted=false;
+let feedbackInbox={status:'unavailable',source:null,items:[],unreadCount:0,error:null},feedbackLoading=false,feedbackAttempted=false;
 const filters={species:'all',need:'all',strategy:'all',time:'all',search:'',sort:'route'};
 const harvestFilters={query:'',range:'all',limit:50};
 let requestGeneration=0,pendingRefresh=false,workspacePanel='map',pressureEnabled=true;
@@ -62,22 +62,30 @@ $('#closeDialog').onclick=closeDialog;$('#cancelDialog').onclick=closeDialog;
 $('#modalForm').addEventListener('submit',async e=>{e.preventDefault();if(submitting)return;submitting=true;$('#submitDialog').disabled=true;$('#formError').textContent='';try{const values=Object.fromEntries(new FormData(e.target));await dialogHandler(values);$('#modal').close();await refresh(true);toast('Saved.');}catch(err){$('#formError').textContent=err.message;}finally{submitting=false;$('#submitDialog').disabled=false;}});
 function intro(kicker,title,description,actions=''){return `<div class="intro"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${description}</p></div><div class="intro-actions">${actions}</div></div>`;}
 function empty(title,description,action=''){return `<div class="empty"><h3>${title}</h3><p>${description}</p>${action}</div>`;}
+function feedbackSeen(){try{const value=JSON.parse(localStorage.getItem('cotw-feedback-seen-v1')||'{}');return value&&typeof value==='object'?value:{};}catch{return {};}}
+function githubFeedbackUnread(items){const seen=feedbackSeen();return items.filter(item=>seen[item.id]!==item.updatedAt).length;}
+function markGithubFeedbackSeen(id,updatedAt){const seen=feedbackSeen();seen[id]=updatedAt||new Date().toISOString();try{localStorage.setItem('cotw-feedback-seen-v1',JSON.stringify(seen));}catch{}feedbackInbox={...feedbackInbox,unreadCount:githubFeedbackUnread(feedbackInbox.items)};render();toast('Feedback marked seen.');}
 function feedbackInboxMarkup(){
  if(feedbackInbox.status==='loading')return '<section class="panel feedback-inbox"><div class="eyebrow">OWNER INBOX</div><h2>Feedback</h2><p class="muted">Checking for new field notes…</p></section>';
- if(feedbackInbox.status==='unavailable')return '<section class="panel feedback-inbox"><div class="eyebrow">OWNER INBOX</div><h2>Feedback</h2><p class="muted">The hosted feedback service is not connected yet. When it is configured, new public notes will appear here.</p></section>';
+ if(feedbackInbox.status==='unavailable')return '<section class="panel feedback-inbox"><div class="eyebrow">OWNER INBOX</div><h2>Feedback</h2><p class="muted">The feedback inbox is temporarily unavailable. Try again shortly.</p><button class="button subtle" data-action="feedback-reload">Try again</button></section>';
  if(feedbackInbox.status==='error')return `<section class="panel feedback-inbox"><div class="eyebrow">OWNER INBOX</div><h2>Feedback</h2><div class="callout warning"><strong>Inbox unavailable.</strong><p>${esc(feedbackInbox.error||'Try again shortly.')}</p></div><button class="button subtle" data-action="feedback-reload">Try again</button></section>`;
  const rows=feedbackInbox.items||[];
+ if(feedbackInbox.source==='github')return `<section class="panel feedback-inbox"><div class="panel-head"><div><div class="eyebrow">OWNER INBOX</div><h2>GitHub Issues</h2><p class="small muted">Public notes from the existing project issue service. “Seen” is stored only in this browser.</p></div><span class="pill ${feedbackInbox.unreadCount?'warn':'good'}">${feedbackInbox.unreadCount||0} new</span></div><p class="tiny muted"><a href="https://github.com/infotradescout/cotw-field-companion/issues" target="_blank" rel="noopener noreferrer">Open all feedback issues ↗</a></p>${rows.length?`<div class="feedback-inbox-list">${rows.map(item=>`<article class="feedback-inbox-item"><div class="feedback-inbox-item-head"><span class="tag">PUBLIC NOTE</span><time class="tiny muted">${date(item.updatedAt||item.createdAt)}</time></div><h3><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></h3><p>${esc(item.message||'No message body.')}</p><div class="tiny muted">${item.author?`From ${esc(item.author)} · `:''}Issue #${esc(item.id)}</div><div class="feedback-inbox-actions"><a class="button small subtle" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">Open issue</a><button class="button small subtle" data-action="feedback-seen" data-id="${esc(item.id)}" data-updated="${esc(item.updatedAt||item.createdAt||'')}">Mark seen</button></div></article>`).join('')}</div>`:empty('No open feedback issues','New public notes will appear here when hunters use GitHub Issues.')}</section>`;
  return `<section class="panel feedback-inbox"><div class="panel-head"><div><div class="eyebrow">OWNER INBOX</div><h2>Feedback</h2><p class="small muted">Messages from the public companion.</p></div><span class="pill ${feedbackInbox.unreadCount?'warn':'good'}">${feedbackInbox.unreadCount||0} new</span></div>${rows.length?`<div class="feedback-inbox-list">${rows.map(item=>`<article class="feedback-inbox-item"><div class="feedback-inbox-item-head"><span class="tag">${esc(item.category)}</span><time class="tiny muted">${date(item.createdAt)}</time></div><p>${esc(item.message)}</p><div class="tiny muted">${item.page?`Page: ${esc(item.page)} · `:''}${item.replyTo?`Reply: ${esc(item.replyTo)}`:'No reply address'}</div><button class="button small subtle" data-action="feedback-read" data-id="${esc(item.id)}">Mark read</button></article>`).join('')}</div>`:empty('No new notes','Public feedback will show up here when someone sends it.')}</section>`;
 }
 function feedback(){return intro('OWNER INBOX','Feedback','Read notes from public hunters and clear notifications when you have handled them.')+feedbackInboxMarkup();}
 async function loadFeedbackInbox(){
  if(feedbackLoading)return;feedbackAttempted=true;feedbackLoading=true;feedbackInbox={...feedbackInbox,status:'loading',error:null};if(view==='feedback')render();
- try{const result=await get('/api/feedback/inbox');feedbackInbox={status:'ready',items:Array.isArray(result.feedback)?result.feedback:[],unreadCount:Number(result.unreadCount)||0,error:null};}
- catch(error){feedbackInbox={status:error.status===503?'unavailable':'error',items:[],unreadCount:0,error:error.message};}
+ try{const result=await get('/api/feedback/inbox');feedbackInbox={status:'ready',source:'hosted',items:Array.isArray(result.feedback)?result.feedback:[],unreadCount:Number(result.unreadCount)||0,error:null};}
+ catch(error){
+  if(error.status===503){try{const result=await get('/api/feedback/github');const items=Array.isArray(result.feedback)?result.feedback:[];feedbackInbox={status:'github',source:'github',items,unreadCount:githubFeedbackUnread(items),error:null};}catch(githubError){feedbackInbox={status:githubError.status===503?'unavailable':'error',source:null,items:[],unreadCount:0,error:githubError.message};}}
+  else feedbackInbox={status:'error',source:null,items:[],unreadCount:0,error:error.message};
+ }
  finally{feedbackLoading=false;if(view==='feedback')render();}
 }
 async function markFeedbackRead(id){
  if(!id)return;
+ if(feedbackInbox.source==='github'){const item=feedbackInbox.items.find(item=>item.id===id);return markGithubFeedbackSeen(id,item?.updatedAt||item?.createdAt);}
  try{await postJSON(`/api/feedback/${encodeURIComponent(id)}/read`,{});await loadFeedbackInbox();toast('Feedback marked read.');}
  catch(error){toast(error.message,true);}
 }
@@ -211,6 +219,7 @@ async function act(action,target){
  if(action==='phone-pair')return phoneUI.pair();
  if(action==='phone-disable')return openDialog('Turn off phone access','<p>Your paired phones will stop connecting. Your saved hunts and notes stay on this PC.</p>',()=>phoneUI.disable(),'Turn off');
  if(action==='feedback-read')return markFeedbackRead(target.dataset.id);
+ if(action==='feedback-seen')return markGithubFeedbackSeen(target.dataset.id,target.dataset.updated);
  if(action==='feedback-reload'){feedbackAttempted=false;return loadFeedbackInbox();}
  if(action==='animal-reference'){await referencePanel.load();referencePanel.openSpecies(target.dataset.species,reserve);switchView('reference');return;}
  if(action.startsWith('view-'))return switchView(action.slice(5));
