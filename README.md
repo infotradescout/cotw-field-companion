@@ -1,6 +1,6 @@
-# COTW Companion
+# GrindZone
 
-An independent companion for **theHunter: Call of the Wild**. Free public reference tools, a local read-only career/harvest observer, and a private-in-browser share studio.
+**GrindZone** is an independent companion for **theHunter: Call of the Wild**. Free public reference tools, a local read-only career/harvest observer, and a private-in-browser share studio.
 
 ## Try the public field library
 

@@ -1,62 +1,34 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260918T2148Z-a6323c5",
-  "createdAt": "2026-09-18T21:46:00.8346656Z",
-  "outcome": "Implemented and locally proved the COTW Companion public feedback form plus a private owner inbox boundary, refreshed the installed Windows package from the pushed branch, and verified the real local browser view. No hosted public feedback origin or Pages deployment is claimed.",
-  "scope": [
-    "public companion feedback intake",
-    "private owner notification inbox",
-    "local package refresh and browser proof",
-    "hosting inventory and product boundary"
-  ],
-  "prohibitions": [
-    "No public feedback delivery claim before a COTW-owned host, durable storage, owner auth, and a synthetic live journey are accepted.",
-    "Do not deploy COTW data into the separate Skill Gaming World service or any unrelated product service."
-  ],
+  "checkpointId": "progress-20260919-private-phone-cache-candidate",
+  "createdAt": "2026-09-19T18:35:23.939189+00:00",
+  "outcome": "Prove COTW end to end while preserving player-owned sources; implement the missing private phone-cache transition before widening game or community scope.",
+  "scope": ["COTW only", "Opt-in private browser cache", "Authenticated pairing and reserve isolation", "Read-only disconnected viewing", "Preserve current installed and public builds"],
+  "prohibitions": ["Never modify player game saves.", "Never treat a disposable cache as the owner or backup of the PC journal.", "No source resets or overwriting newer local work.", "No raw saves or private player data in public builds.", "No browser-policy or release-gate bypass.", "Do not describe a staged candidate as installed, deployed, or publicly accepted."],
+  "previousCheckpoint": {"ref": "9f4ea75537ed094904fae0aab273e3187dde6804", "path": ".selective-intelligence/progress/latest.json", "note": "Preserved in Git history. Its older runtime/host observations must not be treated as current device status."},
   "progress": {
     "completedVerified": [
-      "Public build contains a bounded feedback form with an explicit endpoint seam and honest GitHub Issues fallback.",
-      "Local Companion owner inbox proxies only authenticated owner reads and mark-as-read calls; its token stays server-side.",
-      "Phone relay tests prove paired players never receive the project owner inbox.",
-      "npm test: 167 passed, 0 failed, 1 host-only symlink skip.",
-      "npm test --prefix cloud: 28 passed, 0 failed.",
-      "npm run build:web: 23 public files, privateDataIncluded false.",
-      "Portable staging produced 48 reviewed files and copied matching server.mjs and public/app.js hashes into the installed package.",
-      "Installed Windows Companion restarted from the reviewed package and the Feedback view was checked in the real browser."
+      "Read PR5 at source head 9f4ea75537ed094904fae0aab273e3187dde6804 and the relevant relay, projection and browser files. Existing relay has no offline retained history or self-service account system.",
+      "Verified original app.js, phone-ui.js and cloud/server.mjs bytes against their exact Git blob IDs before bounded sandbox edits.",
+      "Implemented an opt-in cache candidate in the isolated working environment. The candidate adds authenticated-pairing scope binding, per-reserve browser snapshots, stale timestamps, blocked offline mutations, clear-and-stop, and owner-switch guards.",
+      "24 focused Node checks passed with zero failures/skips. Scope: isolated request/readiness functions, relay identity expressions and cache policy with a storage fake.",
+      "Exact-base git apply --check passed; all six applied files were byte-identical to the tested candidate. The same 24 checks passed after applying the patch to the isolated source fixture.",
+      "Saved a candidate archive and proof receipts in the conversation working environment. Committed the durable candidate manifest to the existing task branch at 2726c6deadff872650d088003f428954cee99d7a. The archive itself is attached to the conversation, not stored as runtime source in GitHub."
     ],
     "changedUnverified": [
-      "The public Pages site has not accepted this branch; it still serves the prior main-line state.",
-      "The feedback origin is not deployed, so public submissions and owner notifications are not live-proven.",
-      "The Render workspace has 109 services but no COTW-owned service or COTW database. Its only gaming-named service is skill-gaming-world, a separate Next/Postgres product.",
-      "The GitHub Actions Quality check for this commit failed before any steps were reported; local gates pass, but CI acceptance remains open."
+      "Candidate patch is NOT applied to repository runtime files, installed app, or public deployment.",
+      "Real IndexedDB/browser validation is open: Chromium navigation returned ERR_BLOCKED_BY_ADMINISTRATOR. No browser policy was changed.",
+      "Workstation handoff and installed-app verification are open: direct Remote Desktop Commander reads returned No devices available. Physical PC power/network state is not inferred.",
+      "Existing full native/cloud/portable release checks, physical phone/cellular acceptance, later phone-dock/branding acceptance and current public build regeneration remain unproved by this turn.",
+      "Email accounts, cross-device cloud cache, permissioned public profiles, friends/follows and viewer-isolation acceptance are not implemented by this cache candidate. Console source access and the second game remain out of this execution slice."
     ],
-    "proof": [
-      "Local source identity: a6323c5273e7f93a67086ca7f184684de4b166af on fix/hunting-workflow-20260918.",
-      "Existing PR #2 updated to include the current scope and hosting boundary.",
-      "Render service and Postgres inventory was read-only; no provider mutation occurred.",
-      "Local installed browser screenshot and accessibility tree show the owner inbox honest-unavailable state without a loading loop."
-    ],
-    "externalEffects": [
-      "Pushed a6323c5 to origin/fix/hunting-workflow-20260918.",
-      "Updated existing GitHub PR #2 title and body.",
-      "Refreshed and restarted the local installed Companion only.",
-      "No Render service, database, Pages deployment, public endpoint, player data, or account data was changed."
-    ],
-    "nextSafeAction": "Select a COTW-owned host, durable storage, owner authentication, and provider-verified client identity. Then configure the feedback origin, run a synthetic public-submit to private-inbox journey, and separately accept the main-line Pages deployment after CI is understood."
+    "proof": [".selective-intelligence/progress/phone-cache-candidate-20260919.md", "Conversation artifact GrindZone-phone-cache-candidate.zip contains patch, original/target identities and scoped test receipts."],
+    "externalEffects": ["Only project continuation metadata was written to the task branch. No runtime source or protected branch was changed by the GitHub writes in this turn.", "No installed app, player journal, player configuration, game save or Render service changed. No new cloud resources or spending were provisioned."],
+    "doNotRepeat": ["Do not restart repository-wide discovery.", "Do not call the user's PC offline based on connector reachability.", "Do not replay historical player configuration changes.", "Do not invent a successful browser run or infer product acceptance from the 24 isolated tests.", "Do not reconstruct code from the manifest prose; recover the exact candidate artifact and verify hashes."],
+    "nextSafeAction": "Recover the actual workstation handoff and reconcile newer local source. Retrieve GrindZone-phone-cache-candidate.zip from this conversation/working environment, verify archive and patch hashes from the manifest and original Git blobs, then git apply --check before applying. Run real IndexedDB/browser acceptance, the existing native/cloud/portable gate and installed phone proof. Resume accounts/publication permissions only after the source-to-phone transition is accepted."
   },
-  "repository": {
-    "root": ".",
-    "rootKind": "repository_relative",
-    "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "d00e962262cc9558013277b301e29c7f6827d391",
-    "checkpointCommit": "d00e962262cc9558013277b301e29c7f6827d391",
-    "pushRequested": true,
-    "pushRemote": "origin",
-    "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
-  },
-  "savedFiles": [],
-  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, player data, screenshots, and secrets are excluded"
+  "repository": {"root": ".", "rootKind": "repository_relative", "branch": "fix/hunting-workflow-20260918", "headBefore": "9f4ea75537ed094904fae0aab273e3187dde6804", "checkpointCommit": "containing_commit", "pushRequested": true, "pushRemote": "origin", "protectedBranchAuthorized": false},
+  "savedFiles": [".selective-intelligence/progress/phone-cache-candidate-20260919.md", ".selective-intelligence/progress/latest.json"],
+  "candidate": {"artifact": "GrindZone-phone-cache-candidate.zip", "archiveSha256": "3047f6879894b5d6e4610af5343da5c150da90942c65271c3131b9dbdf6f788a", "patchSha256": "8624988eb6596eefdb596561bc146af705c2609f1387f5ff9ce38f4b8b2cefc2", "baseCommit": "9f4ea75537ed094904fae0aab273e3187dde6804", "runtimeApplied": false},
+  "privacyBoundary": "Synthetic fixtures and bounded source identities only. Player saves, account identifiers, screenshots, secrets and private workstation paths are excluded."
 }
-
