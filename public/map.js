@@ -101,6 +101,15 @@ export class FieldMap{
      }
      if(spot)break;
     }
+    if(!spot){
+     let nearest=Infinity;
+     for(let x=b[0]+13*scale;x<=b[0]+b[2]-13*scale;x+=26*scale){
+      for(let z=b[1]+13*scale;z<=b[1]+b[3]-13*scale;z+=26*scale){
+       const distance=Math.hypot(x-marker.x,z-marker.z);
+       if(distance<nearest&&clear(x,z)){spot={x,z};nearest=distance;}
+      }
+     }
+    }
     if(spot)Object.assign(marker,spot);
    }
    placed.push(marker);

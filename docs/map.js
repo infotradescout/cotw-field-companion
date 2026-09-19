@@ -1,7 +1,7 @@
-import {isGreatOneSpecies} from './species-style.js?v=f49c1d63095827c4';
-import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=f49c1d63095827c4';
-import {TerrainLayer} from './terrain-layer.js?v=f49c1d63095827c4';
-import {routePlan,formatZoneHours} from './route-stops.js?v=f49c1d63095827c4';
+import {isGreatOneSpecies} from './species-style.js?v=4c2540e048ecd51b';
+import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=4c2540e048ecd51b';
+import {TerrainLayer} from './terrain-layer.js?v=4c2540e048ecd51b';
+import {routePlan,formatZoneHours} from './route-stops.js?v=4c2540e048ecd51b';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};
@@ -100,6 +100,15 @@ export class FieldMap{
       if(x>=b[0]+12*scale&&x<=b[0]+b[2]-12*scale&&z>=b[1]+12*scale&&z<=b[1]+b[3]-12*scale&&clear(x,z)){spot={x,z};break;}
      }
      if(spot)break;
+    }
+    if(!spot){
+     let nearest=Infinity;
+     for(let x=b[0]+13*scale;x<=b[0]+b[2]-13*scale;x+=26*scale){
+      for(let z=b[1]+13*scale;z<=b[1]+b[3]-13*scale;z+=26*scale){
+       const distance=Math.hypot(x-marker.x,z-marker.z);
+       if(distance<nearest&&clear(x,z)){spot={x,z};nearest=distance;}
+      }
+     }
     }
     if(spot)Object.assign(marker,spot);
    }

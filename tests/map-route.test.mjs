@@ -245,3 +245,22 @@ test('nearby route numbers separate with leaders to their unchanged saved coordi
   const leg=h.nodes('data-route-leg')[0].children.find(child=>child.tag==='line');
   assert.deepEqual(['x1','y1','x2','y2'].map(name=>Number(leg.getAttribute(name))),[500,500,501,507],'route distances and lines still use exact saved positions');
 });
+
+test('nine route stops crowded at a viewport corner still have separate numbers',t=>{
+  const h=harness(t,{width:390,height:844});
+  h.map.box=[0,0,390,844];
+  const full=Array.from({length:9},(_,i)=>zone(`corner-${i}`,i*.1,i*.1));
+  h.update({routeZones:full,route:full.map(item=>item.id)});
+  const markers=h.nodes('data-route-stop'),centers=markers.map(marker=>{
+    const circle=marker.children.find(child=>child.tag==='circle');
+    return [Number(circle.getAttribute('cx')),Number(circle.getAttribute('cy'))];
+  });
+  assert.equal(centers.length,9);
+  for(let i=0;i<centers.length;i++)for(let j=i+1;j<centers.length;j++)
+    assert.ok(Math.hypot(centers[i][0]-centers[j][0],centers[i][1]-centers[j][1])>=25.999,'edge crowding cannot silently pile numbered stops together');
+  for(let index=0;index<markers.length;index++){
+    assert.equal(markers[index].getAttribute('data-world-x'),String(full[index].x));
+    assert.equal(markers[index].getAttribute('data-world-z'),String(full[index].z));
+  }
+  assert.equal(h.nodes('data-route-leg').length,8);
+});
