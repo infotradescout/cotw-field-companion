@@ -815,3 +815,24 @@ body.hunting-app {
  .hunting-app[data-view=map] #content:not(.native-map-expanded) .native-terrain-status{order:3}
  .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-credit{order:4}
 }
+
+
+/* Phone grind loop: keep repeated hunt controls one tap away. */
+.hunting-app .grind-phone-dock{display:none}
+@media(max-width:700px){
+ .hunting-app .grind-screen{padding-bottom:88px}
+ .hunting-app .grind-page-heading{display:none}
+ .hunting-app .grind-hero{padding-top:12px}
+ .hunting-app .grind-hero-top{margin-bottom:8px}
+ .hunting-app .grind-target{margin-bottom:3px}
+ .hunting-app .grind-total{margin-bottom:8px}
+ .hunting-app .grind-total>strong{font-size:48px}
+ .hunting-app .grind-animal-summary{display:none}
+ .hunting-app .grind-animal-breakdown{border-top:0}
+ .hunting-app .grind-animal-breakdown summary{min-height:38px;padding:7px 0}
+ .hunting-app .grind-goal{margin:10px 0 8px}
+ .hunting-app .grind-primary-actions{display:none}
+ .hunting-app .grind-phone-dock{position:fixed;z-index:40;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));padding:7px;border:1px solid #56634f;border-radius:12px;background:#111a14f2;box-shadow:0 8px 28px #0009;backdrop-filter:blur(10px)}
+ .hunting-app .grind-phone-dock .grind-action{width:100%;min-height:50px;padding:7px 5px;font-size:12px}
+ .hunting-app .grind-phone-locked{display:grid;place-items:center;min-height:50px;padding:5px;text-align:center;border:1px solid #4a5547;border-radius:7px;color:#b8c1b5;font-size:11px;line-height:1.25}
+}
