@@ -7,6 +7,7 @@ import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {WebSocketServer} from 'ws';
 import {PHONE_PROTOCOL,PHONE_MAX_BYTES,phoneRelayOrigin,validatePhoneCommand} from '../lib/phone-bridge.mjs';
 import {phoneTokenCodec,PHONE_DAY as DAY} from './auth.mjs';
+import {mountClientSource} from './mount.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
@@ -18,19 +19,20 @@ const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-
 
 export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1',allowInsecureLoopback=false,now=Date.now,requestTimeoutMs=10000,pairTtlMs=300000,maxPeers=16,maxPending=4,pairAttemptLimit=30,provisionLimit=20}={}){
   const {mac,issue,verify}=phoneTokenCodec({key,now});
-  let origin=phoneRelayOrigin(publicOrigin,{allowInsecureLoopback});
+  let address=phoneRelayOrigin(publicOrigin,{allowInsecureLoopback}),origin=new URL(address).origin;
+  const mount=new URL(address).pathname==='/'?'':'/grindzone',cookieName=mount?'__Secure-grindzone-phone':'__Host-cotw-phone',cookiePath=(mount||'')+'/';
   const peers=new Map(),pairs=new Map(),pending=new Map(),rates=new Map(),sessionReserve=new Map(),installationGenerations=new Map();
-  const files=new Map(assets.map(name=>['/'+name,readFileSync(path.join(root,'public',name))]));
-  const index=readFileSync(path.join(root,'public/index.html'),'utf8').replace('<html','<html data-runtime="phone"');
-  const connectPage=readFileSync(new URL('./connect.html',import.meta.url));
-  const connectScript=readFileSync(new URL('./connect.js',import.meta.url));
+  const files=new Map(assets.map(name=>['/'+name,Buffer.from(mountClientSource(readFileSync(path.join(root,'public',name),'utf8'),mount))]));
+  const index=mountClientSource(readFileSync(path.join(root,'public/index.html'),'utf8').replace('<html','<html data-runtime="phone"'),mount);
+  const connectPage=mountClientSource(readFileSync(new URL('./connect.html',import.meta.url),'utf8'),mount);
+  const connectScript=mountClientSource(readFileSync(new URL('./connect.js',import.meta.url),'utf8'),mount);
   const catalogs=Object.fromEntries([['maps','maps-data'],['gear','gear-data'],['reference','rating-data']].map(([name,file])=>[name,JSON.parse(readFileSync(path.join(root,'lib',file+'.json'),'utf8'))]));
   function limited(key,limit,windowMs=60000){
     let r=rates.get(key);if(!r||r.until<=now()){if(rates.size>=2048){for(const [k,v]of rates)if(v.until<=now())rates.delete(k);if(rates.size>=2048)return true;}r={count:0,until:now()+windowMs};rates.set(key,r);}return ++r.count>limit;
   }
   function auth(req){
-    const found=String(req.headers.cookie??'').split(';').map(v=>v.trim()).filter(v=>v.startsWith('__Host-cotw-phone='));if(found.length!==1)return null;
-    const token=found[0].slice('__Host-cotw-phone='.length),claims=verify(token,'phone');return claims&&typeof claims.sid==='string'?{...claims,token,csrf:mac('csrf:'+token)}:null;
+    const found=String(req.headers.cookie??'').split(';').map(v=>v.trim()).filter(v=>v.startsWith(cookieName+'='));if(found.length!==1)return null;
+    const token=found[0].slice(cookieName.length+1),claims=verify(token,'phone');return claims&&typeof claims.sid==='string'?{...claims,token,csrf:mac('csrf:'+token)}:null;
   }
   const json=(res,status,value,extra={})=>{res.writeHead(status,{...headers,'Content-Type':'application/json; charset=utf-8',...extra});res.end(JSON.stringify(value));};
   function browserOrigin(req){return req.headers.origin===origin&&(!req.headers['sec-fetch-site']||req.headers['sec-fetch-site']==='same-origin');}
@@ -51,6 +53,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
   const server=http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost');
+      if(mount){if(url.pathname===mount){res.writeHead(302,{...headers,Location:mount+'/'});return res.end();}if(!url.pathname.startsWith(mount+'/'))return json(res,404,{error:'Not found'});url.pathname=url.pathname.slice(mount.length);}
       if(req.method==='GET'&&url.pathname==='/healthz')return json(res,200,{ok:true,mode:'live_relay'});
       if(req.headers.host!==new URL(origin).host)return json(res,403,{error:'This address is not accepted'});
       if(req.headers.origin&&req.headers.origin!==origin||req.headers['sec-fetch-site']&&['cross-site','same-site'].includes(req.headers['sec-fetch-site']))return json(res,403,{error:'Use the phone companion directly'});
@@ -74,11 +77,11 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
         const input=await body(req),pair=typeof input.token==='string'&&/^[A-Za-z0-9_-]{43}$/.test(input.token)?pairs.get(hash(input.token)):null;
         if(!pair||pair.expiresAt<=now()||peers.get(pair.peer.deviceId)!==pair.peer)return json(res,400,{error:'This pairing link is unavailable. Request a new one on the PC.'});
         pairs.delete(hash(input.token));const cookie=issue('phone',{deviceId:pair.peer.deviceId,sid:random()},30*DAY);
-        return json(res,200,{paired:true},{'Set-Cookie':'__Host-cotw-phone='+cookie+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=2592000'});
+        return json(res,200,{paired:true},{'Set-Cookie':cookieName+'='+cookie+'; Path='+cookiePath+'; HttpOnly; Secure; SameSite=Strict; Max-Age=2592000'});
       }
       const session=auth(req);
       if(req.method==='GET'&&(url.pathname==='/'||url.pathname==='/index.html')){
-        res.writeHead(session?200:302,{...headers,...(session?{'Content-Type':types['.html']}:{Location:'/phone/connect'})});return res.end(session?index:'');
+        res.writeHead(session?200:302,{...headers,...(session?{'Content-Type':types['.html']}:{Location:mount+'/phone/connect'})});return res.end(session?index:'');
       }
       // Assets contain only application code and public catalogs; all data APIs below require a paired owner.
       if(req.method==='GET'&&files.has(url.pathname)){res.writeHead(200,{...headers,'Content-Type':types[path.extname(url.pathname)]});return res.end(files.get(url.pathname));}
@@ -86,7 +89,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       if(limited('owner:'+session.deviceId,180))return json(res,429,{error:'Too many requests. Try again shortly.'});
       if(req.method==='POST'){
         if(!browserOrigin(req)||!equal(req.headers['x-companion-token'],session.csrf))return json(res,403,{error:'Refresh the phone page before saving.'});
-        if(url.pathname==='/phone/logout')return json(res,200,{signedOut:true},{'Set-Cookie':'__Host-cotw-phone=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'});
+        if(url.pathname==='/phone/logout')return json(res,200,{signedOut:true},{'Set-Cookie':cookieName+'=; Path='+cookiePath+'; HttpOnly; Secure; SameSite=Strict; Max-Age=0'});
         if(url.pathname==='/api/command'){
           if(limited('commands:'+session.deviceId,30))return json(res,429,{error:'Too many actions. Try again shortly.'});
           const command=validatePhoneCommand(await body(req));const result=await relay(peers.get(session.deviceId),'command',{body:command});return json(res,200,result);
@@ -109,7 +112,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
   const connections=new Set();
   server.on('upgrade',(req,socket,head)=>{
     const reject=(code=401)=>socket.end('HTTP/1.1 '+code+' Rejected\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
-    if(req.url!=='/phone/bridge'||req.headers.host!==new URL(origin).host||req.headers.origin)return reject();
+    if(req.url!==mount+'/phone/bridge'||req.headers.host!==new URL(origin).host||req.headers.origin)return reject();
     const header=req.headers['sec-websocket-protocol'];if(typeof header!=='string'||header.length>2100)return reject();
     const protocols=header.split(',').map(s=>s.trim());
     if(protocols.length!==2||!protocols.includes(PHONE_PROTOCOL))return reject();
@@ -142,7 +145,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
           for(const [k,v]of pairs)if(v.expiresAt<=now()||v.peer===peer)pairs.delete(k);
           if(pairs.size>=maxPeers)return socket.close(1013);
           const token=random(),expiresAt=now()+pairTtlMs;pairs.set(hash(token),{peer,expiresAt});
-          socket.send(JSON.stringify({type:'pairing',requestId:m.requestId,url:origin+'/phone/connect#pair='+token,expiresAt}));return;
+          socket.send(JSON.stringify({type:'pairing',requestId:m.requestId,url:address+'/phone/connect#pair='+token,expiresAt}));return;
         }
         if(m.type==='response'){
           const waiting=pending.get(m.id);if(!waiting||waiting.peer!==peer)return;
@@ -164,12 +167,13 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
     for(const p of peers.values()){if(!p.alive||p.expiresAt<=now()){p.socket.terminate();continue;}p.alive=false;p.socket.send(JSON.stringify({type:'ping'}));}
   },30000);cleanup.unref();
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,host,resolve);});
-  if(allowInsecureLoopback&&new URL(origin).port==='0')origin=origin.replace(':0',':'+server.address().port);
-  return {server,origin,async close(){clearInterval(cleanup);for(const p of peers.values())invalidatePeer(p);for(const s of connections)s.terminate();await new Promise(resolve=>wss.close(resolve));server.closeIdleConnections?.();await new Promise(resolve=>server.close(resolve));}};
+  if(allowInsecureLoopback&&new URL(origin).port==='0'){origin=origin.replace(':0',':'+server.address().port);address=origin+mount;}
+  return {server,origin:address,async close(){clearInterval(cleanup);for(const p of peers.values())invalidatePeer(p);for(const s of connections)s.terminate();await new Promise(resolve=>wss.close(resolve));server.closeIdleConnections?.();await new Promise(resolve=>server.close(resolve));}};
 }
 
 if(process.argv[1]&&fileURLToPath(import.meta.url)===path.resolve(process.argv[1])){
-  const relay=await createPhoneRelay({key:process.env.PHONE_RELAY_SIGNING_KEY,publicOrigin:process.env.PHONE_RELAY_ORIGIN||process.env.RENDER_EXTERNAL_URL,port:Number(process.env.PORT||10000),host:'0.0.0.0'});
-  console.log('COTW phone relay ready. No game-save storage is configured.');
+  const relay=await createPhoneRelay({key:process.env.PHONE_RELAY_SIGNING_KEY,publicOrigin:process.env.PHONE_RELAY_ORIGIN||process.env.RENDER_EXTERNAL_URL,port:Number(process.env.PORT||10000),host:process.env.PHONE_RELAY_BIND_HOST||'0.0.0.0'});
+  console.log('GrindZone phone relay ready. No game-save storage is configured.');
+  if(process.send)process.send({ready:true,port:relay.server.address().port});
   let stopping=false;for(const signal of ['SIGTERM','SIGINT'])process.on(signal,async()=>{if(stopping)return;stopping=true;await relay.close();process.exit(0);});
 }
