@@ -1,9 +1,11 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-grind-planner-delivery",
-  "createdAt": "2026-09-19T04:31:12.499674+00:00",
-  "outcome": "Distinguish target and other harvests within each grind; automatically order hunting routes, plan per-stop gear and cash budgets, and reveal zone information on close zoom.",
+  "checkpointId": "progress-20260919-phone-grind-usability",
+  "createdAt": "2026-09-19T17:50:00Z",
+  "outcome": "Simplify the repeated phone grind loop so map, route and tracking state stay one tap away while secondary grind detail stops competing with the live hunt flow.",
   "scope": [
+    "Persistent phone grind quick controls",
+    "Reduce above-the-fold phone grind clutter",
     "Per-grind target and other-animal harvest breakdown",
     "Automatic route ordering",
     "Per-stop grind setup and gear budget",
@@ -26,9 +28,12 @@
       "Live installed browser at320,390,1440 widths showed no horizontal overflow; grind controls at320 retained44px height. Existing named Whitetail grind was configured with its Whitetail target and reloaded as2target+6other; retained harvests/history preserved.",
       "Installed route9stops/8legs is14.1km vs prior21.1km. Actual close-zoom map shows zone hours and known4male/5female herd values, with terrain loaded. Synthetic browser also verified start/manual/auto/reload, add/remove ordering, setup edits and blank-price persistence.",
       "Public Render deployment45f87fb was live with all24assets and manifest matching; auto-deploy off. Public-host browser found generic label taps selecting bare coordinates. That defect is being corrected before final delivery.",
-      "Map tap candidate7989cf4 passed native271root+29cloud0fail/skip, and exact Spoonside role/text clicks on the temporary static preview. Subsequent wide-glyph bounds finding is implemented and17focused map tests pass; final review and browser retry pending."
+      "Map tap candidate7989cf4 passed native271root+29cloud0fail/skip, and exact Spoonside role/text clicks on the temporary static preview. Subsequent wide-glyph bounds finding is implemented and17focused map tests pass; final review and browser retry pending.",
+      "Branch bbaa0899866702292562b2d9c11b6c51fcf156d2 adds a phone-only fixed Map / Route / Pause-Resume-Continue dock, hides the duplicate embedded primary-action row at phone widths, hides the redundant animal-count summary while retaining the existing expandable animal detail, and compacts the live grind hero without changing tracking commands or desktop behavior.",
+      "Direct evaluation of the exact branch renderer passed active, paused, finished and conflicting-active-grind states; the quick dock contains no finish, edit or setup destructive/secondary actions. The added grind-view regression file parses successfully and is present on the branch."
     ],
     "changedUnverified": [
+      "Full native test/build gate and installed-app verification for bbaa0899866702292562b2d9c11b6c51fcf156d2 are still open. GitHub Actions has no run for this commit, and the authorized TSCommandCenter workstation is offline, so no installation claim is made for this phone-flow change.",
       "Current map glyph-measurement refinement measures fitted attached SVG text and hit bounds; final objector closure, browser retry, exact-commit gate, installation and same-service public deployment remain.",
       "Physical phone/away-from-home user journey, overall product/user acceptance, automatic tent identity and unverified feeder/permanent-structure prices remain open."
     ],
@@ -40,20 +45,22 @@
       "One intentional player configuration change: the clearly named active Whitetail grind target was set from All animals to Whitetail Deer. It is reversible in Edit grind; underlying harvest history remains unchanged.",
       "Public Render static guide/creator preview is live45f87fb, with the known generic-label tap issue pending the final candidate. Private grind/setup data is excluded from docs.",
       "PR5 open/unmerged. Task branch remote45f87fb; later map candidates preserved locally pending review. No branch rewrite or main integration.",
-      "Temporary static generated-docs server47853 is running for exact browser verification; stop it after public-host finishes. Synthetic journal server47851 stopped. Installed browser tab retained as deliverable."
+      "Temporary static generated-docs server47853 is running for exact browser verification; stop it after public-host finishes. Synthetic journal server47851 stopped. Installed browser tab retained as deliverable.",
+      "PR5 branch fix/hunting-workflow-20260918 advanced from de9eb63cf11e0e3cea396422d87f87bcbcaf4387 through 68d9fdf0a7b2379b45902d626fe29f95f8c2c888 and bbaa0899866702292562b2d9c11b6c51fcf156d2. No installed runtime, player journal, player configuration or public Render service was mutated by this phone-flow continuation because the workstation was offline."
     ],
     "doNotRepeat": [
       "Do not replay player configuration changes or synthetic fixtures blindly. Inspect current values/versions first.",
       "Preserve player saves/journal and existing backups. Do not infer game placements, feeder prices, build status or Great One outcomes.",
-      "Do not treat GitHub billing as a hosting blocker or claim public static preview contains private grind controls."
+      "Do not treat GitHub billing as a hosting blocker or claim public static preview contains private grind controls.",
+      "Do not overwrite a newer local GrindZone candidate when the workstation returns. Read C:/Users/flavo/Documents/Codex/2026-09-17/gi/HANDOFF-COTW-COMPANION.md and compare the documented local source/checkpoint with remote bbaa089 before installing or rebasing."
     ],
-    "nextSafeAction": "Close the final measured-label bounds review and live Spoonside retry; commit owned refinement, run native unchanged gate once on final SHA, push, update the existing portable target and existing Render service, then verify and save final delivery identity."
+    "nextSafeAction": "When TSCommandCenter is online, read HANDOFF-COTW-COMPANION.md first and reconcile its exact local source/checkpoint against remote bbaa089 without restarting discovery. If there is no newer local candidate, run the full native test and portable-build gate, update the existing installed Companion from the verified candidate, then verify the actual phone grind screen at narrow widths for one-tap Map / Route / Pause-Resume behavior, no horizontal overflow, unobscured harvest activity, and preserved player data."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "7989cf4c2f12536bfbb6f2c831852db566322baf",
+    "headBefore": "de9eb63cf11e0e3cea396422d87f87bcbcaf4387",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
@@ -61,6 +68,9 @@
     "selectedStatusBefore": [],
     "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [],
+  "savedFiles": [
+    "public/grinds.js",
+    "tests/grind-view.test.mjs"
+  ],
   "privacyBoundary": "Bounded UI source and test identities only. Player data, raw screenshots, private paths and secrets stay outside this repository."
 }
