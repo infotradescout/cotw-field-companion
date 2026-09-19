@@ -1,7 +1,7 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
   "checkpointId": "progress-20260919-home-dashboard",
-  "createdAt": "2026-09-19T02:26:54.508603Z",
+  "createdAt": "2026-09-19T02:30:30.489074Z",
   "outcome": "Make the installed Companion open to a readable player dashboard with current grind, recent saved harvests, and the selected reserve route. Overall product acceptance remains open.",
   "scope": [
     "installed Home dashboard and default navigation",
@@ -24,12 +24,11 @@
       "Route read mode shows tappable stop rows; Edit route exposes reorder and remove controls. Explicit Hunt map actions reset the selected pane to Map.",
       "A new saved receipt arrived during the installed browser run and the durable session count updated automatically.",
       "Windows root suite176tests:175passed,0failed,1host-only symlink skip. Cloud suite29passed,0failed,0skips.",
-      "Public build23files with privateDataIncludedfalse. Portable49runtime files plus manifest installed and all50file hashes matched before the final public-career-only CSS preservation.",
-      "Independent source review and Home screenshot review found no remaining blocking Home/navigation issues. Independent live browser verification is unavailable because its Chrome surface blocks localhost."
+      "Independent source review and Home screenshot review found no remaining blocking Home/navigation issues. Independent live browser verification is unavailable because its Chrome surface blocks localhost.",
+      "Exact candidate4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1 passed the unchanged native Ubuntu Node24.14.1 gate:176root tests and29cloud tests,0failures,0skips; public build23files903236bytes and generated docs unchanged.",
+      "Final public-career CSS preservation regenerated public and portable outputs. All50files in the final installed runtime match the reviewed portable stage. Installed server was restarted successfully."
     ],
     "changedUnverified": [
-      "Native Linux final-candidate gate is next; earlier career revision had169root tests and29cloud tests passed on native Node24.",
-      "The final public-career-only CSS preservation needs portable recopy and public build regeneration.",
       "No physical phone or away-from-home live journey was executed for this slice.",
       "No overall product or user acceptance. User identified broader navigation and usability confusion.",
       "GitHub Quality did not start: account locked due to a billing issue. Main integration and public Pages update remain unproved."
@@ -37,25 +36,26 @@
     "proof": [
       "Private installed Home screenshot and runtime hashes retained outside the repository.",
       "Private Windows root/cloud logs and prior native Node24 logs retained outside the repository.",
-      "Independent review distinguishes source and image inspection from unavailable independent browser interactions."
+      "Independent review distinguishes source and image inspection from unavailable independent browser interactions.",
+      "Native source identity and executed gate logs are retained in private dashboard-native-tests.txt; source unchanged except this progress record after that gate."
     ],
     "externalEffects": [
       "Updated and restarted only the installed Companion runtime.",
       "Read game saves; no test-created sessions, route changes, or journal deletions.",
-      "Earlier career candidatefb052fea pushed to the existing task branch; Home slice is not yet pushed."
+      "Home implementation is committed locally at4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1; the next operation pushes it and this checkpoint to the existing task branch."
     ],
     "doNotRepeat": [
       "Do not replay the rejected passing acceptance write; this checkpoint records unfinished product acceptance.",
       "Do not rerun blocked GitHub jobs without an account-state change.",
       "Do not replace the private journal or game saves."
     ],
-    "nextSafeAction": "Regenerate public/portable CSS, commit this owned Home slice, run the unchanged native Node24 gate on the exact candidate, push the existing PR branch, record review and runtime identity, and leave installed Home open."
+    "nextSafeAction": "Push the existing PR branch and update PR5 with Home/career scope. Keep installed Home running and leave the current user-facing result open. Public integration/deployment remains blocked until the GitHub billing lock is resolved; do not rerun unchanged failed jobs or claim user acceptance."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "fb052fea9299701f62ea0191be362f2b7c8a6896",
+    "headBefore": "4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
