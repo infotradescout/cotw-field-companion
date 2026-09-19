@@ -18,8 +18,12 @@ export function isGreatOneSpecies(value, key) {
   return greatOneNames.has(normalize(key)) || greatOneNames.has(normalize(value));
 }
 
+export function isUnidentifiedSpecies(name) {
+  return !name || /^(?:Species(?: hash)? \d+|Unresolved species)$/i.test(name);
+}
+
 export function speciesName(name, key) {
-  const label = escape(!name || /^(?:Species(?: hash)? \d+|Unresolved species)$/i.test(name) ? 'Unidentified animal' : name);
+  const label = escape(isUnidentifiedSpecies(name) ? 'Unidentified animal' : name);
   return isGreatOneSpecies(name, key)
     ? `<span class="great-one-name" title="Great One species">${label}<span class="species-accessible-cue"> (Great One species)</span></span>`
     : label;
