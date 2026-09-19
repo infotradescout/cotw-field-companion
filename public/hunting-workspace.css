@@ -764,5 +764,8 @@ body.hunting-app {
  .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-shell{flex:1 1 0;min-height:0}
  .hunting-app[data-view=map] #content:not(.native-map-expanded) .field-map{height:100%;min-height:0}
  .hunting-app[data-view=map] #content:not(.native-map-expanded) .hunting-workspace>:is(.zone-browser,.map-detail){height:100%;max-height:none}
- .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-route-summary{left:12px;bottom:136px;min-width:280px}
+ .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-route-summary{position:static;order:2;flex:0 0 auto;left:auto;right:auto;bottom:auto;min-width:0;margin-top:6px}
+ .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-shell{order:1}
+ .hunting-app[data-view=map] #content:not(.native-map-expanded) .native-terrain-status{order:3}
+ .hunting-app[data-view=map] #content:not(.native-map-expanded) .map-credit{order:4}
 }
