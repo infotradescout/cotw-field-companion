@@ -1,13 +1,13 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-grind-route-installed",
-  "createdAt": "2026-09-19T03:27:29.533099+00:00",
-  "outcome": "Simplify the player workflow and improve grind tracking, drawn routes with in-game zone hours, saved place names, and visible ammo classes. Keep the public preview usable and private save data local.",
+  "checkpointId": "progress-20260919-automatic-route-and-setup",
+  "createdAt": "2026-09-19T03:44:35.386523+00:00",
+  "outcome": "Simplify the hunting workflow; automatically order routes, plan each stop with tents/stands/structures/optional feeders and in-game costs, and reveal spot information when zoomed in.",
   "scope": [
-    "grind tracker and Home entry",
-    "route map and saved spot names",
-    "ammo class presentation",
-    "public preview and installed runtime"
+    "Automatic route ordering",
+    "Per-stop grind setup and gear budget",
+    "Progressive map spot details",
+    "Preserve installed and public preview delivery"
   ],
   "prohibitions": [
     "Preserve player saves and the private journal.",
@@ -26,34 +26,37 @@
       "Ammo live browser search returns the two .300 options for Moose, marks .22LR as wrong class, and filters it out when Only right class is selected. Fields remain44px at320px; no horizontal overflow at320,390or1440px.",
       "Exact b53e59e native Ubuntu Node24.14.1 release gate passed:225 root tests and29 cloud tests,0 failures and0 skips; public regeneration unchanged.",
       "Installed b53 portable runtime:50 runtime files plus manifest; all51 installed hashes match the staged artifact. Previous runtime and stopped journal backed up before restart. Installed read-only browser opens legacy grind and actual9-stop route with8 legs and loaded terrain;575x986 map has no page overflow.",
-      "Existing Render preview now live on exact b53e59e, deployment dep-damvvmrtqb8s73a2tc10. All24 assets plus build manifest match; live Chrome ammo match/mismatch and Studio phone/desktop widths checked. Auto-deploy remains off."
+      "Existing Render preview now live on exact b53e59e, deployment dep-damvvmrtqb8s73a2tc10. All24 assets plus build manifest match; live Chrome ammo match/mismatch and Studio phone/desktop widths checked. Auto-deploy remains off.",
+      "Source1eee3b3 release gate:228 root and29 cloud tests passed under native Ubuntu Node24,0failed/0skipped;24public files921172bytes regenerated unchanged.",
+      "Source1eee3b3 installed with51matching hashes and journal/runtime backup; live Render dep-dan076ijnfac73esjpjg exact1eee verified all24assets and manifest.",
+      "Dense9-stop phone route has no page overflow; colliding names collapse while all numbers remain. Separate taps4and8 open correct coordinates/hours. Source reviewer12map tests pass including viewport-edge fallback."
     ],
     "changedUnverified": [
-      "Final installed real9-stop map inspection found overlapping route labels around nearby stops. Declutter labels while retaining every stop number, full accessible name, schedules and tap-to-open detail.",
-      "Physical-phone/away-from-home journey and whole-product/user acceptance remain unproved."
+      "New user requests automatic routes, per-stop setup and budgets, and details revealed on close zoom. Backend builder owns route ordering; root owns planner/map UI; research lane verifies equipment identity and cash prices.",
+      "1eee installed final close-zoom/navigation check and new feature integration remain; physical-phone/away-from-home and whole-product/user acceptance still unproved."
     ],
     "proof": [
       "Detailed scoped logs and objector findings are preserved in private work evidence. Synthetic test journal and saves are separate from the player journal.",
       "Private evidence includes final native gate, installed hash receipt and hosting-receipt-b53.json. This checkpoint reconciles the source change from145e522 to b53e59e; only desktop map summary placement changed and was re-tested."
     ],
     "externalEffects": [
-      "Installed Companion running source b53e59e on port47831 with original player journal preserved.",
-      "Existing public static Render preview live on b53e59e; auto-deploy off; public library and fictional samples only.",
-      "PR5 open and unmerged; branch remote matches b53e59e.",
-      "Disposable test app remains on port47851 with separate synthetic save and journal; its test mutations do not affect player data."
+      "Installed Companion running1eee3b3 on47831; original journal preserved with stopped backup.",
+      "Existing Render static preview live1eee3b3; auto-deploy off; public library/fictional samples only.",
+      "PR5 open/unmerged; source branch pushed1eee3b3.",
+      "Disposable app47851 contains separate synthetic route/grind test journal; no player mutations from tests."
     ],
     "doNotRepeat": [
       "Do not treat GitHub billing as a general hosting blocker. Only the Actions job was blocked.",
       "Do not replace or delete player data or weaken release gates.",
       "Do not replay the obsolete rejected passing acceptance packet. This is an unfinished progress checkpoint."
     ],
-    "nextSafeAction": "Resolve the observed label collisions in the existing map renderer, check dense real route and targeted regressions, then update the same runtime and preview with the verified code. Preserve the installed journal and all provider source guards."
+    "nextSafeAction": "Integrate builder automatic-route contract with explicit preference version and stable start; implement per-stop gear setup/cost plan and close-zoom details; test with disposable data, then run unchanged release gates and update the same installed target."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "b53e59e683326315237d4fe48733fd67122f1965",
+    "headBefore": "1eee3b3f0f535c6f02be1ddf63e154eaa13ea77c",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
