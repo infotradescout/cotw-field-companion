@@ -1,6 +1,6 @@
-import {getCatalog} from './data-client.js?v=524d93176decdde4';
-import {speciesName,isGreatOneSpecies} from './species-style.js?v=524d93176decdde4';
-import {MEDALS,LEVEL_NAMES,weightRange,score,evaluateScore,filterSpecies,resolveSpecies} from './reference-core.js?v=524d93176decdde4';
+import {getCatalog} from './data-client.js?v=43bc03f25cab7b34';
+import {speciesName,isGreatOneSpecies} from './species-style.js?v=43bc03f25cab7b34';
+import {MEDALS,LEVEL_NAMES,weightRange,score,evaluateScore,filterSpecies,resolveSpecies} from './reference-core.js?v=43bc03f25cab7b34';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const title=s=>String(s).replaceAll('_',' ').replace(/^./,c=>c.toUpperCase());
 const option=(v,label,chosen)=>`<option value="${escape(v)}" ${String(v)===String(chosen)?'selected':''}>${escape(label)}</option>`;

@@ -543,3 +543,103 @@ body.hunting-app {
   .hunting-app .herd-cards { grid-template-columns: 1fr; gap: 8px; }
   .hunting-app .herd-card { padding: 13px; }
 }
+
+/* A player's starting point: recent activity, the current grind, and the saved route. */
+.hunting-app:is([data-view=home],[data-view=overview]){background:#101713}
+.hunting-app .hunt-dashboard{max-width:1120px;margin:0 auto;font:14px/1.45 system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.hunting-app .dashboard-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.hunting-app .dashboard-heading h1{font:650 28px/1.2 system-ui,sans-serif;letter-spacing:-.04em;margin:0}
+.hunting-app .dashboard-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+.hunting-app .dashboard-main,.hunting-app .dashboard-side{display:grid;gap:16px;min-width:0}
+.hunting-app .hunt-dashboard section{border:1px solid #354139;border-radius:12px;background:#1a241e;min-width:0;overflow:hidden}
+.hunting-app .hunt-dashboard h2{font:600 17px/1.35 system-ui,sans-serif;letter-spacing:-.02em;margin:0}
+.hunting-app .hunt-dashboard h3{font:600 14px/1.4 system-ui,sans-serif;margin:0}
+.hunting-app .hunt-dashboard svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.hunting-app .dashboard-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:9px 13px;border:1px solid #596448;border-radius:7px;background:#253329;color:#e7eee7;font:600 13px/1.35 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+.hunting-app .dashboard-action.primary{background:#ed8d3a;border-color:#ed8d3a;color:#211a13}
+.hunting-app .dashboard-action.text{border:0;background:none;color:#ffc28b;padding-inline:4px}
+.hunting-app .dashboard-action:focus-visible{outline:2px solid #ffa758;outline-offset:3px}
+.hunting-app .dashboard-section-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px}
+.hunting-app .dashboard-meta{display:block;font-size:12px;color:#b5c0b7;line-height:1.5}
+.hunting-app .dashboard-feed{padding:0 18px 6px}
+.hunting-app .dashboard-harvest{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 0;border-top:1px solid #354139}
+.hunting-app .dashboard-activity-icon{display:grid;place-items:center;color:#8f9e92}
+.hunting-app .dashboard-harvest time{display:block;font-size:12px;color:#aebdb2;margin-top:3px}
+.hunting-app .dashboard-score{display:grid;gap:2px;text-align:right}
+.hunting-app .dashboard-score strong{font-size:17px;color:#e3c28f}
+.hunting-app .dashboard-score span{font-size:11px;color:#adbbb0}
+.hunting-app .dashboard-no-activity{padding:6px 18px 20px}
+.hunting-app .dashboard-no-activity p{color:#b6c2b8;margin:5px 0 16px}
+.hunting-app .dashboard-start{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px}
+.hunting-app .dashboard-start strong{font-size:14px}
+.hunting-app .dashboard-start span{display:block;font-size:12px;color:#aebdb2;margin-top:3px}
+.hunting-app .dashboard-grind{border-top:2px solid #ee933f!important;background:linear-gradient(130deg,#2a382a,#1a241e 80%)!important}
+.hunting-app .dashboard-kicker{color:#f2b576;font-size:12px;letter-spacing:.09em;font-weight:650}
+.hunting-app .dashboard-live{font-size:12px;color:#c4e1ba;display:flex;align-items:center;gap:6px}
+.hunting-app .dashboard-live:before{content:'';width:6px;height:6px;background:#b2d29d;border-radius:50%}
+.hunting-app .dashboard-grind-main{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 18px 18px}
+.hunting-app .dashboard-grind-main>div:first-child{min-width:0}
+.hunting-app .dashboard-grind-main h2{font-size:22px;overflow-wrap:anywhere;margin-bottom:4px}
+.hunting-app .dashboard-grind-count{display:grid;justify-items:end;flex-shrink:0}
+.hunting-app .dashboard-grind-count strong{font-size:38px;line-height:1.05;font-weight:650;letter-spacing:-.04em}
+.hunting-app .dashboard-grind-count span{font-size:12px;color:#c1cdbd}
+.hunting-app .dashboard-grind-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 18px;background:#111a155e;border-top:1px solid #354139}
+.hunting-app .dashboard-grind-foot>span{font-size:12px;color:#b6c3b8}
+.hunting-app .dashboard-route-preview{padding:0 18px 12px}
+.hunting-app .dashboard-route-stop{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid #354139}
+.hunting-app .dashboard-stop-number{display:grid;place-items:center;border:1px solid #776846;background:#332f20;border-radius:50%;min-width:28px;height:28px;color:#eec793;font-size:13px}
+.hunting-app .dashboard-route-stop strong{font-size:14px;display:block}
+.hunting-app .dashboard-route-stop>div>span{display:block;font-size:12px;color:#b0bdb2;margin-top:3px}
+.hunting-app .dashboard-route-warning{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 18px;border-top:1px solid #645037;color:#ebc895;font-size:12px;background:#31271b}
+.hunting-app .dashboard-route-empty{padding:0 18px 15px}
+.hunting-app .dashboard-route-empty p{color:#b4c0b6;font-size:13px;margin:0 0 12px}
+.hunting-app .dashboard-route-empty>.text{margin-left:8px}
+.hunting-app .dashboard-career>.dashboard-meta{padding:12px 18px;font-size:12px;border-top:1px solid #354139}
+.hunting-app .dashboard-trophies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0 18px 18px;gap:12px}
+.hunting-app .dashboard-trophy{display:grid;gap:3px;border-right:1px solid #354139}
+.hunting-app .dashboard-trophy:last-child{border:0}
+.hunting-app .dashboard-trophy strong{font-size:26px;line-height:1.1;color:#f1ce7c}
+.hunting-app .dashboard-trophy.diamond strong{color:#b6e2ed}
+.hunting-app .dashboard-trophy span{font-size:12px;color:#c2cdc4}
+.hunting-app .route-page{max-width:950px;margin:0 auto}
+.hunting-app .route-page-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.hunting-app .route-page-heading>span{font-size:13px;color:var(--muted)}
+.hunting-app .route-page .intro{align-items:center}
+.hunting-app .route-page .intro h1{margin:0}
+@media(max-width:700px){
+ .hunting-app .dashboard-layout{grid-template-columns:1fr;gap:16px}
+ .hunting-app .dashboard-heading{margin-bottom:14px}
+ .hunting-app .dashboard-heading h1{font-size:25px}
+ .hunting-app .dashboard-section-top{padding:10px 15px}
+ .hunting-app .dashboard-feed{padding:0 15px 4px}
+ .hunting-app .dashboard-harvest{padding:11px 0;grid-template-columns:22px minmax(0,1fr) auto;gap:8px}
+ .hunting-app .dashboard-grind-main{padding-inline:15px}
+ .hunting-app .dashboard-route-preview{padding:0 15px 8px}
+ .hunting-app .dashboard-route-stop:nth-child(n+2){display:none}
+ .hunting-app .dashboard-route-warning{padding-inline:15px}
+ .hunting-app .dashboard-start{padding:10px 15px}
+ .hunting-app .dashboard-side .dashboard-career{display:none}
+ .hunting-app:is([data-view=home],[data-view=overview],[data-view=harvests]) .topbar{height:64px;min-height:64px}
+}
+
+/* Route reading stays separate from the optional reorder/remove controls. */
+.hunting-app .route-page .intro{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.hunting-app .route-page .intro>div{min-width:0}
+.hunting-app .route-page .intro>div>span{display:block;font-size:12px;margin-top:6px}
+.hunting-app .route-page .intro>.button{flex-shrink:0}
+.hunting-app .route-page .route-focus{padding:0 16px;border-radius:12px}
+.hunting-app .route-page .route-stop{display:block;padding:0;border-bottom:1px solid var(--line)}
+.hunting-app .route-page .route-stop:last-child{border-bottom:0}
+.hunting-app .route-page .route-open{display:grid;grid-template-columns:28px minmax(0,1fr) 22px;align-items:center;gap:12px;width:100%;min-height:88px;padding:12px 0;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;font:14px/1.4 system-ui,sans-serif}
+.hunting-app .route-page .route-open:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.hunting-app .route-page .route-stop-copy{display:grid;gap:3px;min-width:0}
+.hunting-app .route-page .route-stop-copy strong{font-size:15px;overflow-wrap:anywhere}
+.hunting-app .route-page .route-stop-copy>span{font-size:12px;color:var(--muted)}
+.hunting-app .route-page .route-coordinates{font-variant-numeric:tabular-nums;letter-spacing:.015em}
+.hunting-app .route-page .route-open-arrow{font-size:22px;color:#efab66}
+.hunting-app .route-page .route-open .number{width:28px;height:28px;font-size:13px;color:#ebbc79;background:#302b1e;border-color:#665535}
+.hunting-app .route-page .stop-controls{display:flex;width:100%;justify-content:flex-end;gap:6px;padding:0 0 12px 40px}
+.hunting-app .route-page .stop-controls .button{flex:1 1 auto;min-height:44px;padding:8px 7px;font-size:12px;min-width:0}
+.hunting-app .route-page .route-stop-missing{margin:8px 0;padding:0 10px}
+.hunting-app .route-page .route-open.missing{cursor:default}
+.hunting-app .route-page .route-stop-missing .stop-controls{padding-left:0}

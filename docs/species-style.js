@@ -19,7 +19,7 @@ export function isGreatOneSpecies(value, key) {
 }
 
 export function speciesName(name, key) {
-  const label = escape(name);
+  const label = escape(!name || /^(?:Species(?: hash)? \d+|Unresolved species)$/i.test(name) ? 'Unidentified animal' : name);
   return isGreatOneSpecies(name, key)
     ? `<span class="great-one-name" title="Great One species">${label}<span class="species-accessible-cue"> (Great One species)</span></span>`
     : label;

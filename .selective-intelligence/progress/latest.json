@@ -1,55 +1,61 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260918T2233Z-ui-density",
-  "createdAt": "2026-09-18T22:33:31Z",
-  "outcome": "Implemented and browser-proved a compact, phone-first presentation pass for the installed COTW Companion and public preview.",
+  "checkpointId": "progress-20260919-home-dashboard",
+  "createdAt": "2026-09-19T02:26:54.508603Z",
+  "outcome": "Make the installed Companion open to a readable player dashboard with current grind, recent saved harvests, and the selected reserve route. Overall product acceptance remains open.",
   "scope": [
-    "mobile career hierarchy",
-    "weapon-category stat layout",
-    "public home vertical density",
-    "portable package refresh and browser proof"
+    "installed Home dashboard and default navigation",
+    "Hunt and optional route planning",
+    "career stats presentation",
+    "portable and public-build consistency"
   ],
   "prohibitions": [
-    "Keep player save data and account data out of the public build.",
-    "Do not claim the public Pages deployment changed until the branch is integrated and the Pages build is live.",
-    "Do not remove access to career detail; keep lower-value detail behind the More career details drawer."
+    "Preserve player saves and the private journal.",
+    "Keep player data and screenshots out of the public build.",
+    "Do not claim GitHub integration, public deployment, physical-phone or all-product acceptance from local proof.",
+    "Do not weaken release checks or work around GitHub account restrictions."
   ],
   "progress": {
     "completedVerified": [
-      "Career view removes the redundant subtitle, keeps the seven primary totals visible, and places shots, medals, reserve progress, reconciliation, and technical details behind one More career details drawer.",
-      "Weapon category cards stay visible in a two-column grid at a 390px phone viewport, reducing the weapon panel from 1,048px to 474px.",
-      "Installed Windows Companion was rebuilt from reviewed portable staging, refreshed, restarted, and loaded in a real 390x844 browser viewport.",
-      "Installed career document height measured 1,630px at 390x844, down from 2,645px before this pass.",
-      "Public home feature tiles use a horizontal phone rail; mobile copy and hero actions are shorter while reserve, gear, rare-fur, local companion, and community paths remain available.",
-      "Generated public build measured 1,614px at 390x844, with the feature rail at 214px instead of a 700px vertical stack.",
-      "npm test: 168 passed, 0 failed, 1 host-only symlink skip.",
-      "npm test --prefix cloud: 29 passed, 0 failed.",
-      "npm run build:web: 23 public files, privateDataIncluded false.",
-      "Portable staging produced 48 reviewed files and installed public/career.js, public/field-theme.css, and public/hunting-workspace.css hashes match source."
+      "Home is the installed default and the first phone navigation item. Legacy overview routes resolve to Home.",
+      "Current or most recent grind uses the durable global session summary. Recent activity uses the newest saved receipts. Route belongs to the selected reserve and preserves missing stop IDs.",
+      "Installed Home at390x844 measured390x844 with the route ending at741.8px above navigation777.2px. At320x568 no horizontal overflow; visible Home actions44px. At1440x900 both dashboard columns fit without overflow.",
+      "Executed installed journeys: Home to Harvests; route to Add stops to Zones to Home to Hunt map; route stop to its map detail; Home to Stats; End grind dialog and Cancel without ending the active session.",
+      "Route read mode shows tappable stop rows; Edit route exposes reorder and remove controls. Explicit Hunt map actions reset the selected pane to Map.",
+      "A new saved receipt arrived during the installed browser run and the durable session count updated automatically.",
+      "Windows root suite176tests:175passed,0failed,1host-only symlink skip. Cloud suite29passed,0failed,0skips.",
+      "Public build23files with privateDataIncludedfalse. Portable49runtime files plus manifest installed and all50file hashes matched before the final public-career-only CSS preservation.",
+      "Independent source review and Home screenshot review found no remaining blocking Home/navigation issues. Independent live browser verification is unavailable because its Chrome surface blocks localhost."
     ],
     "changedUnverified": [
-      "The UI commit is pushed to fix/hunting-workflow-20260918 at a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd but is not integrated into main.",
-      "GitHub Pages still requires integration and a successful Pages build before the live public URL can be called updated.",
-      "GitHub Actions Quality remains unavailable before steps because the repository has no assigned runner."
+      "Native Linux final-candidate gate is next; earlier career revision had169root tests and29cloud tests passed on native Node24.",
+      "The final public-career-only CSS preservation needs portable recopy and public build regeneration.",
+      "No physical phone or away-from-home live journey was executed for this slice.",
+      "No overall product or user acceptance. User identified broader navigation and usability confusion.",
+      "GitHub Quality did not start: account locked due to a billing issue. Main integration and public Pages update remain unproved."
     ],
     "proof": [
-      "Real installed browser proof: 390x844 local career view after restart.",
-      "Real static public build proof: 390x844 generated docs/index.html preview.",
-      "Source and installed hashes were compared for the reviewed UI files.",
-      "Root and cloud test suites were rerun after the final source changes."
+      "Private installed Home screenshot and runtime hashes retained outside the repository.",
+      "Private Windows root/cloud logs and prior native Node24 logs retained outside the repository.",
+      "Independent review distinguishes source and image inspection from unavailable independent browser interactions."
     ],
     "externalEffects": [
-      "Pushed commit a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd to the existing feature branch.",
-      "Refreshed and restarted the local installed Companion.",
-      "No player saves, account data, Render services, databases, or hosted feedback data were changed."
+      "Updated and restarted only the installed Companion runtime.",
+      "Read game saves; no test-created sessions, route changes, or journal deletions.",
+      "Earlier career candidatefb052fea pushed to the existing task branch; Home slice is not yet pushed."
     ],
-    "nextSafeAction": "Integrate a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd into main through the existing review path, then wait for the Pages build and recheck the live phone layout."
+    "doNotRepeat": [
+      "Do not replay the rejected passing acceptance write; this checkpoint records unfinished product acceptance.",
+      "Do not rerun blocked GitHub jobs without an account-state change.",
+      "Do not replace the private journal or game saves."
+    ],
+    "nextSafeAction": "Regenerate public/portable CSS, commit this owned Home slice, run the unchanged native Node24 gate on the exact candidate, push the existing PR branch, record review and runtime identity, and leave installed Home open."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "a9e777b25eabf49f38cd65aadc06ef1ddfb4e9dd",
+    "headBefore": "fb052fea9299701f62ea0191be362f2b7c8a6896",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
@@ -58,5 +64,5 @@
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [],
-  "privacyBoundary": "bounded UI identities and test measurements only; no player data, raw screenshots, save paths, or secrets"
+  "privacyBoundary": "Bounded UI source and test identities only. Player data, raw screenshots, private paths and secrets stay outside this repository."
 }
