@@ -111,3 +111,20 @@ test('setup uses the selected session while pause, resume, finish and history re
  assert.match(view({...current,pausedAt:'2026-09-18T12:30:00Z'}),/data-action="session-resume"/);
  assert.match(view(finished),/Continue this grind/);
 });
+
+
+test('phone grind flow keeps map route and tracking controls one tap away',()=>{
+ const active=view(session());
+ const dock=active.match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.ok(dock);assert.match(dock,/data-action="grind-hunt"/);assert.match(dock,/data-action="grind-route"/);assert.match(dock,/data-action="session-pause"/);
+ assert.doesNotMatch(dock,/session-end|session-edit|grind-setup/);
+ assert.match(active,/@media\(max-width:700px\)[\s\S]*\.grind-primary-actions\{display:none\}/);
+ assert.match(active,/\.grind-animal-summary\{display:none\}/);assert.match(active,/padding-bottom:88px/);
+ const paused=view(session({pausedAt:'2026-09-18T12:30:00Z'})).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.match(paused,/data-action="session-resume"/);assert.match(paused,/>Resume<\/button>/);
+ const finished=view(session({endedAt:'2026-09-18T13:00:00Z'})).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.match(finished,/data-action="session-resume"/);assert.match(finished,/>Continue<\/button>/);
+ const chosen=session({id:'chosen',endedAt:'2026-09-18T13:00:00Z'}),other=session({id:'other',targetSpecies:'Red Deer'});
+ const blocked=grindsView({sessions:[chosen,other],reserves:[{id:19,name:'Askiy Ridge'}]},{selectedId:'chosen'}).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.match(blocked,/Other grind active/);assert.doesNotMatch(blocked,/data-action="session-resume"/);
+});
