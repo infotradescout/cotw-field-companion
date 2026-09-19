@@ -1,6 +1,6 @@
-import {FieldMap,poiKinds} from './map.js?v=f6f2eeee2a2f3f27';
-import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=f6f2eeee2a2f3f27';
-import {insideBounds} from './map-geometry.js?v=f6f2eeee2a2f3f27';
+import {FieldMap,poiKinds} from './map.js?v=d65fd2e5634d1463';
+import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=d65fd2e5634d1463';
+import {insideBounds} from './map-geometry.js?v=d65fd2e5634d1463';
 const terrainLabels={outside:'Outside the mapped area — use Fit full reserve',loading:'Loading reserve terrain…',ready:'Reserve terrain loaded',partial:'Some detail tiles failed; available terrain is retained',error:'Terrain unavailable. Retry or use the coordinate grid.',disabled:'Coordinate grid · online terrain off',unavailable:'No verified terrain geometry for this reserve'};
 export function terrainStatusText(s){return terrainLabels[s?.status]||'Waiting for terrain';}
 export class MapAtlas{

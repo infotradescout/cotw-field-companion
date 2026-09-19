@@ -308,3 +308,14 @@ test('ordinary zone, equipment and place labels select their own record through 
   }
  }
 });
+test('interactive equipment labels cannot cover an earlier visible zone marker',t=>{
+ const h=harness(t);h.map.box=[0,0,4000,4000];
+ const herd=zone('herd',1000,1000),gear={id:'gear',x:900,z:1000,label:'Lake stand',kind:'tripod'};
+ h.update({zones:[herd],equipment:[gear]});
+ assert.equal(h.nodes('data-spot-info').length,0,'collapse a label crossing another marker before its interactive text is painted');
+ assert.equal(h.nodes('data-spot-hit').length,0,'collapsed labels leave no invisible hit rectangle');
+ assert.ok(h.nodes('data-zone').some(n=>n.getAttribute('role')==='button'),'the earlier herd marker remains selectable');
+ assert.ok(h.nodes('data-pin').some(n=>n.getAttribute('role')==='button'),'the equipment marker remains selectable');
+ h.map.box=[800,800,400,400];h.map.draw();
+ assert.ok(h.nodes('data-spot-info').some(n=>n.textContent.includes('Lake stand')),'zoom reveals the label again when space permits');
+});
