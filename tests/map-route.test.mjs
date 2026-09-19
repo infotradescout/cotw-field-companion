@@ -179,3 +179,69 @@ test('route species labels use Great One gold while saved aliases stay neutral',
   h.update({routeZones: [zone('a', 100, 100), zone('b', 700, 700, {annotation: {name: 'North lake'}})], route: ['a', 'b']});
   assert.deepEqual(h.nodes('data-route-name').map(item => item.getAttribute('fill')), ['#f0c76d', '#fff4db']);
 });
+
+test('a crowded route stays readable without losing numbered stops or their details', t => {
+  const h = harness(t, {width: 390, height: 844});
+  const full = [[100,200],[500,480],[502,505],[525,492],[565,520],[540,508],[535,545],[150,700],[820,780]]
+    .map(([x,z], index) => zone(`stop-${index}`, x, z, {annotation:{name:`Lake ${index+1}`}}));
+  h.update({routeZones:full, route:full.map(item => item.id)});
+  const markers=h.nodes('data-route-stop'), names=h.nodes('data-route-name'), hours=h.nodes('data-route-hours');
+  assert.equal(markers.length,9);
+  assert.equal(h.nodes('data-route-leg').length,8);
+  const visible=names.filter(item=>item.getAttribute('display')!=='none'), hidden=names.filter(item=>item.getAttribute('display')==='none');
+  assert.ok(visible.length>0 && hidden.length>0,'show readable labels while collapsing only crowded ones');
+  const overlaps=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
+  const textBox=(text, fontSize=Number(text.getAttribute('font-size')))=>{
+    const x=Number(text.getAttribute('x')),y=Number(text.getAttribute('y')),width=text.textContent.length*fontSize*.6;
+    const end=text.getAttribute('text-anchor')==='end'||text.parent?.getAttribute('text-anchor')==='end';
+    return [end?x-width:x,y-fontSize,end?x:x+width,y+fontSize*.25];
+  };
+  const labelBoxes=visible.map(name=>{
+    const schedule=hours.find(item=>item.getAttribute('data-route-hours')===name.getAttribute('data-route-name'));
+    const boxes=[textBox(name),...schedule.children.map(line=>textBox(line,Number(schedule.getAttribute('font-size'))))];
+    return [Math.min(...boxes.map(b=>b[0])),Math.min(...boxes.map(b=>b[1])),Math.max(...boxes.map(b=>b[2])),Math.max(...boxes.map(b=>b[3]))];
+  });
+  for(let i=0;i<labelBoxes.length;i++){
+    for(let j=i+1;j<labelBoxes.length;j++)assert.equal(overlaps(labelBoxes[i],labelBoxes[j]),false,'visible names and hours cannot overlap');
+    for(const marker of markers){
+      const circle=marker.children.find(child=>child.tag==='circle'),x=Number(circle.getAttribute('cx')),z=Number(circle.getAttribute('cy')),r=Number(circle.getAttribute('r'));
+      assert.equal(overlaps(labelBoxes[i],[x-r,z-r,x+r,z+r]),false,'no label covers a numbered stop');
+    }
+  }
+  for(const name of hidden){
+    const number=name.getAttribute('data-route-name'),marker=markers.find(item=>item.getAttribute('data-route-stop')===number),hit=h.nodes('data-route-hit').find(item=>item.getAttribute('data-route-hit')===number);
+    assert.match(marker.getAttribute('aria-label'),/Lake \d+, drinking · 06:00–10:00/);
+    assert.ok(Math.abs(Number(hit.getAttribute('width'))-44*h.map.box[2]/390)<1e-8,'hidden text does not leave an invisible wide tap area');
+    marker.listeners.get('keydown')({key:'Enter',preventDefault(){}});
+    assert.equal(h.selected.at(-1),marker.getAttribute('data-zone'));
+  }
+  const hiddenId=markers.find(item=>item.getAttribute('data-route-stop')===hidden[0].getAttribute('data-route-name')).getAttribute('data-zone');
+  const target=full.find(item=>item.id===hiddenId);
+  h.map.zoom(.04,[target.x,target.z]);
+  const zoomed=h.nodes('data-route-stop').find(item=>item.getAttribute('data-zone')===hiddenId);
+  const revealed=zoomed.children.find(item=>item.getAttribute('data-route-name'));
+  assert.notEqual(revealed.getAttribute('display'),'none','zooming recomputes placement and reveals the full label when room is available');
+});
+
+test('nearby route numbers separate with leaders to their unchanged saved coordinates', t=>{
+  const h=harness(t,{width:390,height:844}),full=[zone('a',500,500),zone('b',501,507),zone('c',505,505)];
+  h.update({routeZones:full,route:full.map(item=>item.id)});
+  const markers=h.nodes('data-route-stop'),scale=h.map.box[2]/390;
+  const centers=markers.map(marker=>{
+    const circle=marker.children.find(child=>child.tag==='circle');
+    return [Number(circle.getAttribute('cx')),Number(circle.getAttribute('cy'))];
+  });
+  for(let i=0;i<centers.length;i++)for(let j=i+1;j<centers.length;j++)
+    assert.ok(Math.hypot(centers[i][0]-centers[j][0],centers[i][1]-centers[j][1])>=26*scale-.001,'all three number circles remain separately visible');
+  for(let index=0;index<markers.length;index++){
+    const marker=markers[index],saved=full[index];
+    assert.deepEqual([marker.getAttribute('data-world-x'),marker.getAttribute('data-world-z')],[String(saved.x),String(saved.z)]);
+    if(centers[index][0]!==saved.x||centers[index][1]!==saved.z){
+      const leader=marker.children.find(child=>child.tag==='line');
+      assert.deepEqual([Number(leader.getAttribute('x1')),Number(leader.getAttribute('y1'))],[saved.x,saved.z]);
+      assert.deepEqual([Number(leader.getAttribute('x2')),Number(leader.getAttribute('y2'))],centers[index]);
+    }
+  }
+  const leg=h.nodes('data-route-leg')[0].children.find(child=>child.tag==='line');
+  assert.deepEqual(['x1','y1','x2','y2'].map(name=>Number(leg.getAttribute(name))),[500,500,501,507],'route distances and lines still use exact saved positions');
+});

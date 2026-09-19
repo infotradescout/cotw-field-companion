@@ -1,5 +1,5 @@
-import {esc,pretty} from './data-client.js?v=263febb61b86541f';
-import {speciesName} from './species-style.js?v=263febb61b86541f';
+import {esc,pretty} from './data-client.js?v=f49c1d63095827c4';
+import {speciesName} from './species-style.js?v=f49c1d63095827c4';
 
 const num=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:1}):'Not available';
 const date=v=>v?new Date(v).toLocaleString():'Not recorded';

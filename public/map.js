@@ -9,6 +9,7 @@ function el(tag,attrs={},text){const n=document.createElementNS(NS,tag);for(cons
 function textWidth(node,text){node.textContent=text;const measured=node.getComputedTextLength?.();return Number.isFinite(measured)&&measured>0?measured:Array.from(text).length*Number(node.getAttribute('font-size'))*.68;}
 function fitText(node,text,width){if(textWidth(node,text)<=width)return text;const letters=Array.from(text);let low=0,high=letters.length;while(low<high){const mid=Math.ceil((low+high)/2);if(textWidth(node,letters.slice(0,mid).join('')+'…')<=width)low=mid;else high=mid-1;}return low?letters.slice(0,low).join('')+'…':'';}
 function wrapText(node,text,width){const lines=[];let line='';for(const word of text.split(/\s+/)){const next=line?line+' '+word:word;if(textWidth(node,next)<=width){line=next;continue;}if(line)lines.push(line);line='';for(const letter of Array.from(word)){if(line&&textWidth(node,line+letter)>width){lines.push(line);line='';}line+=letter;}}if(line)lines.push(line);return lines;}
+const boxesOverlap=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
 /** Saved 256×256 pressure, in the game's row-major X/Z order. No inferred circles. */
 export class HuntingPressureLayer {
  constructor(node=el('image'),createCanvas=()=>document.createElement('canvas')) {
@@ -87,6 +88,23 @@ export class FieldMap{
   const plan=this.layers.route?routePlan(route,this.data.routeZones??this.data.zones):{stops:[],legs:[]},routeIds=new Set(plan.stops.filter(stop=>stop.valid).map(stop=>stop.id));
   const routePeers=new Map();for(const stop of plan.stops.filter(stop=>stop.valid&&visible(stop.zone))){const key=stop.zone.x+':'+stop.zone.z;if(!routePeers.has(key))routePeers.set(key,[]);routePeers.get(key).push(stop.number);}
   const routeMarkers=plan.stops.filter(stop=>stop.valid&&visible(stop.zone)).map(stop=>{const peers=routePeers.get(stop.zone.x+':'+stop.zone.z),angle=peers.indexOf(stop.number)/peers.length*Math.PI*2,offset=peers.length>1?Math.max(14,peers.length*4)*scale:0;return {stop,x:stop.zone.x+Math.cos(angle)*offset,z:stop.zone.z+Math.sin(angle)*offset};});
+  // Separate nearby numbers; a short leader still points to the exact saved location.
+  const placed=[];
+  for(const marker of routeMarkers){
+   const clear=(x,z)=>placed.every(other=>Math.hypot(x-other.x,z-other.z)>=26*scale-.001);
+   if(!clear(marker.x,marker.z)){
+    let spot=null;
+    for(const radius of [26,52,78]){
+     for(let direction=0;direction<8;direction++){
+      const angle=direction*Math.PI/4,x=marker.x+Math.cos(angle)*radius*scale,z=marker.z+Math.sin(angle)*radius*scale;
+      if(x>=b[0]+12*scale&&x<=b[0]+b[2]-12*scale&&z>=b[1]+12*scale&&z<=b[1]+b[3]-12*scale&&clear(x,z)){spot={x,z};break;}
+     }
+     if(spot)break;
+    }
+    if(spot)Object.assign(marker,spot);
+   }
+   placed.push(marker);
+  }
   const zones=(this.layers.zones?this.data.zones:[]).filter(p=>visible(p)&&!routeIds.has(p.id)),equipment=this.layers.equipment?this.data.equipment:[],pins=this.layers.equipment?this.data.pins:[];
   for(const leg of plan.legs){const a=leg.from.zone,c=leg.to.zone,g=el('g',{'data-route-leg':`${leg.from.number}-${leg.to.number}`,'pointer-events':'none'}),attrs={x1:a.x,y1:a.z,x2:c.x,y2:c.z,'stroke-linecap':'round'};g.append(el('line',{...attrs,stroke:'#142017','stroke-width':7*scale}));g.append(el('line',{...attrs,stroke:'#ff7a00','stroke-width':3.5*scale}));if(leg.distanceMeters>0){const ux=(c.x-a.x)/leg.distanceMeters,uz=(c.z-a.z)/leg.distanceMeters,x=a.x+(c.x-a.x)*.6,z=a.z+(c.z-a.z)*.6,size=Math.min(11*scale,leg.distanceMeters*.18);g.append(el('path',{'data-route-direction':'forward',d:`M${x-ux*size-uz*size*.65},${z-uz*size+ux*size*.65} L${x+ux*size},${z+uz*size} L${x-ux*size+uz*size*.65},${z-uz*size-ux*size*.65}`,fill:'none',stroke:'#ff7a00','stroke-width':3.5*scale,'stroke-linecap':'round','stroke-linejoin':'round'}));}g.append(el('title',{},`Route ${leg.from.number} to ${leg.to.number} · ${Math.round(leg.distanceMeters)} m straight-line`));out.append(g);}
   // Wide hit areas sit below all visible markers so a neighbor's hit area cannot cover a marker.
@@ -102,6 +120,7 @@ export class FieldMap{
   }
   if(this.layers.poi)for(const p of (reserve.poi||[]).filter(p=>visible(p)&&(this.poiFilter==='all'||this.poiFilter===p.kind))){const g=el('g',{'data-poi':p.id,'data-world-x':p.x,'data-world-z':p.z,tabindex:0,role:'button','aria-label':`${poiKinds[p.kind]||'Reference point'}: ${p.label}`});const fill=p.kind==='outpost'?'#e5b459':p.kind==='lookout_point'?'#deebc2':'#cfc5ab';g.append(el('rect',{x:p.x-8*scale,y:p.z-8*scale,width:16*scale,height:16*scale,rx:2*scale,fill,stroke:'#283126','stroke-width':1.5*scale}));g.append(el('text',{x:p.x,y:p.z+4*scale,'text-anchor':'middle',fill:'#182519','font-size':11*scale,'font-weight':'bold','pointer-events':'none'},p.kind==='outpost'?'⌂':p.kind==='lookout_point'?'△':p.kind==='landmark'?'◆':'H'));g.append(el('title',{},`${p.label} · ${poiKinds[p.kind]||p.kind} · reference, not unlock status`));if(b[2]<4200){const t=label(p.x,p.z,p.label);if(t)g.append(t);}g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.point=[p.x,p.z];this.onPoint(this.point,p);this.draw();}});out.append(g);}
   for(const p of [...equipment,...pins].filter(visible)){const g=el('g',{'data-pin':p.id,'data-world-x':p.x,'data-world-z':p.z,tabindex:0,role:'button','aria-label':`${p.label||p.kind} X ${Math.round(p.x)} Z ${Math.round(p.z)}`});g.append(el('path',{d:`M${p.x},${p.z-8*scale}l${8*scale},${8*scale}l${-8*scale},${8*scale}l${-8*scale},${-8*scale}Z`,fill:p.source==='save'?'#f5eee0':'#c4d57a',stroke:'#283126','stroke-width':1.5*scale}));g.append(el('title',{},p.label||p.kind));if(p.label){const t=label(p.x,p.z,p.label);if(t)g.append(t);}g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.onPoint([p.x,p.z],p);}});out.append(g);}
+  const routeNumberBoxes=routeMarkers.map(({x,z})=>[x-13*scale,z-13*scale,x+13*scale,z+13*scale]);
   for(const {stop,x,z} of routeMarkers){
    const zone=stop.zone,name=zone.annotation?.name||zone.species||'Zone',hours=formatZoneHours(zone.start,zone.end),g=el('g',{'data-zone':stop.id,'data-route-stop':stop.number,'data-world-x':zone.x,'data-world-z':zone.z,tabindex:0,role:'button','aria-label':`Route stop ${stop.number}, ${name}, ${zone.need||'zone'} · ${hours}, X ${Math.round(zone.x)}, Z ${Math.round(zone.z)}`});
    if(x!==zone.x||z!==zone.z)g.append(el('line',{x1:zone.x,y1:zone.z,x2:x,y2:z,stroke:'#ff7a00','stroke-width':1.5*scale,'pointer-events':'none'}));
@@ -110,14 +129,27 @@ export class FieldMap{
    g.append(el('title',{},`Stop ${stop.number} · ${name} · ${zone.need||'zone'} · ${hours} in-game`));
    const textAttrs={'paint-order':'stroke',stroke:'#142017','stroke-width':3*scale,style:'pointer-events:all'},nameNode=el('text',{...textAttrs,'data-route-name':stop.number,fill:!zone.annotation?.name&&isGreatOneSpecies(zone.species,zone.speciesKey)?'#f0c76d':'#fff4db','font-size':11*scale,'font-weight':'bold'}),hoursNode=el('text',{...textAttrs,'data-route-hours':stop.number,fill:'#ffb46d','font-size':10*scale});
    g.append(nameNode,hoursNode);out.append(g);
-   // Measure attached SVG text, then place the label on the side with room.
-   const schedule=`${zone.need||'Zone'} · ${hours}`,wanted=Math.max(textWidth(nameNode,name),textWidth(hoursNode,schedule)),left=b[0]+6*scale,right=b[0]+b[2]-6*scale,rightX=Math.max(left,Math.min(right,x+16*scale)),leftX=Math.max(left,Math.min(right,x-16*scale)),rightRoom=right-rightX,leftRoom=leftX-left,onLeft=wanted>rightRoom&&leftRoom>rightRoom,textX=onLeft?leftX:rightX,room=Math.max(scale,onLeft?leftRoom:rightRoom),anchor=onLeft?'end':'start';
-   const shownName=fitText(nameNode,name,room),lines=wrapText(hoursNode,schedule,room),labelY=Math.max(b[1]+15*scale,Math.min(z-3*scale,b[1]+b[3]-(lines.length*14+8)*scale));
-   nameNode.textContent=shownName;nameNode.setAttribute('x',textX);nameNode.setAttribute('y',labelY);nameNode.setAttribute('text-anchor',anchor);
-   const widest=Math.max(textWidth(nameNode,shownName),...lines.map(line=>textWidth(hoursNode,line)));hoursNode.textContent='';
-   for(let index=0;index<lines.length;index++){const line=el('tspan',{x:textX,y:labelY+(index+1)*14*scale},lines[index]);hoursNode.append(line);}
-   hoursNode.setAttribute('text-anchor',anchor);
-   const labelLeft=onLeft?textX-widest:textX,labelRight=onLeft?textX:textX+widest,hitX=Math.min(x-22*scale,labelLeft-4*scale),hitY=Math.min(z-22*scale,labelY-12*scale),hitRight=Math.max(x+22*scale,labelRight+4*scale),hitBottom=Math.max(z+22*scale,labelY+(lines.length*14+4)*scale);
+   // Try either side before collapsing a crowded label to its numbered stop.
+   // Full names and hours remain on the accessible button and in stop details.
+   const schedule=`${zone.need||'Zone'} · ${hours}`,wanted=Math.max(textWidth(nameNode,name),textWidth(hoursNode,schedule)),left=b[0]+6*scale,right=b[0]+b[2]-6*scale,rightX=Math.max(left,Math.min(right,x+16*scale)),leftX=Math.max(left,Math.min(right,x-16*scale)),rightRoom=right-rightX,leftRoom=leftX-left,preferLeft=wanted>rightRoom&&leftRoom>rightRoom;
+   let placement=null;
+   for(const onLeft of [preferLeft,!preferLeft]){
+    const textX=onLeft?leftX:rightX,room=onLeft?leftRoom:rightRoom;
+    if(room<60*scale)continue;
+    const shownName=fitText(nameNode,name,room),lines=wrapText(hoursNode,schedule,room),labelY=Math.max(b[1]+15*scale,Math.min(z-3*scale,b[1]+b[3]-(lines.length*14+8)*scale)),widest=Math.max(textWidth(nameNode,shownName),...lines.map(line=>textWidth(hoursNode,line))),area=[onLeft?textX-widest:textX,labelY-12*scale,onLeft?textX:textX+widest,labelY+(lines.length*14+4)*scale];
+    if(area[1]<b[1]||area[3]>b[1]+b[3]||[...labelBoxes,...routeNumberBoxes].some(box=>boxesOverlap(area,box)))continue;
+    placement={textX,shownName,lines,labelY,area,anchor:onLeft?'end':'start'};break;
+   }
+   let hitX=x-22*scale,hitY=z-22*scale,hitRight=x+22*scale,hitBottom=z+22*scale;
+   if(placement){
+    const {textX,shownName,lines,labelY,area,anchor}=placement;
+    nameNode.textContent=shownName;nameNode.setAttribute('x',textX);nameNode.setAttribute('y',labelY);nameNode.setAttribute('text-anchor',anchor);hoursNode.textContent='';
+    for(let index=0;index<lines.length;index++)hoursNode.append(el('tspan',{x:textX,y:labelY+(index+1)*14*scale},lines[index]));
+    hoursNode.setAttribute('text-anchor',anchor);labelBoxes.push(area);
+    hitX=Math.min(hitX,area[0]-4*scale);hitY=Math.min(hitY,area[1]);hitRight=Math.max(hitRight,area[2]+4*scale);hitBottom=Math.max(hitBottom,area[3]);
+   }else{
+    nameNode.textContent=name;hoursNode.textContent=schedule;nameNode.setAttribute('display','none');hoursNode.setAttribute('display','none');
+   }
    hitLayer.append(el('rect',{'data-zone':stop.id,'data-route-hit':stop.number,x:hitX,y:hitY,width:hitRight-hitX,height:hitBottom-hitY,fill:'transparent','pointer-events':'all','aria-hidden':'true'}));
    g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.onSelect(stop.id);}});
   }

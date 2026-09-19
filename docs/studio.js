@@ -1,5 +1,5 @@
-import {esc,safePreference,savePreference} from './data-client.js?v=263febb61b86541f';
-import {speciesName,isGreatOneSpecies,GREAT_ONE_COLOR} from './species-style.js?v=263febb61b86541f';
+import {esc,safePreference,savePreference} from './data-client.js?v=f49c1d63095827c4';
+import {speciesName,isGreatOneSpecies,GREAT_ONE_COLOR} from './species-style.js?v=f49c1d63095827c4';
 
 const SIZES = {
   square: [1080, 1080],
