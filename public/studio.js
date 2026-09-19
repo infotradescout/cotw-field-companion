@@ -357,7 +357,7 @@ export class ShareStudio {
     context.fillStyle = accent;
     context.fillRect(pad, pad, width * 0.09, 7);
     context.fillStyle = ink;
-    fitted(context, design.alias ? design.alias.toUpperCase() : 'COTW COMPANION', pad, pad + 45, width - (2 * pad), Math.min(28, width * 0.025));
+    fitted(context, design.alias ? design.alias.toUpperCase() : 'GRINDZONE', pad, pad + 45, width - (2 * pad), Math.min(28, width * 0.025));
     const metrics = this.metrics();
 
     if (design.layout === 'thumbnail') {
