@@ -1,7 +1,7 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-grind-route-candidate",
-  "createdAt": "2026-09-19T03:12:41.117071+00:00",
+  "checkpointId": "progress-20260919-grind-route-installed",
+  "createdAt": "2026-09-19T03:27:29.533099+00:00",
   "outcome": "Simplify the player workflow and improve grind tracking, drawn routes with in-game zone hours, saved place names, and visible ammo classes. Keep the public preview usable and private save data local.",
   "scope": [
     "grind tracker and Home entry",
@@ -23,33 +23,37 @@
       "Disposable browser exercised saved zone/structure names and route selection under an animal filter; imported and public identities have independent reorder and paired-phone proof.",
       "Windows integration suite:222 tests,221 passed,0failed,1host-only symlink skip. Cloud:29passed,0failed,0skipped.",
       "Final disposable phone route click now opens the correct zone from its text label, retains it after refresh under another animal filter, and fits labels at320and390px.",
-      "Ammo live browser search returns the two .300 options for Moose, marks .22LR as wrong class, and filters it out when Only right class is selected. Fields remain44px at320px; no horizontal overflow at320,390or1440px."
+      "Ammo live browser search returns the two .300 options for Moose, marks .22LR as wrong class, and filters it out when Only right class is selected. Fields remain44px at320px; no horizontal overflow at320,390or1440px.",
+      "Exact b53e59e native Ubuntu Node24.14.1 release gate passed:225 root tests and29 cloud tests,0 failures and0 skips; public regeneration unchanged.",
+      "Installed b53 portable runtime:50 runtime files plus manifest; all51 installed hashes match the staged artifact. Previous runtime and stopped journal backed up before restart. Installed read-only browser opens legacy grind and actual9-stop route with8 legs and loaded terrain;575x986 map has no page overflow.",
+      "Existing Render preview now live on exact b53e59e, deployment dep-damvvmrtqb8s73a2tc10. All24 assets plus build manifest match; live Chrome ammo match/mismatch and Studio phone/desktop widths checked. Auto-deploy remains off."
     ],
     "changedUnverified": [
-      "Final desktop map height adjustment still needs browser confirmation.",
-      "Composite exact-commit native gate, installed update, and updated Render assets remain to execute.",
+      "Final installed real9-stop map inspection found overlapping route labels around nearby stops. Declutter labels while retaining every stop number, full accessible name, schedules and tap-to-open detail.",
       "Physical-phone/away-from-home journey and whole-product/user acceptance remain unproved."
     ],
     "proof": [
-      "Detailed scoped logs and objector findings are preserved in private work evidence. Synthetic test journal and saves are separate from the player journal."
+      "Detailed scoped logs and objector findings are preserved in private work evidence. Synthetic test journal and saves are separate from the player journal.",
+      "Private evidence includes final native gate, installed hash receipt and hosting-receipt-b53.json. This checkpoint reconciles the source change from145e522 to b53e59e; only desktop map summary placement changed and was re-tested."
     ],
     "externalEffects": [
-      "Render public static preview created and verified on c21b5fa; auto-deploy off.",
-      "Installed Companion remains running on the previous Home/dashboard candidate; current feature changes are not installed yet.",
-      "PR5 remains unmerged. Current candidate code is in the owned task worktree."
+      "Installed Companion running source b53e59e on port47831 with original player journal preserved.",
+      "Existing public static Render preview live on b53e59e; auto-deploy off; public library and fictional samples only.",
+      "PR5 open and unmerged; branch remote matches b53e59e.",
+      "Disposable test app remains on port47851 with separate synthetic save and journal; its test mutations do not affect player data."
     ],
     "doNotRepeat": [
       "Do not treat GitHub billing as a general hosting blocker. Only the Actions job was blocked.",
       "Do not replace or delete player data or weaken release gates.",
       "Do not replay the obsolete rejected passing acceptance packet. This is an unfinished progress checkpoint."
     ],
-    "nextSafeAction": "Run the exact committed native release gate, confirm desktop map height, install the reviewed portable build, push PR5 and update the existing Render preview with public-only assets."
+    "nextSafeAction": "Resolve the observed label collisions in the existing map renderer, check dense real route and targeted regressions, then update the same runtime and preview with the verified code. Preserve the installed journal and all provider source guards."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "c21b5faed3247519f3eae9c71cd305fee3cc80a8",
+    "headBefore": "b53e59e683326315237d4fe48733fd67122f1965",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
