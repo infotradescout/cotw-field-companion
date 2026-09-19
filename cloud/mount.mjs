@@ -3,7 +3,7 @@ export function mountClientSource(source,mount=''){
   if(!mount)return source;
   if(mount!=='/grindzone')throw Error('Unsupported phone mount');
   return source.replace(/(["'`])\/(?=(?:api|phone)\/|#)/g,'$1'+mount+'/')
-    .replace(/((?:src|href)=["'])\/(?!\/)/g,'$1'+mount+'/');
+    .replace(/((?:src|href)=["'])\/(?!\/|grindzone\/)/g,'$1'+mount+'/');
 }
 export function isPhonePath(url){return typeof url==='string'&&(url==='/grindzone'||url.startsWith('/grindzone/')||url.startsWith('/grindzone?'));}
 export function phoneProxyHeaders(headers){

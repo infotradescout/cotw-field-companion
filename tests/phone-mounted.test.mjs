@@ -64,3 +64,10 @@ test('shared-host HTTP and WebSocket proxy completes private pairing and live st
  assert.equal(state.harvests[0].id,'synthetic-receipt');assert.equal(await (await fetch(httpBase+'/')).text(),'host-intact');
  await bridge.close();assert.equal((await localFetch(publicBase+'/api/state',{headers:{Cookie:cookie}})).status,503);
 });
+
+test("pairing script and API links are mounted once",()=>{
+ const input=`<script src="/phone/connect.js"></script><a href="/api/export">Export</a>`;
+ const output=mountClientSource(input,"/grindzone");
+ assert.equal(output,`<script src="/grindzone/phone/connect.js"></script><a href="/grindzone/api/export">Export</a>`);
+ assert.equal(mountClientSource(output,"/grindzone"),output);
+});
