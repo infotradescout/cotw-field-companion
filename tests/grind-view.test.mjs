@@ -15,6 +15,7 @@ test('current and selected finished grinds remain distinct and goal completion d
  assert.equal(selectedGrind(state).id,'current');assert.equal(selectedGrind(state,'old').id,'old');
  const html=grindsView(state);assert.match(html,/Pause grind/);assert.match(html,/Goal reached/);assert.doesNotMatch(html,/Must not leak/);
  active.name='<img onerror=x>';assert.doesNotMatch(grindsView(state),/<img/);
+ active.endedAt='2026-09-18';const finished=grindsView(state,{selectedId:active.id});assert.match(finished,/Goal reached<\/span>/);assert.doesNotMatch(finished,/finish when you choose|Pause grind/);
 });
 
 const session=(overrides={})=>({id:'selected-grind',name:'Lake circuit',reserve:19,startedAt:'2026-09-18T12:00:00Z',endedAt:null,targetSpecies:'Moose',goal:400,...overrides});
