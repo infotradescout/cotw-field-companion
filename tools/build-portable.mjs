@@ -36,7 +36,7 @@ export function buildPortable(root, destination) {
   }
   const receipt = {
     schema: 'field.portable-package.v1', version,
-    productName: 'COTW Companion', finalNamePending: true,
+    productName: 'GrindZone', finalNamePending: false,
     distribution: 'private-staged-local-preview', targetHub: 'Skill Gaming World',
     platform: 'Windows', requires: 'Node.js 22.13 or newer', entrypoint: 'START.cmd',
     price: 0, paymentRequired: false, donationUrl: null,
