@@ -1,77 +1,34 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-phone-grind-usability-source-final",
-  "createdAt": "2026-09-19T17:50:00Z",
-  "outcome": "Simplify the repeated phone grind loop so map, route and tracking state stay one tap away while secondary grind detail stops competing with the live hunt flow.",
-  "scope": [
-    "Persistent phone grind quick controls",
-    "Reduce above-the-fold phone grind clutter",
-    "Per-grind target and other-animal harvest breakdown",
-    "Automatic route ordering",
-    "Per-stop grind setup and gear budget",
-    "Progressive map spot details",
-    "Preserve installed and public preview delivery"
-  ],
-  "prohibitions": [
-    "Preserve player saves and the private journal.",
-    "Keep player data and screenshots out of the public build.",
-    "Do not claim GitHub integration, public deployment, physical-phone or all-product acceptance from local proof.",
-    "Do not weaken release checks or work around GitHub account restrictions."
-  ],
+  "checkpointId": "progress-20260919-private-phone-cache-candidate",
+  "createdAt": "2026-09-19T18:35:23.939189+00:00",
+  "outcome": "Prove COTW end to end while preserving player-owned sources; implement the missing private phone-cache transition before widening game or community scope.",
+  "scope": ["COTW only", "Opt-in private browser cache", "Authenticated pairing and reserve isolation", "Read-only disconnected viewing", "Preserve current installed and public builds"],
+  "prohibitions": ["Never modify player game saves.", "Never treat a disposable cache as the owner or backup of the PC journal.", "No source resets or overwriting newer local work.", "No raw saves or private player data in public builds.", "No browser-policy or release-gate bypass.", "Do not describe a staged candidate as installed, deployed, or publicly accepted."],
+  "previousCheckpoint": {"ref": "9f4ea75537ed094904fae0aab273e3187dde6804", "path": ".selective-intelligence/progress/latest.json", "note": "Preserved in Git history. Its older runtime/host observations must not be treated as current device status."},
   "progress": {
     "completedVerified": [
-      "Grinds retain per-session species totals, distinguish target vs other harvests and advance goals only for the selected target. Pause/resume, history, target changes and unknown summaries remain supported.",
-      "Automatic route ordering uses zone hours with bounded distance improvement, a chosen start, version-guarded preference changes and persistent manual override. Missing coordinates preserve route IDs.",
-      "Per-stop gear setup and in-game cash estimates support identified nearby saved equipment, selected structures and specific optional feeders. Unknown prices stay unknown; shared structure costs are charged once and conflicting claims remain unresolved.",
-      "Independent source review closed route and setup findings;37 setup/map/grind tests and disposable paired-phone API checks passed before later map tap refinements.",
-      "Exact45f87fb native release gate passed269root+29cloud with0fail/skip and unchanged24-file public rebuild; installed54runtime files plus manifest all55hashes matched.",
-      "Live installed browser at320,390,1440 widths showed no horizontal overflow; grind controls at320 retained44px height. Existing named Whitetail grind was configured with its Whitetail target and reloaded as2target+6other; retained harvests/history preserved.",
-      "Installed route9stops/8legs is14.1km vs prior21.1km. Actual close-zoom map shows zone hours and known4male/5female herd values, with terrain loaded. Synthetic browser also verified start/manual/auto/reload, add/remove ordering, setup edits and blank-price persistence.",
-      "Public Render deployment45f87fb was live with all24assets and manifest matching; auto-deploy off. Public-host browser found generic label taps selecting bare coordinates. That defect is being corrected before final delivery.",
-      "Map tap candidate7989cf4 passed native271root+29cloud0fail/skip, and exact Spoonside role/text clicks on the temporary static preview. Subsequent wide-glyph bounds finding is implemented and17focused map tests pass; final review and browser retry pending.",
-      "Branch f0deeb02a11c596e1648c77993bc47552b4a7d13 adds a phone-only fixed Map / Route / Pause-Resume-Continue dock, hides the duplicate embedded primary-action row at phone widths, hides the redundant animal-count summary while retaining the existing expandable animal detail, and compacts the live grind hero without changing tracking commands or desktop behavior.",
-      "Direct evaluation of the exact branch renderer passed active, paused, finished and conflicting-active-grind states; the quick dock contains no finish, edit or setup destructive/secondary actions. The added grind-view regression file parses successfully and is present on the branch."
+      "Read PR5 at source head 9f4ea75537ed094904fae0aab273e3187dde6804 and the relevant relay, projection and browser files. Existing relay has no offline retained history or self-service account system.",
+      "Verified original app.js, phone-ui.js and cloud/server.mjs bytes against their exact Git blob IDs before bounded sandbox edits.",
+      "Implemented an opt-in cache candidate in the isolated working environment. The candidate adds authenticated-pairing scope binding, per-reserve browser snapshots, stale timestamps, blocked offline mutations, clear-and-stop, and owner-switch guards.",
+      "24 focused Node checks passed with zero failures/skips. Scope: isolated request/readiness functions, relay identity expressions and cache policy with a storage fake.",
+      "Exact-base git apply --check passed; all six applied files were byte-identical to the tested candidate. The same 24 checks passed after applying the patch to the isolated source fixture.",
+      "Saved a candidate archive and proof receipts in the conversation working environment. Committed the durable candidate manifest to the existing task branch at 2726c6deadff872650d088003f428954cee99d7a. The archive itself is attached to the conversation, not stored as runtime source in GitHub."
     ],
     "changedUnverified": [
-      "Full native test/build gate and installed-app verification for f0deeb02a11c596e1648c77993bc47552b4a7d13 are still open. GitHub Actions has no run for this commit, and the authorized TSCommandCenter workstation is offline, so no installation claim is made for this phone-flow change.",
-      "Current map glyph-measurement refinement measures fitted attached SVG text and hit bounds; final objector closure, browser retry, exact-commit gate, installation and same-service public deployment remain.",
-      "Physical phone/away-from-home user journey, overall product/user acceptance, automatic tent identity and unverified feeder/permanent-structure prices remain open."
+      "Candidate patch is NOT applied to repository runtime files, installed app, or public deployment.",
+      "Real IndexedDB/browser validation is open: Chromium navigation returned ERR_BLOCKED_BY_ADMINISTRATOR. No browser policy was changed.",
+      "Workstation handoff and installed-app verification are open: direct Remote Desktop Commander reads returned No devices available. Physical PC power/network state is not inferred.",
+      "Existing full native/cloud/portable release checks, physical phone/cellular acceptance, later phone-dock/branding acceptance and current public build regeneration remain unproved by this turn.",
+      "Email accounts, cross-device cloud cache, permissioned public profiles, friends/follows and viewer-isolation acceptance are not implemented by this cache candidate. Console source access and the second game remain out of this execution slice."
     ],
-    "proof": [
-      "Private work evidence contains independent setup-detail-objector.md and map-label-objector.md, native exact-commit gate logs, installed hashes and browser receipts, and public-host provider/asset/browser receipts. Synthetic test journal is separate from player data."
-    ],
-    "externalEffects": [
-      "Installed Companion45f87fb remains running on47831; its prior runtime and stopped journal are backed up.",
-      "One intentional player configuration change: the clearly named active Whitetail grind target was set from All animals to Whitetail Deer. It is reversible in Edit grind; underlying harvest history remains unchanged.",
-      "Public Render static guide/creator preview is live45f87fb, with the known generic-label tap issue pending the final candidate. Private grind/setup data is excluded from docs.",
-      "PR5 open/unmerged. Task branch remote45f87fb; later map candidates preserved locally pending review. No branch rewrite or main integration.",
-      "Temporary static generated-docs server47853 is running for exact browser verification; stop it after public-host finishes. Synthetic journal server47851 stopped. Installed browser tab retained as deliverable.",
-      "PR5 branch fix/hunting-workflow-20260918 advanced from de9eb63cf11e0e3cea396422d87f87bcbcaf4387 through 68d9fdf0a7b2379b45902d626fe29f95f8c2c888 and f0deeb02a11c596e1648c77993bc47552b4a7d13. No installed runtime, player journal, player configuration or public Render service was mutated by this phone-flow continuation because the workstation was offline."
-    ],
-    "doNotRepeat": [
-      "Do not replay player configuration changes or synthetic fixtures blindly. Inspect current values/versions first.",
-      "Preserve player saves/journal and existing backups. Do not infer game placements, feeder prices, build status or Great One outcomes.",
-      "Do not treat GitHub billing as a hosting blocker or claim public static preview contains private grind controls.",
-      "Do not overwrite a newer local GrindZone candidate when the workstation returns. Read C:/Users/flavo/Documents/Codex/2026-09-17/gi/HANDOFF-COTW-COMPANION.md and compare the documented local source/checkpoint with remote bbaa089 before installing or rebasing."
-    ],
-    "nextSafeAction": "When TSCommandCenter is online, read HANDOFF-COTW-COMPANION.md first and reconcile its exact local source/checkpoint against remote bbaa089 without restarting discovery. If there is no newer local candidate, run the full native test and portable-build gate, update the existing installed Companion from the verified candidate, then verify the actual phone grind screen at narrow widths for one-tap Map / Route / Pause-Resume behavior, no horizontal overflow, unobscured harvest activity, and preserved player data."
+    "proof": [".selective-intelligence/progress/phone-cache-candidate-20260919.md", "Conversation artifact GrindZone-phone-cache-candidate.zip contains patch, original/target identities and scoped test receipts."],
+    "externalEffects": ["Only project continuation metadata was written to the task branch. No runtime source or protected branch was changed by the GitHub writes in this turn.", "No installed app, player journal, player configuration, game save or Render service changed. No new cloud resources or spending were provisioned."],
+    "doNotRepeat": ["Do not restart repository-wide discovery.", "Do not call the user's PC offline based on connector reachability.", "Do not replay historical player configuration changes.", "Do not invent a successful browser run or infer product acceptance from the 24 isolated tests.", "Do not reconstruct code from the manifest prose; recover the exact candidate artifact and verify hashes."],
+    "nextSafeAction": "Recover the actual workstation handoff and reconcile newer local source. Retrieve GrindZone-phone-cache-candidate.zip from this conversation/working environment, verify archive and patch hashes from the manifest and original Git blobs, then git apply --check before applying. Run real IndexedDB/browser acceptance, the existing native/cloud/portable gate and installed phone proof. Resume accounts/publication permissions only after the source-to-phone transition is accepted."
   },
-  "repository": {
-    "root": ".",
-    "rootKind": "repository_relative",
-    "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "de9eb63cf11e0e3cea396422d87f87bcbcaf4387",
-    "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
-    "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
-  },
-  "savedFiles": [
-    "public/grinds.js",
-    "public/hunting-workspace.css",
-    "tests/grind-view.test.mjs"
-  ],
-  "privacyBoundary": "Bounded UI source and test identities only. Player data, raw screenshots, private paths and secrets stay outside this repository."
+  "repository": {"root": ".", "rootKind": "repository_relative", "branch": "fix/hunting-workflow-20260918", "headBefore": "9f4ea75537ed094904fae0aab273e3187dde6804", "checkpointCommit": "containing_commit", "pushRequested": true, "pushRemote": "origin", "protectedBranchAuthorized": false},
+  "savedFiles": [".selective-intelligence/progress/phone-cache-candidate-20260919.md", ".selective-intelligence/progress/latest.json"],
+  "candidate": {"artifact": "GrindZone-phone-cache-candidate.zip", "archiveSha256": "3047f6879894b5d6e4610af5343da5c150da90942c65271c3131b9dbdf6f788a", "patchSha256": "8624988eb6596eefdb596561bc146af705c2609f1387f5ff9ce38f4b8b2cefc2", "baseCommit": "9f4ea75537ed094904fae0aab273e3187dde6804", "runtimeApplied": false},
+  "privacyBoundary": "Synthetic fixtures and bounded source identities only. Player saves, account identifiers, screenshots, secrets and private workstation paths are excluded."
 }
