@@ -24,7 +24,7 @@ test('activity is newest first without mutating the save state and rejects inval
 test('dashboard preserves an unavailable first route stop and keeps its reserve distinct from the grind',()=>{
  const s=state();s.sessions=[{reserve:2,name:'Layton',endedAt:null,harvestSummary:{total:21}}];s.route=['missing','known'];s.zones=[{id:'known',species:'Moose'}];
  const d=dashboardData(s,19);assert.equal(d.reserveName,'Askiy Ridge');assert.equal(d.grindCount,21);assert.equal(d.route[0].zone,null);assert.equal(d.route[1].number,2);assert.equal(d.missingStops,1);
- const html=dashboardView(s,{reserve:19});assert.match(html,/All animals · all reserves/);assert.match(html,/Askiy Ridge/);assert.doesNotMatch(html,/Next stop/);
+ const html=dashboardView(s,{reserve:19});assert.match(html,/All animals · all maps/);assert.match(html,/Askiy Ridge/);assert.doesNotMatch(html,/Next stop/);
 });
 test('dashboard escapes saved names and never invents medal values for unknown counters',()=>{
  const s=state();s.sessions=[{name:'<img src=x onerror=alert(1)>',endedAt:null}];const html=dashboardView(s,{reserve:19});

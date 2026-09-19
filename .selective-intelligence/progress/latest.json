@@ -1,13 +1,13 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-home-dashboard",
-  "createdAt": "2026-09-19T02:30:30.489074Z",
-  "outcome": "Make the installed Companion open to a readable player dashboard with current grind, recent saved harvests, and the selected reserve route. Overall product acceptance remains open.",
+  "checkpointId": "progress-20260919-grind-route-candidate",
+  "createdAt": "2026-09-19T03:12:41.117071+00:00",
+  "outcome": "Simplify the player workflow and improve grind tracking, drawn routes with in-game zone hours, saved place names, and visible ammo classes. Keep the public preview usable and private save data local.",
   "scope": [
-    "installed Home dashboard and default navigation",
-    "Hunt and optional route planning",
-    "career stats presentation",
-    "portable and public-build consistency"
+    "grind tracker and Home entry",
+    "route map and saved spot names",
+    "ammo class presentation",
+    "public preview and installed runtime"
   ],
   "prohibitions": [
     "Preserve player saves and the private journal.",
@@ -17,45 +17,39 @@
   ],
   "progress": {
     "completedVerified": [
-      "Home is the installed default and the first phone navigation item. Legacy overview routes resolve to Home.",
-      "Current or most recent grind uses the durable global session summary. Recent activity uses the newest saved receipts. Route belongs to the selected reserve and preserves missing stop IDs.",
-      "Installed Home at390x844 measured390x844 with the route ending at741.8px above navigation777.2px. At320x568 no horizontal overflow; visible Home actions44px. At1440x900 both dashboard columns fit without overflow.",
-      "Executed installed journeys: Home to Harvests; route to Add stops to Zones to Home to Hunt map; route stop to its map detail; Home to Stats; End grind dialog and Cancel without ending the active session.",
-      "Route read mode shows tappable stop rows; Edit route exposes reorder and remove controls. Explicit Hunt map actions reset the selected pane to Map.",
-      "A new saved receipt arrived during the installed browser run and the durable session count updated automatically.",
-      "Windows root suite176tests:175passed,0failed,1host-only symlink skip. Cloud suite29passed,0failed,0skips.",
-      "Independent source review and Home screenshot review found no remaining blocking Home/navigation issues. Independent live browser verification is unavailable because its Chrome surface blocks localhost.",
-      "Exact candidate4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1 passed the unchanged native Ubuntu Node24.14.1 gate:176root tests and29cloud tests,0failures,0skips; public build23files903236bytes and generated docs unchanged.",
-      "Final public-career CSS preservation regenerated public and portable outputs. All50files in the final installed runtime match the reviewed portable stage. Installed server was restarted successfully."
+      "Public Render preview is live at https://cotw-field-companion-preview.onrender.com on source c21b5fa. This deployment did not require GitHub Actions.",
+      "Grind controls persist target, goal, pause/resume and history with full retained receipt summaries. Independent objector reviewed semantics and identity guards.",
+      "Disposable browser exercised target changes, pause exclusion, automatic new receipt count, finish/cancel/continue, new-grind selection, and reload persistence.",
+      "Disposable browser exercised saved zone/structure names and route selection under an animal filter; imported and public identities have independent reorder and paired-phone proof.",
+      "Windows integration suite:222 tests,221 passed,0failed,1host-only symlink skip. Cloud:29passed,0failed,0skipped.",
+      "Final disposable phone route click now opens the correct zone from its text label, retains it after refresh under another animal filter, and fits labels at320and390px.",
+      "Ammo live browser search returns the two .300 options for Moose, marks .22LR as wrong class, and filters it out when Only right class is selected. Fields remain44px at320px; no horizontal overflow at320,390or1440px."
     ],
     "changedUnverified": [
-      "No physical phone or away-from-home live journey was executed for this slice.",
-      "No overall product or user acceptance. User identified broader navigation and usability confusion.",
-      "GitHub Quality did not start: account locked due to a billing issue. Main integration and public Pages update remain unproved."
+      "Final desktop map height adjustment still needs browser confirmation.",
+      "Composite exact-commit native gate, installed update, and updated Render assets remain to execute.",
+      "Physical-phone/away-from-home journey and whole-product/user acceptance remain unproved."
     ],
     "proof": [
-      "Private installed Home screenshot and runtime hashes retained outside the repository.",
-      "Private Windows root/cloud logs and prior native Node24 logs retained outside the repository.",
-      "Independent review distinguishes source and image inspection from unavailable independent browser interactions.",
-      "Native source identity and executed gate logs are retained in private dashboard-native-tests.txt; source unchanged except this progress record after that gate."
+      "Detailed scoped logs and objector findings are preserved in private work evidence. Synthetic test journal and saves are separate from the player journal."
     ],
     "externalEffects": [
-      "Updated and restarted only the installed Companion runtime.",
-      "Read game saves; no test-created sessions, route changes, or journal deletions.",
-      "Home implementation is committed locally at4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1; the next operation pushes it and this checkpoint to the existing task branch."
+      "Render public static preview created and verified on c21b5fa; auto-deploy off.",
+      "Installed Companion remains running on the previous Home/dashboard candidate; current feature changes are not installed yet.",
+      "PR5 remains unmerged. Current candidate code is in the owned task worktree."
     ],
     "doNotRepeat": [
-      "Do not replay the rejected passing acceptance write; this checkpoint records unfinished product acceptance.",
-      "Do not rerun blocked GitHub jobs without an account-state change.",
-      "Do not replace the private journal or game saves."
+      "Do not treat GitHub billing as a general hosting blocker. Only the Actions job was blocked.",
+      "Do not replace or delete player data or weaken release gates.",
+      "Do not replay the obsolete rejected passing acceptance packet. This is an unfinished progress checkpoint."
     ],
-    "nextSafeAction": "Push the existing PR branch and update PR5 with Home/career scope. Keep installed Home running and leave the current user-facing result open. Public integration/deployment remains blocked until the GitHub billing lock is resolved; do not rerun unchanged failed jobs or claim user acceptance."
+    "nextSafeAction": "Run the exact committed native release gate, confirm desktop map height, install the reviewed portable build, push PR5 and update the existing Render preview with public-only assets."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "4280fc5ee25c1fd6e4b22c6841cb339cbcbc64e1",
+    "headBefore": "c21b5faed3247519f3eae9c71cd305fee3cc80a8",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",

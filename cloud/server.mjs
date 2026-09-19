@@ -12,7 +12,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const assets=['app.js','dashboard.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
+const assets=['app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
 
@@ -98,7 +98,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
         const reserve=Number(url.searchParams.get('reserve')??sessionReserve.get(session.sid)?.reserve??19);if(!Number.isInteger(reserve)||reserve<0||reserve>999)return json(res,400,{error:'Invalid reserve'});
         if(sessionReserve.size<2048||sessionReserve.has(session.sid))sessionReserve.set(session.sid,{reserve,expiresAt:session.exp});
         const result=await relay(peers.get(session.deviceId),url.pathname==='/api/state'?'state':'export',{reserve});
-        if(url.pathname==='/api/state')result.reserves=(result.reserves??[]).map(r=>({...catalogs.maps.reserves.find(x=>x.id===r.id),...r,poi:r.id===reserve?catalogs.maps.reserves.find(x=>x.id===r.id)?.poi??[]:[]}));
+        if(url.pathname==='/api/state')result.reserves=(result.reserves??[]).map(r=>({...catalogs.maps.reserves.find(x=>x.id===r.id),...r,poi:r.id===reserve?(catalogs.maps.reserves.find(x=>x.id===r.id)?.poi??[]).map(p=>{const key='place:poi:'+hash(JSON.stringify([r.id,p.kind,p.x,p.z])),matches=r.poi?.filter(x=>x.renameId===key)??[],duplicates=(catalogs.maps.reserves.find(x=>x.id===r.id)?.poi??[]).filter(x=>x.kind===p.kind&&x.x===p.x&&x.z===p.z).length;if(matches.length!==1||duplicates!==1)return {...p,canRename:false,renameId:null};const saved=matches[0],customLabel=typeof saved.customLabel==='string'&&saved.customLabel.length<=120?saved.customLabel:null;return {...p,renameId:key,canRename:saved.canRename===true,renameUnavailableReason:saved.renameUnavailableReason??null,originalLabel:p.label,customLabel,label:customLabel||p.label};}):[]}));
         return json(res,200,result,url.pathname==='/api/export'?{'Content-Disposition':'attachment; filename="COTW-phone-view.json"'}:{});
       }
       return json(res,404,{error:'Not found'});

@@ -1,4 +1,4 @@
-import {esc} from './data-client.js?v=43bc03f25cab7b34';
+import {esc} from './data-client.js?v=263febb61b86541f';
 
 const REPO='https://github.com/infotradescout/cotw-field-companion';
 
