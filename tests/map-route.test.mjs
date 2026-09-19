@@ -264,3 +264,29 @@ test('nine route stops crowded at a viewport corner still have separate numbers'
   }
   assert.equal(h.nodes('data-route-leg').length,8);
 });
+
+test('zoom reveals zone hours and known herd counts, then hides them when zoomed out',t=>{
+ const h=harness(t,{width:500,height:500}),animal=zone('herd',500,500,{species:'Whitetail Deer',males:4,females:2,annotation:{name:'North lake'}});
+ h.map.box=[0,0,4000,4000];h.update({zones:[animal]});
+ assert.equal(h.nodes('data-spot-info')[0].getAttribute('data-spot-info'),'name');
+ assert.doesNotMatch(h.nodes('data-spot-info')[0].textContent,/males|06:00/);
+ h.map.box=[0,0,1000,1000];h.map.draw();
+ const info=h.nodes('data-spot-info')[0];
+ assert.equal(info.getAttribute('data-spot-info'),'expanded');
+ assert.match(info.textContent,/North lake/);assert.match(info.textContent,/Whitetail Deer/);
+ assert.match(info.textContent,/06:00–10:00/);assert.match(info.textContent,/4 males · 2 females/);
+ const species=info.children.find(n=>n.textContent==='Whitetail Deer');assert.equal(species.getAttribute('fill'),'#f0c76d');
+ animal.males=null;animal.females=null;h.map.draw();assert.doesNotMatch(h.nodes('data-spot-info')[0].textContent,/0 males|0 females|2 females/);
+});
+test('expanded spot information does not cover route numbers even when selected',t=>{
+ const h=harness(t,{width:500,height:500});h.map.box=[0,0,1000,1000];
+ const ordinary=zone('ordinary',100,100,{annotation:{name:'North lake'},males:4,females:2}),routed=zone('routed',180,160);
+ for(const selectedZone of [null,'ordinary']){
+  h.update({zones:[ordinary],routeZones:[routed],route:['routed'],selectedZone});
+  assert.equal(h.nodes('data-spot-info').length,0,'hide a colliding label while preserving its marker');
+  const marker=h.nodes('data-zone').find(n=>n.getAttribute('role')==='button'&&n.getAttribute('data-zone')==='ordinary');
+  assert.match(marker.getAttribute('aria-label'),/06:00–10:00/);
+  marker.listeners.get('keydown')({key:'Enter',preventDefault(){}});assert.equal(h.selected.at(-1),'ordinary');
+  assert.equal(h.nodes('data-route-stop').length,1);
+ }
+});

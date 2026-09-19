@@ -1,10 +1,10 @@
-import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=4c2540e048ecd51b';
-import {ReferencePanel} from './reference.js?v=4c2540e048ecd51b';
-import {FieldLibrary} from './field-library.js?v=4c2540e048ecd51b';
-import {ShareStudio} from './studio.js?v=4c2540e048ecd51b';
-import {CareerScreen} from './career.js?v=4c2540e048ecd51b';
-import {MapAtlas} from './map-atlas.js?v=4c2540e048ecd51b';
-import {FeedbackPanel} from './feedback.js?v=4c2540e048ecd51b';
+import {getCatalog,esc,safePreference,savePreference} from './data-client.js?v=9f326ba1360a70f2';
+import {ReferencePanel} from './reference.js?v=9f326ba1360a70f2';
+import {FieldLibrary} from './field-library.js?v=9f326ba1360a70f2';
+import {ShareStudio} from './studio.js?v=9f326ba1360a70f2';
+import {CareerScreen} from './career.js?v=9f326ba1360a70f2';
+import {MapAtlas} from './map-atlas.js?v=9f326ba1360a70f2';
+import {FeedbackPanel} from './feedback.js?v=9f326ba1360a70f2';
 const root=document.querySelector('#content'),picker=document.querySelector('#reserve');
 const careerScreen=new CareerScreen(root);
 const views=['home','maps','reserves','reference','rares','gear','studio','career','faq','feedback'];

@@ -1,9 +1,10 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260919-automatic-route-and-setup",
-  "createdAt": "2026-09-19T03:44:35.386523+00:00",
-  "outcome": "Simplify the hunting workflow; automatically order routes, plan each stop with tents/stands/structures/optional feeders and in-game costs, and reveal spot information when zoomed in.",
+  "checkpointId": "progress-20260919-grind-route-planner-candidate",
+  "createdAt": "2026-09-19T04:11:20.854523+00:00",
+  "outcome": "Distinguish target and other harvests within each grind; automatically order hunting routes, plan per-stop gear and cash budgets, and reveal zone information on close zoom.",
   "scope": [
+    "Per-grind target and other-animal harvest breakdown",
     "Automatic route ordering",
     "Per-stop grind setup and gear budget",
     "Progressive map spot details",
@@ -29,34 +30,40 @@
       "Existing Render preview now live on exact b53e59e, deployment dep-damvvmrtqb8s73a2tc10. All24 assets plus build manifest match; live Chrome ammo match/mismatch and Studio phone/desktop widths checked. Auto-deploy remains off.",
       "Source1eee3b3 release gate:228 root and29 cloud tests passed under native Ubuntu Node24,0failed/0skipped;24public files921172bytes regenerated unchanged.",
       "Source1eee3b3 installed with51matching hashes and journal/runtime backup; live Render dep-dan076ijnfac73esjpjg exact1eee verified all24assets and manifest.",
-      "Dense9-stop phone route has no page overflow; colliding names collapse while all numbers remain. Separate taps4and8 open correct coordinates/hours. Source reviewer12map tests pass including viewport-edge fallback."
+      "Dense9-stop phone route has no page overflow; colliding names collapse while all numbers remain. Separate taps4and8 open correct coordinates/hours. Source reviewer12map tests pass including viewport-edge fallback.",
+      "Candidate source: 37 setup/map/grind tests passed with no failures or skips; independent objector reran all37 and closed null-price, structure-confirmation, shared-cost and map-label collision findings.",
+      "Automatic-route tests18passed; independent review and disposable paired-phone setup command/replay/stale-version/profile/reserve checks passed.",
+      "Disposable phone browser: finished grind shows13target harvests and4other animals, per-species disclosure, target-only goal, setup link to the selected hunting map.",
+      "Disposable phone browser: auto route reduced21.1km to14.1km; chosen start, manual reorder and reload persistence, auto restore and9-to10-to9 stop edits verified.",
+      "Disposable phone browser: owned tent removes16k from estimate; chosen feeder keeps price unknown until entered; blank tent price persists through reopen and range-only edit; nearby stand matching changes with range.",
+      "Disposable phone map: close zoom reveals saved spot name, gold species, drinking08:00-12:00 and2males/0females; no horizontal overflow at390px. Player journal untouched by test actions."
     ],
     "changedUnverified": [
-      "New user requests automatic routes, per-stop setup and budgets, and details revealed on close zoom. Backend builder owns route ordering; root owns planner/map UI; research lane verifies equipment identity and cash prices.",
-      "1eee installed final close-zoom/navigation check and new feature integration remain; physical-phone/away-from-home and whole-product/user acceptance still unproved."
+      "Candidate CSS readability adjustment awaits final browser reload. Exact-commit native full gate, updated portable install, live installed browser, public shared-map asset deployment and PR description remain.",
+      "Physical phone and away-from-home user journey, whole-product/user acceptance, automatic tent identity and unverified feeder/permanent-structure prices remain open."
     ],
     "proof": [
       "Detailed scoped logs and objector findings are preserved in private work evidence. Synthetic test journal and saves are separate from the player journal.",
       "Private evidence includes final native gate, installed hash receipt and hosting-receipt-b53.json. This checkpoint reconciles the source change from145e522 to b53e59e; only desktop map summary placement changed and was re-tested."
     ],
     "externalEffects": [
-      "Installed Companion running1eee3b3 on47831; original journal preserved with stopped backup.",
-      "Existing Render static preview live1eee3b3; auto-deploy off; public library/fictional samples only.",
-      "PR5 open/unmerged; source branch pushed1eee3b3.",
-      "Disposable app47851 contains separate synthetic route/grind test journal; no player mutations from tests."
+      "Installed Companion remains running prior1eee3b3 on47831 with original journal preserved.",
+      "Render static library preview remains exact1eee3b3; auto-deploy off; private grinds/routes are not exposed there.",
+      "PR5 remains open and unmerged.",
+      "Disposable app47851 has synthetic route preferences, gear plan and budget edits; safe test-only changes retained separately."
     ],
     "doNotRepeat": [
       "Do not treat GitHub billing as a general hosting blocker. Only the Actions job was blocked.",
       "Do not replace or delete player data or weaken release gates.",
       "Do not replay the obsolete rejected passing acceptance packet. This is an unfinished progress checkpoint."
     ],
-    "nextSafeAction": "Integrate builder automatic-route contract with explicit preference version and stable start; implement per-stop gear setup/cost plan and close-zoom details; test with disposable data, then run unchanged release gates and update the same installed target."
+    "nextSafeAction": "Commit the owned candidate and generated public map assets; run the unchanged native root/cloud release gate on the exact commit, recheck phone/desktop layout, then update the existing installed runtime and existing static preview."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "1eee3b3f0f535c6f02be1ddf63e154eaa13ea77c",
+    "headBefore": "0e73488f08cc5a1e59023d0c6ca837cbefc90290",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
