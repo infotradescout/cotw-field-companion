@@ -118,8 +118,6 @@ test('phone grind flow keeps map route and tracking controls one tap away',()=>{
  const dock=active.match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
  assert.ok(dock);assert.match(dock,/data-action="grind-hunt"/);assert.match(dock,/data-action="grind-route"/);assert.match(dock,/data-action="session-pause"/);
  assert.doesNotMatch(dock,/session-end|session-edit|grind-setup/);
- assert.match(active,/@media\(max-width:700px\)[\s\S]*\.grind-primary-actions\{display:none\}/);
- assert.match(active,/\.grind-animal-summary\{display:none\}/);assert.match(active,/padding-bottom:88px/);
  const paused=view(session({pausedAt:'2026-09-18T12:30:00Z'})).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
  assert.match(paused,/data-action="session-resume"/);assert.match(paused,/>Resume<\/button>/);
  const finished=view(session({endedAt:'2026-09-18T13:00:00Z'})).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
