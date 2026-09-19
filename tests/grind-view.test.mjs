@@ -126,3 +126,20 @@ test('phone grind flow keeps map route and tracking controls one tap away',()=>{
  const blocked=grindsView({sessions:[chosen,other],reserves:[{id:19,name:'Askiy Ridge'}]},{selectedId:'chosen'}).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
  assert.match(blocked,/Other grind active/);assert.doesNotMatch(blocked,/data-action="session-resume"/);
 });
+
+
+test('phone grind bar replaces global navigation only when it provides a way home',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const html=view(session()),dock=html.match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.match(dock,/data-action="view-home"/);
+ assert.equal((dock.match(/<button /g)||[]).length,4);
+ const css=readFileSync(new URL('../public/hunting-workspace.css',import.meta.url),'utf8');
+ assert.match(css,/\.hunting-app\[data-view=grinds\]:has\(\.grind-phone-dock\) > \.mobile-nav\{display:none\}/);
+ assert.match(css,/\.grind-phone-dock\{position:fixed;z-index:100;display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ const index=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+ const nav=index.slice(index.indexOf('<nav class="mobile-nav"'));
+ const primary=nav.slice(0,nav.indexOf('<details'));
+ assert.match(primary,/data-view="grinds"/);
+ assert.match(nav,/<button data-view="career">Stats<\/button>/);
+ assert.doesNotMatch(grindsView({sessions:[]}),/class="grind-phone-dock"/);
+});
