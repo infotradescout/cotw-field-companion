@@ -1,7 +1,7 @@
-import {isGreatOneSpecies} from './species-style.js?v=d65fd2e5634d1463';
-import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=d65fd2e5634d1463';
-import {TerrainLayer} from './terrain-layer.js?v=d65fd2e5634d1463';
-import {routePlan,formatZoneHours} from './route-stops.js?v=d65fd2e5634d1463';
+import {isGreatOneSpecies} from './species-style.js?v=fa9340bdc4a486ea';
+import {homeBox,validBox,validBounds,insideBounds,scaleBar} from './map-geometry.js?v=fa9340bdc4a486ea';
+import {TerrainLayer} from './terrain-layer.js?v=fa9340bdc4a486ea';
+import {routePlan,formatZoneHours} from './route-stops.js?v=fa9340bdc4a486ea';
 const NS='http://www.w3.org/2000/svg';
 export const needColors={drinking:'#83bfc9',feeding:'#d9ba76',resting:'#c7afd8'};
 export const poiKinds={outpost:'Outpost',lookout_point:'Lookout',landmark:'Landmark',hunting_blind:'Hunting structure',machan:'Raised platform',lore:'Point of interest',shooting_range:'Shooting range'};
@@ -128,13 +128,22 @@ export class FieldMap{
   const detailed=b[2]<=1800,labelBoxes=[],routeNumberBoxes=routeMarkers.map(({x,z})=>[x-13*scale,z-13*scale,x+13*scale,z+13*scale]);
   const markerBox=(x,z)=>[x-9*scale,z-9*scale,x+9*scale,z+9*scale],markerBoxes=[...routeNumberBoxes,...zones.map(p=>{const {x,y}=zonePosition(p);return markerBox(x,y);}),...(this.layers.poi?(reserve.poi||[]).filter(p=>visible(p)&&(this.poiFilter==='all'||this.poiFilter===p.kind)):[]).map(p=>markerBox(p.x,p.z)),...[...equipment,...pins].filter(visible).map(p=>markerBox(p.x,p.z))];
   const label=(x,z,text,priority=false,color='#fff4db',details=[],target=null)=>{
-   const lines=[{text,color},...details.map(line=>typeof line==='string'?{text:line,color:'#d9e3d3'}:line)],width=Math.max(...lines.map(line=>line.text.length))*6.8*scale;
-   const left=b[0]+6*scale,right=b[0]+b[2]-6*scale,onLeft=x+12*scale+width>right&&x-left>right-x,textX=onLeft?x-12*scale:x+12*scale,room=Math.max(scale,onLeft?textX-left:right-textX),shownWidth=Math.min(width,room),top=Math.max(b[1]+12*scale,Math.min(z+4*scale,b[1]+b[3]-(lines.length*14+2)*scale));
-   const area=[onLeft?textX-shownWidth:textX,top-12*scale,onLeft?textX:textX+shownWidth,top+(lines.length-1)*14*scale+4*scale];
+   const lines=[{text,color},...details.map(line=>typeof line==='string'?{text:line,color:'#d9e3d3'}:line)];
+   const n=el('text',{visibility:'hidden',fill:color,'font-size':11*scale,'font-weight':400,'paint-order':'stroke',stroke:'#142017','stroke-width':3*scale,'pointer-events':'all',style:'pointer-events:all','data-spot-info':details.length?'expanded':'name'});
+   out.append(n);
+   const spans=lines.map(line=>{const span=el('tspan',{fill:line.color,'font-size':11*scale,style:'pointer-events:all'},line.text);n.append(span);return span;});
+   const measure=span=>{try{const width=span.getComputedTextLength?.();return Number.isFinite(width)&&(width>0||!span.textContent)?width:null;}catch{return null;}};
+   const widths=spans.map(measure);if(widths.some(w=>w===null)){n.remove();return null;}
+   const width=Math.max(...widths),left=b[0]+6*scale,right=b[0]+b[2]-6*scale,onLeft=x+12*scale+width>right&&x-left>right-x,textX=onLeft?x-12*scale:x+12*scale,room=Math.max(scale,onLeft?textX-left:right-textX),top=Math.max(b[1]+12*scale,Math.min(z+4*scale,b[1]+b[3]-(lines.length*14+2)*scale));
+   n.setAttribute('x',textX);n.setAttribute('y',top);n.setAttribute('text-anchor',onLeft?'end':'start');
+   for(let index=0;index<spans.length;index++){const span=spans[index];span.setAttribute('x',textX);span.setAttribute('y',top+index*14*scale);span.textContent=fitText(span,lines[index].text,room);}
+   const fittedWidths=spans.map(measure);if(fittedWidths.some(w=>w===null)){n.remove();return null;}
+   const shownWidth=Math.max(...fittedWidths);let area=[onLeft?textX-shownWidth:textX,top-12*scale,onLeft?textX:textX+shownWidth,top+(lines.length-1)*14*scale+4*scale];
+   try{const bounds=n.getBBox?.();if(bounds&&[bounds.x,bounds.y,bounds.width,bounds.height].every(Number.isFinite))area=[bounds.x,bounds.y,bounds.x+bounds.width,bounds.y+bounds.height];}catch{}
+   area=[area[0]-2*scale,area[1]-2*scale,area[2]+2*scale,area[3]+2*scale];n.remove();
    if([...labelBoxes,...markerBoxes].some(box=>boxesOverlap(area,box)))return null;
-   labelBoxes.push(area);if(target)hitLayer.append(el('rect',{x:area[0],y:area[1],width:area[2]-area[0],height:area[3]-area[1],fill:'transparent','pointer-events':'all','aria-hidden':'true','data-spot-hit':target.kind+':'+target.id,[`data-${target.kind}`]:target.id}));const n=el('text',{x:textX,y:top,'text-anchor':onLeft?'end':'start',fill:color,'font-size':11*scale,'paint-order':'stroke',stroke:'#142017','stroke-width':3*scale,'pointer-events':'all',style:'pointer-events:all','data-spot-info':details.length?'expanded':'name'});
-   for(let index=0;index<lines.length;index++){const line=lines[index],span=el('tspan',{x:textX,y:top+index*14*scale,fill:line.color,'font-size':11*scale,style:'pointer-events:all'},line.text);n.append(span);span.textContent=fitText(span,line.text,room);}
-   return n;
+   labelBoxes.push(area);if(target)hitLayer.append(el('rect',{x:area[0],y:area[1],width:area[2]-area[0],height:area[3]-area[1],fill:'transparent','pointer-events':'all','aria-hidden':'true','data-spot-hit':target.kind+':'+target.id,[`data-${target.kind}`]:target.id}));
+   n.setAttribute('visibility','visible');return n;
   };
   for(const z of [...zones].sort((a,c)=>Number(c.id===this.data.selectedZone)-Number(a.id===this.data.selectedZone))){const {peers,x,y}=zonePosition(z);
    const name=z.annotation?.name||z.species,g=el('g',{'data-zone':z.id,'data-world-x':z.x,'data-world-z':z.z,tabindex:0,role:'button','aria-label':`${name}, ${z.species}, ${z.need}, ${formatZoneHours(z.start,z.end)}, X ${Math.round(z.x)}, Z ${Math.round(z.z)}`});if(peers.length>1)g.append(el('line',{x1:z.x,y1:z.z,x2:x,y2:y,stroke:'#fff','stroke-width':scale,opacity:.65}));g.append(el('circle',{cx:x,cy:y,r:7*scale,fill:needColors[z.need]||'#e4ad50',stroke:'#112018','stroke-width':1.5*scale}));g.append(el('title',{},`${name} · ${z.need} · X ${Math.round(z.x)}, Z ${Math.round(z.z)}`));if(b[2]<3500||z.annotation?.name){const color=isGreatOneSpecies(z.species,z.speciesKey)?'#f0c76d':'#fff4db',details=detailed?[...(z.annotation?.name?[{text:z.species,color}]:[]),`${z.need} · ${formatZoneHours(z.start,z.end)}`,...(Number.isFinite(z.males)&&Number.isFinite(z.females)?[`${z.males} males · ${z.females} females`]:[])]:[];const t=label(x,y,name,z.id===this.data.selectedZone,z.annotation?.name?'#fff4db':color,details,{kind:'zone',id:z.id});if(t)g.append(t);}g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();this.onSelect(z.id);}});out.append(g);

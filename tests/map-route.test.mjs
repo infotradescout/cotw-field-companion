@@ -10,6 +10,7 @@ function node(tag = 'g') {
     setAttribute(name, value) { this.attributes.set(name, String(value)); },
     getAttribute(name) { return this.attributes.get(name) ?? null; },
     append(...children) { for (const child of children) child.parent = this; this.children.push(...children); },
+    remove() { if(this.parent)this.parent.children=this.parent.children.filter(child=>child!==this);this.parent=null; },
     replaceChildren(...children) { this.children = []; this.append(...children); },
     addEventListener(type, callback) { this.listeners.set(type, callback); },
     set textContent(value) { this.text = String(value); },
@@ -318,4 +319,16 @@ test('interactive equipment labels cannot cover an earlier visible zone marker',
  assert.ok(h.nodes('data-pin').some(n=>n.getAttribute('role')==='button'),'the equipment marker remains selectable');
  h.map.box=[800,800,400,400];h.map.draw();
  assert.ok(h.nodes('data-spot-info').some(n=>n.textContent.includes('Lake stand')),'zoom reveals the label again when space permits');
+});
+test('label collision and tap bounds use fitted glyph measurements, including wide letters',t=>{
+ const h=harness(t);h.map.box=[0,0,4000,4000];
+ const create=globalThis.document.createElementNS;
+ globalThis.document.createElementNS=(ns,tag)=>{const n=create(ns,tag);if(tag==='tspan')n.getComputedTextLength=function(){assert.ok(this.parent?.parent,'measure while attached to the map');return this.textContent.length*Number(this.getAttribute('font-size'))*.95;};return n;};
+ h.update({zones:[zone('herd',1050,1000)],equipment:[{id:'gear',x:400,z:1000,label:'WWWWWWWW',kind:'tripod'}]});
+ assert.equal(h.nodes('data-spot-info').length,0,'wide glyphs overlapping the herd cannot become interactive labels');
+ h.update({equipment:[{id:'gear',x:400,z:1000,label:'WWWWWWWW',kind:'tripod'}]});
+ const label=h.nodes('data-spot-info')[0],hit=h.nodes('data-spot-hit')[0],span=label.children[0];
+ assert.ok(Number(hit.getAttribute('width'))>=span.getComputedTextLength(),'the label hit box covers the entire visible wide text');
+ globalThis.document.createElementNS=(ns,tag)=>{const n=create(ns,tag);if(tag==='tspan')n.getComputedTextLength=()=>NaN;return n;};
+ h.map.draw();assert.equal(h.nodes('data-spot-info').length,0,'unmeasurable text falls back to its selectable marker');
 });
