@@ -290,3 +290,21 @@ test('expanded spot information does not cover route numbers even when selected'
   assert.equal(h.nodes('data-route-stop').length,1);
  }
 });
+test('ordinary zone, equipment and place labels select their own record through pointer gestures',t=>{
+ const h=harness(t),picked=[],herd=zone('herd',100,100,{males:4,females:2}),gear={id:'tripod',x:100,z:400,label:'Lake stand',kind:'tripod',typeVerified:true},place={id:'outpost',x:100,z:700,label:'Spoonside Rest',kind:'outpost'};
+ h.map.onPoint=(point,item)=>picked.push({point,id:item?.id});
+ h.update({zones:[herd],equipment:[gear],reserve:{id:19,bounds:[[0,0],[1000,1000]],poi:[place]}});
+ Object.assign(h.map,{abort:new AbortController(),pointers:new Map(),pinch:null,toWorld:e=>[e.clientX,e.clientY]});
+ h.map.svg.setPointerCapture=()=>{};h.map.svg.hasPointerCapture=()=>false;h.map.setEvents();
+ for(const [kind,item] of [['zone',herd],['pin',gear],['poi',place]]){
+  const label=h.nodes('data-spot-info').find(n=>n.parent.getAttribute('data-'+kind)===item.id),hit=h.nodes('data-spot-hit').find(n=>n.getAttribute('data-'+kind)===item.id);
+  assert.ok(label&&hit);assert.equal(label.getAttribute('style'),'pointer-events:all');
+  assert.equal(hit.parent,h.nodes('data-map-hit-layer')[0],'the wide label target stays below every visible marker');
+  for(const target of [label,...label.children,hit]){
+   const event={target,button:0,pointerId:1,clientX:777,clientY:888};
+   h.map.svg.listeners.get('pointerdown')(event);h.map.svg.listeners.get('pointerup')(event);
+   if(kind==='zone')assert.equal(h.selected.at(-1),item.id);
+   else assert.deepEqual(picked.at(-1),{point:[item.x,item.z],id:item.id},'text taps use the saved location, not the pointer coordinate');
+  }
+ }
+});
