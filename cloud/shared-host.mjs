@@ -6,7 +6,7 @@ export async function startSharedPhone({publicBase,key}={}){
   const base=new URL(publicBase);
   if(base.protocol!=='https:'||base.pathname!=='/grindzone'||base.search||base.hash||base.username||base.password)throw Error('A fixed HTTPS GrindZone mount is required');
   if(typeof key!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(key))throw Error('Private GrindZone signing key is missing');
-  const child=fork(new URL('./server.mjs',import.meta.url),[],{execArgv:['--max-old-space-size=96'],env:{NODE_ENV:'production',PORT:'0',PHONE_RELAY_BIND_HOST:'127.0.0.1',PHONE_RELAY_ORIGIN:publicBase,PHONE_RELAY_SIGNING_KEY:key},stdio:['ignore','inherit','inherit','ipc']});
+  const child=fork(new URL('./activation-server.mjs',import.meta.url),[],{execArgv:['--max-old-space-size=96'],env:{NODE_ENV:'production',PORT:'0',PHONE_RELAY_BIND_HOST:'127.0.0.1',PHONE_RELAY_ORIGIN:publicBase,PHONE_RELAY_SIGNING_KEY:key},stdio:['ignore','inherit','inherit','ipc']});
   const port=await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>{child.kill();reject(Error('GrindZone startup timed out'));},15000);
     child.once('error',error=>{clearTimeout(timer);reject(error);});
