@@ -263,7 +263,7 @@ async function act(action,target){
  if(action==='route-show'){setWorkspacePanel('map');if(view!=='map')switchView('map');$('#layerRoute').checked=true;map.setLayer('route',true);if(!map.fitRoute())toast('Add a located zone to your route first.');return;}
  if(action==='route-edit'){routeEditing=!routeEditing;render();return;}
  if(action==='route-tab-stops'||action==='route-tab-setup'){routeTab=action==='route-tab-setup'?'setup':'stops';routeEditing=false;render();return;}
- if(action==='route-mode'||action==='route-start'){await command({op:action==='route-mode'?'route.mode':'route.start',reserve,...(action==='route-mode'?'mode':false?{}:{}),...(action==='route-mode'?{mode:target.dataset.mode}:{zoneId:target.dataset.id}),expectedOrder:[...state.route],expectedVersion:state.routeOptimization?.version??1});await refresh(true);return;}
+ if(action==='route-mode'||action==='route-start'){await command({op:action==='route-mode'?'route.mode':'route.start',reserve,...(action==='route-mode'?{mode:target.dataset.mode}:{zoneId:target.dataset.id}),expectedOrder:[...state.route],expectedVersion:state.routeOptimization?.version??1});await refresh(true);return;}
  if(action==='setup-stop')return setupDialog(target.dataset.id);
  if(action==='setup-budget')return setupBudgetDialog();
  if(action==='route-choose'){switchView('map');clearZoneSelection();setWorkspacePanel('zones',true);return;}
