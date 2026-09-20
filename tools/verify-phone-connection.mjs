@@ -35,10 +35,12 @@ try{
  await pc.locator('[data-action="phone-enable"]').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();
  await pc.locator('.phone-qr svg').waitFor({timeout:30000});
  const link=await pc.locator('.phone-pairing input[readonly]').inputValue();secrets.push(new URL(link).hash.slice(6));
+ assert.equal(await pc.locator('[data-phone-copy]').isVisible(),true);
+ assert.equal(await pc.locator('[data-phone-link]').isVisible(),true);
  const device=app.store.get('phone:connection:'+app.observer.profile).deviceToken;secrets.push(device);
  const qr=await sharp(await pc.locator('.phone-qr').screenshot()).ensureAlpha().raw().toBuffer({resolveWithObject:true});
  assert.equal(jsQR(new Uint8ClampedArray(qr.data),qr.info.width,qr.info.height)?.data,link);
- proof.checks.push('Actual PC Settings consent activates without an enrollment credential and renders a decodable QR');
+ proof.checks.push('Actual PC Settings consent activates without an enrollment credential, renders a decodable QR and exposes a visible private-link fallback');
  const phoneContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'}),phone=await phoneContext.newPage();phone.on('pageerror',e=>errors.push(e.message));
  await phone.goto(link,{waitUntil:'domcontentloaded'});await phone.locator('#pair').click();await phone.waitForURL(url=>url.pathname==='/grindzone/'&&url.hash==='#map');await phone.locator('#fieldMap').waitFor();
  await phone.goto(base+'/#grinds',{waitUntil:'domcontentloaded'});await phone.locator('.grind-hero').waitFor();assert.match(await phone.locator('.grind-hero').innerText(),/Phone connection check/);
@@ -48,6 +50,14 @@ try{
  await phone.waitForFunction(()=>Array.from(document.querySelectorAll('.grind-total strong')).some(n=>n.textContent.trim()==='1'),{},{timeout:20000});
  assert.equal(createHash('sha256').update(readFileSync(log)).digest('hex'),createHash('sha256').update(payload).digest('hex'));
  proof.checks.push('A synthetic game-save change reaches the real phone DOM automatically; reader preserves file bytes');
+ const current=(await json(await fetch(app.url+'/api/state?reserve=19'))).sessions.find(s=>s.id===grind.id);
+ await post('/api/command',{op:'session.update',id:grind.id,version:current.version,name:current.name,reserve:19,targetSpecies:'Whitetail Deer',goal:10,requestId:randomUUID()});
+ await phone.locator('[data-grind-count-context]').waitFor();await phone.locator('.grind-result').first().waitFor();
+ assert.equal(await phone.locator('.grind-hero [data-action="session-end"]').count(),0);
+ assert.equal(await phone.locator('[data-action="session-end"]').isVisible(),false);
+ proof.phoneLayout=await phone.evaluate(()=>{const result=document.querySelector('.grind-result').getBoundingClientRect(),dock=document.querySelector('.grind-phone-dock').getBoundingClientRect();return {width:innerWidth,height:innerHeight,firstResultTop:Math.round(result.top),firstResultBottom:Math.round(result.bottom),dockTop:Math.round(dock.top),scrollY};});
+ assert.equal(proof.phoneLayout.scrollY,0);assert.ok(proof.phoneLayout.firstResultBottom<=proof.phoneLayout.dockTop,'First recent harvest must be visible above the phone dock without scrolling');
+ proof.checks.push('Target grind shows its first recent harvest above the phone dock without scrolling; finishing and goal setup remain behind Manage grind');
  await phone.locator('.grind-phone-dock [data-action="session-pause"]').click();await phone.locator('.grind-phone-dock [data-action="session-resume"]').waitFor();
  await until(async()=>(await json(await fetch(app.url+'/api/state?reserve=19'))).sessions.find(s=>s.id===grind.id)?.pausedAt);
  await phone.locator('.grind-phone-dock [data-action="session-resume"]').click();await phone.locator('.grind-phone-dock [data-action="session-pause"]').waitFor();
