@@ -11,8 +11,7 @@ export async function createActivatedPhoneRelay(options){
   const handlers=relay.server.listeners('request');
   relay.server.removeAllListeners('request');
   relay.server.on('request',(req,res)=>{
-    const url=new URL(req.url,'http://localhost');
-    if(url.pathname===route)return void activate(req,res);
+    if(req.url===route||req.url?.startsWith(route+'?'))return void activate(req,res);
     res.setHeader('X-GrindZone-Phone-Activation','self-service-v1');
     for(const handler of handlers)handler.call(relay.server,req,res);
   });
