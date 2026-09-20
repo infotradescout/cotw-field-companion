@@ -59,7 +59,9 @@ try{
  assert.equal(app.store.get('phone:connection:'+app.observer.profile).deviceToken,device);
  proof.checks.push('The used QR cannot pair again; the same paired phone reconnects after an actual app restart');
  await pc.reload();await pc.locator('[data-action="phone-disable"]').click();await pc.locator('#submitDialog').click();await pc.locator('[data-action="phone-enable"]').waitFor();
- await until(async()=>(await phoneContext.request.get(base+'/api/state')).status()===503);
+ assert.equal(app.phone.status().enabled,false);
+ // Check the session in the actual paired browser, not a separate HTTP client cookie implementation.
+ await until(async()=>{proof.disconnectedPhoneStatus=await phone.evaluate(async()=> (await fetch('/grindzone/api/state',{cache:'no-store'})).status);return proof.disconnectedPhoneStatus===503;});
  assert.equal((await fetch(base+'/api/state')).status,401);assert.deepEqual(errors,[]);
  proof.checks.push('Turn off phone access disconnects the phone; unpaired access remains denied; no uncaught browser errors');
  proof.passed=true;
