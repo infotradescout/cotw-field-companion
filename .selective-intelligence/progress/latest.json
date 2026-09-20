@@ -1,68 +1,34 @@
 {
-  "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260920-phone-launcher-pushed",
-  "createdAt": "2026-09-20T17:26:56.970418+00:00",
-  "outcome": "Finish the existing GrindZone installed-PC to private phone connection on the already approved shared paid host. Preserve player-owned saves and durable journal history.",
-  "scope": ["COTW only", "Existing desktop installation and read-only save reader", "Private phone enrollment and pairing", "Preserve shared paid hosting", "No new game or architecture rewrite"],
-  "prohibitions": ["Never modify game saves or discard the player's durable journal.", "Do not substitute a cache prototype for the immediate installed-PC phone outcome.", "Do not reset or overwrite newer local work.", "Never publish credentials, raw saves or private player data.", "Do not retry or repackage a denied installation action to evade a safeguard.", "Do not treat source publication or a hosted pairing page as installed or physical-phone acceptance."],
-  "previousCheckpoint": {
-    "ref": "58ceb46de0ab10463dcdd7187985d91d8b4bf45a",
-    "path": ".selective-intelligence/progress/latest.json",
-    "checkpointId": "progress-20260919-private-phone-cache-candidate",
-    "note": "The earlier cache-candidate record remains preserved at this immutable revision. It is not the current next action. Private workstation checkpoints may contain newer installed-state observations and must be reconciled rather than overwritten."
+  "schemaVersion":"si.progress-checkpoint.v1",
+  "checkpointId":"progress-20260920-direct-download-deployed",
+  "createdAt":"2026-09-20T18:09:48.173153+00:00",
+  "outcome":"Finish the existing GrindZone PC-to-phone experience without depending on Desktop Commander. Preserve player-owned sources and durable journal history.",
+  "scope":["COTW only","Normal self-contained GrindZone Windows distribution","Existing paid host","Private phone enrollment and pairing as remaining work"],
+  "prohibitions":["Do not use Desktop Commander under the owner's current direction.","Never modify game saves or erase the durable journal.","Do not retry or repackage the denied remote installer or change Windows security settings.","Do not publish private enrollment credentials, raw saves or player data.","Do not treat a public download or deployment as an installed PC or paired-phone success.","Do not create another service or restart a platform redesign."],
+  "previousCheckpoint":{"ref":"451f897f01237917ba5d548f460602b3251528a0","path":".selective-intelligence/progress/latest.json","note":"Preserves earlier launcher proof, private workstation observations and the independent cache candidate. Those workstation observations were not refreshed in this continuation."},
+  "productIntent":{"desktopInstallationAllowed":true,"desktopCommanderIsPlayerDependency":false,"desktopCommanderAllowedForThisContinuation":false,"rawSavesRemainPlayerControlled":true,"durableJournalIsNotDisposableCache":true,"existingPaidHostingApproved":true,"communityAndSecondGameDoNotBlockInitialPhonePairing":true},
+  "progress":{
+    "completedVerified":[
+      "Resumed from451f897f and the already-published launcher correction. No Desktop Commander calls or substitute PC-control attempts were made.",
+      "Published self-contained Windows distribution builder, bundled-runtime START.cmd path and the actual approved phone relay address. Application/download source is5974923b6a87666c87af34742df96bbe0bdef18c. The public configuration contains only a URL and does not enroll or enable a player automatically.",
+      "Local Linux Node22.16 execution passed10 packaging tests and2 host-boundary tests, zero failures/skips. An independent Python ZIP reader verified exact decompression and CRC for the generated test archive. The existing portable builder was reused byte-for-byte at blob e58d71a6f4ab5e444e95d6f7a1ecaa242f18728c.",
+      "Sway PR253 merged normally at a34b323dbca17e9ee55bc7d06ac804877ee91212. Only build preparation and its test changed. The live relay pin remains58ceb46; Sway runtime routes, migrations, providers, credentials and paid plan were not altered.",
+      "The actual Render build ran all325 COTW test cases successfully with zero failures, cancellations or skips, downloaded the real official Node24.21.0 Windows x64 runtime and verified both archive and executable against pinned release checksums.",
+      "The build produced a59-file,36241548-byte Windows ZIP, SHA256 4c9adf8c9cdd9c2583a729ed609a58a81169678a6b794b03c11c04572d511494. Existing service deployment dep-dao20hnavr4c73arsvmg is provider-confirmed live at18:06:17UTC. No new service or database was created."
+    ],
+    "changedUnverified":[
+      "The external HTTP inspection tool could not retrieve the newly deployed URLs. Actual browser appearance and independent public HTTP/download-byte verification remain open; this is not a reported404 or failed deployment.",
+      "Windows launch was not executed. The ordinary portable archive does not stop or replace an older installed copy. Installed PC state was neither inspected nor changed.",
+      "Private phone enrollment is NOT included in the public archive. The existing operator-enrolled relay still requires a private permit; normal in-app activation and real owner pairing remain unfinished. Do not present the download as a completed phone connection.",
+      "Accounts, durable cross-device cache and community remain separate later work. Preserve the earlier candidate artifacts without replacing the immediate phone activation objective."
+    ],
+    "proof":[".selective-intelligence/progress/windows-download-20260920.json","Sway PR253 and deploy dep-dao20hnavr4c73arsvmg","Provider test summary2026-09-20T18:05:30.636737444Z and successful package manifest2026-09-20T18:05:35Z","Conversation artifact grindzone-direct/evidence/verification.json contains local source/log hashes and delivery limits"],
+    "externalEffects":["Existing COTW task branch advanced through packaging, configuration and evidence commits; main was not merged.","Existing Sway main advanced via regular PR253 and automatically deployed on the already approved paid service. No service setting or application credential was changed.","Public static files are under /grindzone-download/. The private phone relay remains /grindzone/ at its previous source pin.","No PC access, installation, process termination, security-policy change, journal write, game-save read/write or private enrollment operation was performed."],
+    "doNotRepeat":["Do not route continuation back through Desktop Commander or another permission-toggle/support-request loop.","Do not rebuild the already-fixed launcher or repeat unchanged packaging tests as a substitute for phone activation.","Do not call the hosted public ZIP an installer that updated the user's PC.","Do not put a shared or private enrollment permit into a public download.","Do not reset newer local work or run the stale Windows installer.","Preserve the live relay pin unless an actual relay change is necessary; download-source updates use a separate pin."],
+    "nextSafeAction":"Continue through GitHub and the existing host. Independently verify the deployed download/public routes with an available supported HTTP/browser client, then implement the normal private activation/enrollment flow inside GrindZone so the owner can pair a phone without developer environment setup. Preserve strict owner pairing, local consent, read-only saves and the existing journal. The user must open the application on the gaming PC and pair the physical phone; do not invent that interaction or replace it with another remote-control dependency."
   },
-  "productIntent": {
-    "desktopInstallationAllowed": true,
-    "desktopCommanderIsPlayerDependency": false,
-    "rawSavesRemainPlayerControlled": true,
-    "durableJournalIsNotDisposableCache": true,
-    "hostingApprovalAlreadyGiven": true,
-    "communityAndSecondGameDoNotBlockInitialPhonePairing": true
-  },
-  "progress": {
-    "completedVerified": [
-      "Read the active PR and exact launcher blob b8b87a6f0bd88912c1526076b6790f83bcdc887d at source 58ceb46. The previous turn's verified patch matched those exact bytes.",
-      "Published regression tests at 2712116a69b7c2ddf83e9b98655811f24a1dc34d and the two-line launcher correction at 1e77678192ead6a37516a343a242d38e5d0f7a0b on the existing task branch. The launcher accepts the exact legacy and GrindZone names, retains different-save and explicit-journal conflict guards, and uses the recognized name in its existing-instance message.",
-      "Executed the actual corrected launcher against disposable synthetic loopback responses in Linux Node v22.16.0: nine tests passed, zero failures, cancellations or skips. Tests cover legacy and approved names, unrelated and similar names, different saves, alternate journals, repeated launches and absent identity. Assertions preserve fixture bytes and forbid additional journal creation or mutation requests.",
-      "Verified the remote launcher blob a7748dc2c4490233821a72a594f7fa2d0a46c3af and remote test blob addc1635df9c71fffccec60218f13eefc5bfdd55 against the tested local files. GitHub comparison confirms only launcher.mjs and its regression file changed in the application slice; the launcher delta is two added and two removed lines.",
-      "Published the actual executed TAP log at .selective-intelligence/progress/launcher-regression-20260920.tap in commit 730ee9e1e48907b9c046d30eb378da059f82fe36."
-    ],
-    "changedUnverified": [
-      "The current workstation process/read request returned No devices available. This does not establish physical PC power or network state. The installed runtime and phone configuration were not freshly observed or changed.",
-      "The source correction is pushed, not merged to main, installed, or deployed. PC enrollment, an owner pairing QR, actual owner phone data and physical-phone acceptance remain unfinished.",
-      "GitHub Quality run 35525790633 for application revision 1e776781 reports failure. Its job 106117584042 has runner_id 0 and no executed steps. Do not call this a passing workflow or infer a failing application test from the empty job. The cause was not established in this turn.",
-      "The source test environment was a two-file subset. No full app build, full regression suite, Windows launch/browser opening, portable install or paired-phone journey was executed by this continuation.",
-      "The old prepared installer targets 58ceb46. Do not run that stale exact-source script against the new candidate or remove its revision guards. Reconcile the supported installation path and update reviewed expected-source and staging identities before any authorized execution."
-    ],
-    "proof": [
-      ".selective-intelligence/progress/launcher-regression-20260920.tap",
-      "Application revision 1e77678192ead6a37516a343a242d38e5d0f7a0b",
-      "GitHub compare 58ceb46de0ab10463dcdd7187985d91d8b4bf45a...1e77678192ead6a37516a343a242d38e5d0f7a0b",
-      "Conversation verification receipt contains source hashes, TAP hash, environment and delivery limits."
-    ],
-    "externalEffects": [
-      "Existing task branch advanced through the regression, launcher correction and evidence commits. No protected branch was changed or protection bypassed.",
-      "No deployment, provider setting, new service, paid plan, account configuration, installed PC file, journal, game save, enrollment credential or security permission was changed by this turn.",
-      "The previously denied installer was not retried. The unavailable workstation was not accessed using an alternative route."
-    ],
-    "doNotRepeat": [
-      "Do not rediscover or rebuild the already-fixed launcher behavior. The correction and regression are now in the task branch, not just an attached patch.",
-      "Do not resume the old cache prototype merely because an older checkpoint names it.",
-      "Do not ask again about hosting approval, force browser-only PC reading, or require Desktop Commander from players.",
-      "Do not repeat permission-toggle or support-request detours as substitutes for delivery.",
-      "Do not blindly replay an installer, circumvent a denied action, or overwrite newer local source/journal state."
-    ],
-    "nextSafeAction": "When the owning workstation is reachable through a supported authorized execution path, read its latest handoff/private checkpoint and reconcile its worktree against application revision 1e776781. Preserve local changes and the journal. Complete the existing reviewed PC update using the new exact-source identities, then private enrollment and owner-only hosted verification, and leave a fresh pairing QR for the physical phone. Resolve any remaining execution denial through supported authorization, never evasion. Keep phone readiness false until the installed-player path works."
-  },
-  "repository": {"root": ".", "rootKind": "repository_relative", "branch": "fix/hunting-workflow-20260918", "headBefore": "58ceb46de0ab10463dcdd7187985d91d8b4bf45a", "runtimeRevision": "1e77678192ead6a37516a343a242d38e5d0f7a0b", "checkpointCommit": "containing_commit", "pushRequested": true, "pushRemote": "origin", "protectedBranchAuthorized": false},
-  "savedFiles": ["launcher.mjs", "tests/launcher-existing-instance.test.mjs", ".selective-intelligence/progress/launcher-regression-20260920.tap", ".selective-intelligence/progress/latest.json"],
-  "verification": {
-    "node": "v22.16.0", "platform": "Linux sandbox", "tests": 9, "pass": 9, "fail": 0, "skipped": 0,
-    "launcherSha256": "7e24681fca486461c0d1aaae514002f1f8d12b7c05e7b70d104e9bc17a87d1c7",
-    "testSha256": "101436b6e6c85e596ffe6d9b98296bc541e86fccbd849c64cd5383c47b79fbfb",
-    "tapSha256": "b51ac7782c8ccd093e06d4224352886bff03517d795e6fb65dbd426363005ffa"
-  },
-  "historicalDeployment": {"hostRepository": "infotradescout/sway.tips", "hostRevision": "e15db1518ef2b1823442d18479d71af4ee0ca95a", "relayRevision": "58ceb46de0ab10463dcdd7187985d91d8b4bf45a", "note": "Preserved prior evidence only; no provider or live-host verification was repeated this turn. The launcher-only change does not require a relay pin update."},
-  "candidate": {"artifact": "GrindZone-phone-cache-candidate.zip", "archiveSha256": "3047f6879894b5d6e4610af5343da5c150da90942c65271c3131b9dbdf6f788a", "patchSha256": "8624988eb6596eefdb596561bc146af705c2609f1387f5ff9ce38f4b8b2cefc2", "baseCommit": "9f4ea75537ed094904fae0aab273e3187dde6804", "runtimeApplied": false, "note": "Preserved independent historical candidate, not the current source-to-phone delivery slice. Do not confuse with the separately attached cache-sharing prototype."},
-  "privacyBoundary": "Source identities and synthetic test results only. Player saves, account identifiers, secrets and private workstation paths are excluded."
+  "repository":{"root":".","rootKind":"repository_relative","branch":"fix/hunting-workflow-20260918","headBefore":"451f897f01237917ba5d548f460602b3251528a0","runtimeRevision":"5974923b6a87666c87af34742df96bbe0bdef18c","checkpointCommit":"containing_commit","pushRequested":true,"pushRemote":"origin","protectedBranchAuthorized":false},
+  "savedFiles":["tools/build-windows-download.mjs","tests/windows-download.test.mjs","START.cmd","lib/phone-service.json",".selective-intelligence/progress/windows-download-20260920.json",".selective-intelligence/progress/latest.json"],
+  "deployment":{"hostRevision":"a34b323dbca17e9ee55bc7d06ac804877ee91212","relayRevision":"58ceb46de0ab10463dcdd7187985d91d8b4bf45a","downloadRevision":"5974923b6a87666c87af34742df96bbe0bdef18c","serviceId":"srv-d8iarnldt1ts73f4ia6g","deploymentId":"dep-dao20hnavr4c73arsvmg","downloadPage":"https://sway-tips.onrender.com/grindzone-download/index.html","phoneReady":false},
+  "privacyBoundary":"Public source identities and synthetic test/build evidence only. No player data, private account identifier, enrollment token or signing key is included."
 }
