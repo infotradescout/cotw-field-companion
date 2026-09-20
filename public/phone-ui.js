@@ -47,8 +47,8 @@ export class PhoneAccessUI {
     const expected=(this.info?.relayUrl??'').replace(/\/$/,'')+'/phone/connect#pair=';
     if(!this.info?.relayUrl||typeof value?.url!=='string'||!value.url.startsWith(expected)||!/^[-_A-Za-z0-9]{43}$/.test(value.url.slice(expected.length))||!Number.isFinite(value.expiresAt)||value.expiresAt<=this.now())throw Error('The connection code is unavailable. Request a new code.');
     const {default:qrcode}=await import('./qrcode.js');const qr=qrcode(0,'M');qr.addData(value.url);qr.make();
-    // Six blank modules on every side; six display pixels per module at the default desktop size.
-    this.qrSize=(qr.getModuleCount()+12)*6;
+    // Six blank modules on every side. Eight display pixels per module also align at 125% and 150% zoom.
+    this.qrSize=(qr.getModuleCount()+12)*8;
     this.qr=qr.createSvgTag({cellSize:6,margin:36,scalable:true});this.pairing=value;
     this.expiryTimer=setInterval(()=>this.tick(),1000);this.expiryTimer.unref?.();this.draw();
   }
