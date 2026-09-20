@@ -9,6 +9,7 @@ import {execFileSync} from 'node:child_process';
 import {createActivatedPhoneRelay} from '../cloud/activation-server.mjs';
 import {createApp} from '../server.mjs';
 import {fixture,defs} from '../tests/fixtures.mjs';
+import {verifyPhoneQR} from './verify-phone-qr.mjs';
 const hostRoot=path.resolve(process.argv[2]||'.'),mode=process.argv[3]||'local',output=path.resolve(process.argv[4]||'phone-acceptance');
 assert.ok(['local','live'].includes(mode));
 const require=createRequire(path.join(hostRoot,'package.json'));
@@ -40,6 +41,7 @@ try{
  const device=app.store.get('phone:connection:'+app.observer.profile).deviceToken;secrets.push(device);
  const qr=await sharp(await pc.locator('.phone-qr').screenshot()).ensureAlpha().raw().toBuffer({resolveWithObject:true});
  assert.equal(jsQR(new Uint8ClampedArray(qr.data),qr.info.width,qr.info.height)?.data,link);
+ proof.qrScan=await verifyPhoneQR({page:pc,link,sharp,jsQR});
  proof.checks.push('Actual PC Settings consent activates without an enrollment credential, renders a decodable QR and exposes a visible private-link fallback');
  const phoneContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'}),phone=await phoneContext.newPage();phone.on('pageerror',e=>errors.push(e.message));
  await phone.goto(link,{waitUntil:'domcontentloaded'});await phone.locator('#pair').click();await phone.waitForURL(url=>url.pathname==='/grindzone/'&&url.hash==='#map');await phone.locator('#fieldMap').waitFor();
