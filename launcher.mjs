@@ -26,9 +26,9 @@ function openBrowser(){
 let existing=null;
 try{const response=await fetch(localUrl+'/api/state?reserve=19',{signal:AbortSignal.timeout(1200)});if(response.ok)existing=await response.json();}catch{}
 if(existing){
-  if(existing.app?.name!=='COTW Field Companion')throw Error('The selected local port is already in use by another application.');
+  if(!['COTW Field Companion','GrindZone'].includes(existing.app?.name))throw Error('The selected local port is already in use by another application.');
   const sameSave=(existing.observer?.sourceFolder||'').replaceAll('\\','/').toLowerCase()===(save||'').replaceAll('\\','/').toLowerCase();  if(!sameSave||process.env.COMPANION_DATA_DIR)throw Error('Another companion instance is running. Close it or choose a different COMPANION_PORT.');
-  console.log(`COTW Field Companion is already running at ${localUrl}`);
+  console.log(`${existing.app.name} is already running at ${localUrl}`);
   if(process.argv.includes('--open'))openBrowser();
   process.exitCode=0;
 }else{
