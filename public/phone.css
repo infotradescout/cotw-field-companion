@@ -32,3 +32,12 @@
 .hunting-app .zone-activity-panel table{width:100%;table-layout:fixed}
 .hunting-app .zone-activity-panel td,.hunting-app .zone-activity-panel th{white-space:normal;overflow-wrap:anywhere;padding:8px;font-size:12px;text-align:left}
 @media(max-width:700px){.hunting-app .zone-route-page .intro{display:block}.hunting-app .zone-route-page .route-header-actions{margin-top:8px}.hunting-app .zone-route-page .route-page-heading{margin-bottom:8px}.hunting-app .zone-route-card{padding:10px}.hunting-app .zone-stop-top h2{font-size:16px}.hunting-app .zone-route-page .route-tabs .button{min-height:44px;padding:8px 12px}}
+
+/* Source is communicated with text and a dashed shape, not color alone. */
+.hunting-app .zone-discovery-note{margin:6px 0 10px;font-size:12px;color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+.hunting-app .zone-discovery-note>summary{min-height:44px;padding:10px 0;cursor:pointer;color:var(--text);font-size:13px}
+.hunting-app .zone-discovery-note>p{font-size:12px;line-height:1.5;margin:5px 0;max-width:80ch}
+.hunting-app .zone-reference-label{display:block;flex-basis:100%;font-size:12px;line-height:1.4;color:var(--warning);margin-bottom:5px}
+.hunting-app .zone-card[data-discovery="undiscovered"]{border-style:dashed}
+.hunting-app .field-map g[data-discovery="undiscovered"]>circle:not([fill="transparent"]){fill-opacity:.3;stroke-dasharray:4 3;stroke-width:2;vector-effect:non-scaling-stroke}
+.hunting-app .zone-card[data-discovery="undiscovered"] .zone-meta{flex-wrap:wrap}
