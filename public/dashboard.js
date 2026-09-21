@@ -1,4 +1,5 @@
 import {esc} from './data-client.js';
+import {saveDataView} from './save-data.js';
 import {speciesName} from './species-style.js';
 import {medalCounts} from './career.js';
 import {resolveRouteStops} from './route-stops.js';
@@ -37,5 +38,5 @@ function routeMarkup(data){
 export function dashboardView(state,{reserve}={}){
  const data=dashboardData(state,reserve),hasGrind=!!data.grind;
  const trophy=(count,label,tone)=>`<div class="dashboard-trophy ${tone}"><strong${count===null?' aria-label="Not available"':''}>${number(count)}</strong><span>${label}</span></div>`;
- return `<div class="hunt-dashboard"><header class="dashboard-heading"><h1>Your hunt</h1>${action('Hunt map '+arrow,'view-map','','primary')}</header><div class="dashboard-layout"><div class="dashboard-main">${hasGrind?grindMarkup(data):''}${activityMarkup(data)}${!hasGrind?grindMarkup(data):''}</div><div class="dashboard-side">${routeMarkup(data)}<section class="dashboard-career"><div class="dashboard-section-top"><h2>Career trophies</h2>${action('Stats '+arrow,'view-career','aria-label="Open career stats"','text')}</div><div class="dashboard-trophies">${trophy(data.medals.gold,'Gold','gold')}${trophy(data.medals.diamond,'Diamond','diamond')}${trophy(Number.isFinite(state.career?.summary?.greatOnes)?state.career.summary.greatOnes:null,'Great Ones','great-one')}</div><span class="dashboard-meta">Lifetime · all reserves</span></section></div></div></div>`;
+ return `<div class="hunt-dashboard"><header class="dashboard-heading"><h1>Your hunt</h1>${action('Hunt map '+arrow,'view-map','','primary')}</header><div class="dashboard-layout"><div class="dashboard-main">${hasGrind?grindMarkup(data):''}${activityMarkup(data)}${!hasGrind?grindMarkup(data):''}</div><div class="dashboard-side">${routeMarkup(data)}<section class="dashboard-career"><div class="dashboard-section-top"><h2>Career trophies</h2>${action('Stats '+arrow,'view-career','aria-label="Open career stats"','text')}</div><div class="dashboard-trophies">${trophy(data.medals.gold,'Gold','gold')}${trophy(data.medals.diamond,'Diamond','diamond')}${trophy(Number.isFinite(state.career?.summary?.greatOnes)?state.career.summary.greatOnes:null,'Great Ones','great-one')}</div><span class="dashboard-meta">Lifetime · all reserves</span></section></div></div>${saveDataView(state)}</div>`;
 }

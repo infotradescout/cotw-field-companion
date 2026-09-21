@@ -13,7 +13,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const assets=['app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
+const assets=['save-data.js','save-data.css','app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
 
@@ -85,7 +85,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       }
       // Assets contain only application code and public catalogs; all data APIs below require a paired owner.
       if(req.method==='GET'&&files.has(url.pathname)){res.writeHead(200,{...headers,'Content-Type':types[path.extname(url.pathname)]});return res.end(files.get(url.pathname));}
-      if(!session)return json(res,401,{error:'Pair this browser from the companion on your PC.'});
+      if(!session)return json(res,401,{error:'Pair this browser from the companion on the PC.'});
       if(limited('owner:'+session.deviceId,180))return json(res,429,{error:'Too many requests. Try again shortly.'});
       if(req.method==='POST'){
         if(!browserOrigin(req)||!equal(req.headers['x-companion-token'],session.csrf))return json(res,403,{error:'Refresh the phone page before saving.'});
