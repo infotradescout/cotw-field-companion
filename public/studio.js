@@ -147,17 +147,17 @@ export class ShareStudio {
       this.handleDesign(event);
     });
     root.addEventListener('dragover', event => {
-      const zone = event.target.closest('.studio-layout') && this.root.querySelector('#studioDropzone');
+      const zone = event.target.closest('.studio-layout,.studio-import') && this.root.querySelector('#studioDropzone');
       if (!zone) return;
       event.preventDefault();
       zone.classList.add('dragging');
     });
     root.addEventListener('dragleave', event => {
-      const zone = event.target.closest('.studio-layout') && this.root.querySelector('#studioDropzone');
+      const zone = event.target.closest('.studio-layout,.studio-import') && this.root.querySelector('#studioDropzone');
       if (zone && !zone.contains(event.relatedTarget)) zone.classList.remove('dragging');
     });
     root.addEventListener('drop', event => {
-      const zone = event.target.closest('.studio-layout') && this.root.querySelector('#studioDropzone');
+      const zone = event.target.closest('.studio-layout,.studio-import') && this.root.querySelector('#studioDropzone');
       if (!zone) return;
       event.preventDefault();
       zone.classList.remove('dragging');
@@ -355,10 +355,11 @@ export class ShareStudio {
     return [
       '<div class="intro studio-intro"><div><div class="eyebrow">SHARE YOUR HUNT</div><h1>Trophy studio</h1><p>Make a card or a hunting thumbnail in three quick steps.</p></div>' + demoBadge + '</div>',
       '<div class="studio-steps" aria-label="Studio steps"><div><b>1</b><span>Add a screenshot</span></div><div><b>2</b><span>Pick a style</span></div><div><b>3</b><span>Save or share</span></div></div>',
-      '<div class="studio-layout"><section id="studioControls" class="panel studio-controls"><h2>Build your image</h2>',
+      '<section class="panel studio-controls studio-import" aria-label="Choose your screenshots">',
       '<div id="studioDropzone" class="studio-dropzone" tabindex="0"><strong>1. Add an in-game screenshot</strong><span>Choose a saved screenshot from Photos or Files. You can also drop or paste one.</span><button id="studioChoosePhotos" type="button" class="button primary studio-photo-button">Choose screenshots</button><input id="studioPhotos" class="studio-file-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.bmp" multiple><small>Up to 6 images · PNG, JPG, WebP or BMP · 32 MB each</small></div>',
       '<p id="studioImportStatus" role="status" class="muted small">Screenshots are processed locally, not uploaded.</p>',
       '<div id="studioPhotoStrip" class="studio-photo-strip" aria-live="polite"></div>',
+      '</section><div class="studio-layout"><section id="studioControls" class="panel studio-controls"><h2>Style your card</h2>',
       '<label>2. Pick a style<select data-design="layout">' + styleOptions + '</select></label>',
       '<div class="form-grid"><label>Picture shape<select data-design="size">' + sizeOptions + '</select></label><label>Colors<select data-design="theme">' + themeOptions + '</select></label></div>',
       '<label>Title<input data-design="title" maxlength="70" value="' + esc(design.title) + '"></label>',
@@ -369,7 +370,7 @@ export class ShareStudio {
       '<details class="studio-section"><summary>Stats on your image</summary><label>Use stats from<select data-design="source">' + sourceOptions + '</select></label>',
       '<fieldset class="studio-metrics" ' + (hasStats ? '' : 'hidden') + '><legend>Choose up to 6 stats</legend>' + metricOptions + '</fieldset>',
       '<label>Your own stats <span class="muted">(name: value)</span><textarea data-design="custom" rows="4" maxlength="800" placeholder="Favorite reserve: Askiy Ridge&#10;Best trophy: 9.6">' + esc(design.custom) + '</textarea></label></details>',
-      '<label>Photo fit<select data-design="photoFit"><option value="contain"' + (design.photoFit === 'contain' ? ' selected' : '') + '>Show the whole photo</option><option value="cover"' + (design.photoFit === 'cover' ? ' selected' : '') + '>Crop to fill · adjust each image below</option></select></label>',
+      '<label>Photo fit<select data-design="photoFit"><option value="contain"' + (design.photoFit === 'contain' ? ' selected' : '') + '>Show the whole photo</option><option value="cover"' + (design.photoFit === 'cover' ? ' selected' : '') + '>Crop to fill · adjust each image above</option></select></label>',
       '<p class="small muted">Career, trophy and thumbnail cards use the first image. Choose Photo collage to show several.</p>',
       '<div class="actions"><button id="studioClearPhotos" class="button subtle" type="button">Clear images</button><button id="studioClearDesign" class="button subtle" type="button">Reset design</button></div>',
       '<p class="tiny muted">Images are processed in this browser. They are not uploaded or saved by this companion.</p></section>',
