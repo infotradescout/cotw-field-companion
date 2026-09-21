@@ -47,7 +47,7 @@ try{
  const phoneState=()=>phone.evaluate(async()=>{const r=await fetch('/grindzone/api/state?reserve=19',{cache:'no-store'});if(!r.ok)throw Error('Phone state '+r.status);return r.json();});
  let p=await phoneState();assert.equal(p.zones.length,1);assert.equal(referenceRequests,0);assert.equal(p.zones[0].source,'save');
  proof.checks.push('Actual PC and paired phone start with discoveries only and no public-reference request');
- await pc.locator('#spoilerSetting').check();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();
+ await pc.locator('#spoilerSetting').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();
  await until(async()=>{p=await phoneState();return p.zoneActivity?.discovery?.hiddenZones===2;});
  await phone.locator('.zone-card[data-discovery="undiscovered"]').first().waitFor({state:'attached'});
  assert.equal(p.zones.length,3);assert.deepEqual(new Set(p.zones.map(z=>z.need)),new Set(['feeding','drinking','resting']));assert.equal(referenceRequests,1);
@@ -72,7 +72,7 @@ try{
  assert.equal(p.zoneTracking.active,false);assert.equal(p.zoneTracking.name,null);assert.ok(p.route.includes(hidden));assert.equal(p.zoneHistory.find(z=>z.id===hidden).snapshot,null);
  await phone.goto(base+'/#herds');await phone.locator('[data-zone-state="hidden"]').waitFor();assert.match(await phone.locator('[data-zone-state="hidden"]').innerText(),/Undiscovered stop hidden/);assert.equal(await phone.locator('[data-zone-state="hidden"] [data-action="zone-loss"]').count(),0);
  proof.checks.push('Spoilers off removes hidden phone pins/details and pauses hidden-location tracking, while retaining route and activity history');
- await pc.locator('#spoilerSetting').check();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();await until(async()=> (await phoneState()).zones.length===3);
+ await pc.locator('#spoilerSetting').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();await until(async()=> (await phoneState()).zones.length===3);
  assert.equal(referenceRequests,1);writeFileSync(path.join(save,'found_need_zones_adf'),discoveredSave([101,102]));
  await until(async()=>{p=await phoneState();return p.zones.find(z=>z.id===hidden)?.source==='save'&&p.zoneActivity.discovery.hiddenZones===1;});
  assert.equal(new Set(p.zones.map(z=>z.id)).size,3);assert.equal(p.zoneActivity.byZone.find(z=>z.zoneId===hidden).harvests,1);
