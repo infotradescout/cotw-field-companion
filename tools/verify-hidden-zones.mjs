@@ -53,7 +53,7 @@ try{
  assert.equal(p.zones.length,3);assert.deepEqual(new Set(p.zones.map(z=>z.need)),new Set(['feeding','drinking','resting']));assert.equal(referenceRequests,1);
  await phone.locator('#filterNeed').selectOption('feeding');await until(async()=>await phone.locator('.zone-card').count()===1);
  assert.match(await phone.locator('.zone-card').innerText(),/Undiscovered area/);
- await phone.locator('[data-action="workspace-tab"][data-panel="zones"]').click();await phone.locator('.zone-card').click();await phone.locator('#mapDetail').waitFor();assert.match(await phone.locator('#mapDetail').innerText(),/Undiscovered zone area/);
+ await phone.locator('[data-action="workspace-tab"][data-panel="zones"]').click();await phone.locator('.zone-card').click();await phone.locator('#mapDetail').waitFor();assert.match(await phone.locator('#mapDetail').textContent(),/Undiscovered zone area/);
  assert.equal(await phone.locator('#fieldMap g[data-discovery="undiscovered"]').count()>0,true);
  assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
  proof.checks.push('Spoiler consent reveals assigned feeding/resting areas, preserves discovered drinking zone, and labels phone map/list/detail without overflow');
