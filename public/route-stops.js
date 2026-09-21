@@ -39,10 +39,23 @@ const when=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?ne
 export const zoneSourceReady=state=>state.observer?.connected===true&&!state.observer?.error&&state.observer?.sources?.some(s=>s.name==='found_need_zones_adf'&&s.status==='ok');
 const action=(label,name,id,extra='',primary=false)=>`<button class="button ${primary?'primary':'small subtle'}" data-action="${name}" data-id="${escape(id)}" ${extra}>${label}</button>`;
 const coordinateText=z=>Number.isFinite(z?.x)&&Number.isFinite(z?.z)?`X ${Math.round(z.x)} · Z ${Math.round(z.z)}`:'Location was not recorded';
+const hiddenZone=zone=>zone?.source==='population_path_reference';
+export function zoneDiscoveryNotice(state){
+  if(state.settings?.spoilers!==true)return '';
+  const info=state.zoneActivity?.discovery;
+  if(!info)return '<p class="zone-discovery-note" role="status">Undiscovered zones require the current PC reader. Your existing connection can stay paired.</p>';
+  const messages={loading:'Loading undiscovered zone areas…',population_unavailable:'Waiting for this reserve’s population save.',source_unavailable:'Waiting for readable saves before showing undiscovered zones.',reference_unavailable:'Undiscovered-zone reference is unavailable. Discovered zones remain usable.',reference_mismatch:'Zone reference does not match this save. Hidden locations are withheld rather than guessed.'};
+  const available=['available','partial'].includes(info.status);
+  const text=available?`${count(info.hiddenZones)} undiscovered zone areas${info.status==='partial'?' · incomplete reference coverage':''}`:messages[info.status]||'Undiscovered-zone reference is unavailable.';
+  return `<details class="zone-discovery-note" data-disclosure-key="zone-discovery"><summary><span data-zone-discovery-status="${escape(info.status)}">${text}</span></summary><p>Hidden areas are matched to the zone paths in your population save. Their markers are reference areas, not live animal or exact kill locations. Feeding, drinking and resting follow each animal’s recorded schedule.</p><p>Public map-reference data comes from DECA. Only the reserve number is requested; your game files and journal stay on your PC.</p>${available?`<p>${count(info.unresolvedSlots??0)} unlocated activity references. Unsupported or inactive slots are not invented. Turning spoilers off hides undiscovered locations.</p>`:''}</details>`;
+}
 
 /** A missing record is not proof of deletion or overpressure. Preserve the distinction. */
 export function zoneRouteStatus(zone,history,sourceReady){
+  if(hiddenZone(zone))return {label:'Undiscovered · spoiler area',state:'active',detail:'Assigned in the population save and located with a public reference. The marker is an area, not a discovered point or live animal position.'};
   if(zone)return zone.source!=='save'||sourceReady?{label:'Active zone',state:'active',detail:''}:{label:'Waiting for readable save',state:'stale',detail:'Showing the last known zone. Its removal has not been established.'};
+  if(history?.status==='spoiler_hidden')return {label:'Undiscovered stop hidden',state:'hidden',detail:'Turn spoilers on to display this reference again. This is not a deleted zone.'};
+  if(history?.status==='reference_unavailable')return {label:'Undiscovered reference unavailable',state:'stale',detail:'The hidden area cannot currently be resolved. Its removal has not been established.'};
   if(!sourceReady||history?.status==='source_unavailable')return {label:'Waiting for readable save',state:'stale',detail:'The source is unavailable. Last known details and history are retained.'};
   if(history?.status!=='removed')return {label:'Zone not in current save',state:'unrecorded',detail:'GrindZone has no confirmed removal record for this stop. Its cause is unknown.'};
   if(history.reason==='overpressure_reported')return {label:'Removed · overpressure reported',state:'removed',detail:'You reported overpressure as the cause. This is not an automatic diagnosis.'};
@@ -54,30 +67,32 @@ export function zoneHuntButton(state,zone){
   if(state.zoneLedgerVersion!==1||!zone)return '';
   const active=state.zoneTracking?.active===true&&state.zoneTracking.zoneId===zone.id;
   const ready=zone.source!=='save'||zoneSourceReady(state);
-  return action(active?'Hunting here':'Hunt here','zone-track',zone.id,`aria-pressed="${active}" ${!ready||active?'disabled':''}`,!active);
+  const note=hiddenZone(zone)?'<span class="zone-reference-label">Undiscovered area · not an exact animal location</span>':'';
+  return note+action(active?'Hunting here':'Hunt here','zone-track',zone.id,`aria-pressed="${active}" ${!ready||active?'disabled':''}`,!active);
 }
 export function zoneTrackingBar(state){
-  if(state.zoneLedgerVersion!==1)return '<p class="small muted zone-upgrade">Zone history and location tracking require the current PC version. Your existing phone connection can stay paired.</p>';
+  const discovery=zoneDiscoveryNotice(state);
+  if(state.zoneLedgerVersion!==1)return discovery+'<p class="small muted zone-upgrade">Zone history and location tracking require the current PC version. Your existing phone connection can stay paired.</p>';
   const tracking=state.zoneTracking;
-  if(tracking?.active)return `<section class="zone-tracking-bar" aria-label="Selected hunting location"><div><strong>Hunting: ${escape(tracking.name||'Selected zone')}</strong><small>New harvests use this selected location, not detected kill coordinates.</small></div>${action('Stop location tracking','zone-stop',tracking.zoneId,`data-reserve="${tracking.reserve}"`)}</section>`;
-  const reason=tracking?.stopReason==='zone_removed'?'The selected zone disappeared; location tracking stopped.':tracking?.stopReason==='app_restarted'?'Choose your hunting location again after restarting.':'Choose Hunt here to assign new saved harvests to a zone.';
-  return `<p class="zone-tracking-hint" role="status">${reason} Previous counts remain saved.</p>`;
+  if(tracking?.active)return discovery+`<section class="zone-tracking-bar" aria-label="Selected hunting location"><div><strong>Hunting: ${escape(tracking.name||'Selected zone')}</strong><small>New harvests use this selected location, not detected kill coordinates.</small></div>${action('Stop location tracking','zone-stop',tracking.zoneId,`data-reserve="${tracking.reserve}"`)}</section>`;
+  const reason=tracking?.stopReason==='zone_removed'?'The selected zone disappeared; location tracking stopped.':tracking?.stopReason==='app_restarted'?'Choose your hunting location again after restarting.':tracking?.stopReason==='spoilers_disabled'?'Spoilers are off; hidden-location tracking stopped.':'Choose Hunt here to assign new saved harvests to a zone.';
+  return discovery+`<p class="zone-tracking-hint" role="status">${reason} Previous counts remain saved.</p>`;
 }
 export function renderRouteCards(state,{stops=resolveRouteStops(state.route||[],state.zones||[]),limit=Infinity,editing=false,routeButton,formatSpecies=escape}={}){
   const history=new Map((state.zoneHistory||[]).map(z=>[z.id,z]));
   const counts=new Map((state.zoneActivity?.byZone||[]).map(z=>[z.zoneId,z]));
   const ready=zoneSourceReady(state),manual=state.routeOptimization?.mode==='manual';
   return stops.slice(0,limit).map(({id,number,zone})=>{
-    const past=history.get(id),last=zone||past?.snapshot,status=zoneRouteStatus(zone,past,ready),stats=counts.get(id);
+    const past=history.get(id),concealed=['spoiler_hidden','reference_unavailable'].includes(past?.status),last=zone||(concealed?null:past?.snapshot),status=zoneRouteStatus(zone,past,ready),stats=counts.get(id);
     const title=zone?.annotation?.name?escape(zone.annotation.name):last?.name?escape(last.name):last?.species?formatSpecies(last.species,last.speciesKey):'Previously saved stop';
     const hours=last?formatZoneHours(last.start,last.end):'Hours were not recorded';
-    const meta=[last?.need, hours, coordinateText(last)].filter(Boolean).map(escape).join(' · ');
+    const meta=concealed?'Hidden reference details are not displayed.':[last?.need, hours, coordinateText(last)].filter(Boolean).map(escape).join(' · ');
     const note=zone?.annotation?.notes||past?.notes;
     const totals=state.zoneLedgerVersion===1?`<span class="zone-stop-counts" data-zone-counts="${escape(id)}"><b>${count(stats?stats.harvests:0)}</b> harvests · <b>${count(stats?stats.unlinkedDeathReports:0)}</b> unlinked death reports <small>All retained history for this zone</small></span>`:'';
     const remove=routeButton?routeButton(id,true):action('Remove stop','route',id);
     const reorder=editing&&manual?action('↑ Up','route-up',id,`${number===1?'disabled':''} aria-label="Move stop ${number} up"`)+action('↓ Down','route-down',id,`${number===stops.length?'disabled':''} aria-label="Move stop ${number} down"`):editing&&zone&&number>1?action('Start here','route-start',id):'';
-    const report=!zone&&ready&&state.zoneLedgerVersion===1?action('Record observed cause','zone-loss',id):'';
-    return `<article class="zone-route-card" data-zone-stop="${escape(id)}" data-zone-state="${status.state}"><div class="zone-stop-top"><span class="zone-stop-number">${number}</span><div><h2>${title}</h2><p class="zone-stop-status">${status.label}</p><p class="zone-stop-meta">${zone?'':'Last recorded · '}${meta}</p></div></div><div class="zone-stop-main">${totals}<div class="zone-stop-actions">${zone?zoneHuntButton(state,zone)+action('Map','zone-view',id):''}</div></div><details data-disclosure-key="zone-stop:${escape(id)}"><summary>Details &amp; route controls</summary>${status.detail?`<p>${status.detail}</p>`:''}${past?.lastSeenAt?`<p class="small muted">Last seen ${escape(when(past.lastSeenAt)||'time unavailable')}${when(past.removedAt)?' · disappearance observed '+escape(when(past.removedAt)):''}.</p>`:''}${note?`<p class="zone-stop-notes">${escape(note)}</p>`:''}${zone?`<p class="small muted">Known animals: ${count(zone.males)} male · ${count(zone.females)} female. Counts are not kill totals.</p>`:''}<div class="zone-stop-actions">${reorder}${report}${remove}</div><p class="small muted">Removing a route stop does not erase its recorded activity.</p></details></article>`;
+    const report=!zone&&!concealed&&ready&&state.zoneLedgerVersion===1?action('Record observed cause','zone-loss',id):'';
+    return `<article class="zone-route-card" data-zone-stop="${escape(id)}" data-zone-state="${status.state}"><div class="zone-stop-top"><span class="zone-stop-number">${number}</span><div><h2>${title}</h2><p class="zone-stop-status">${status.label}</p><p class="zone-stop-meta">${zone||concealed?'':'Last recorded · '}${meta}</p></div></div><div class="zone-stop-main">${totals}<div class="zone-stop-actions">${zone?zoneHuntButton(state,zone)+action('Map','zone-view',id):''}</div></div><details data-disclosure-key="zone-stop:${escape(id)}"><summary>Details &amp; route controls</summary>${status.detail?`<p>${status.detail}</p>`:''}${past?.lastSeenAt?`<p class="small muted">Last seen ${escape(when(past.lastSeenAt)||'time unavailable')}${when(past.removedAt)?' · disappearance observed '+escape(when(past.removedAt)):''}.</p>`:''}${note?`<p class="zone-stop-notes">${escape(note)}</p>`:''}${zone?`<p class="small muted">Known animals: ${count(zone.males)} male · ${count(zone.females)} female. Counts are not kill totals.</p>`:''}<div class="zone-stop-actions">${reorder}${report}${remove}</div><p class="small muted">Removing a route stop does not erase its recorded activity.</p></details></article>`;
   }).join('');
 }
 export function zoneActivityPanel(state,{sessionId=null}={}){
