@@ -58,9 +58,11 @@ try{
  await phone.locator('#reserve').selectOption('1');await phone.getByRole('heading',{name:'Companion unavailable',exact:true}).waitFor();assert.equal(await phone.locator('.zone-route-card').count(),0);
  await phone.locator('#reserve').selectOption('19');await phone.locator('.zone-route-card').waitFor();
  proof.checks.push('Cached route remains readable; an uncached reserve shows an explicit unavailable state instead of showing the previous map under a different reserve');
+ await phone.goto(base+'/#settings',{waitUntil:'domcontentloaded'});await phone.locator('[data-action="cache-delete"]').click();await phone.getByRole('heading',{name:'Companion unavailable',exact:true}).waitFor();saved=await cacheRoot(phone);assert.equal(saved.enabled,false);assert.deepEqual(saved.records,[]);assert.equal(commands,beforeCommands);
+ proof.checks.push('The phone can erase its own cached copies with the PC still closed; local deletion never requires or sends a PC write');
  app=await createApp(options);await phone.goto(base+'/#grinds',{waitUntil:'domcontentloaded'});await phone.locator('.grind-phone-dock [data-action="session-pause"]:enabled').waitFor({timeout:20000});assert.equal(commands,beforeCommands);
  const retained=await json(await fetch(app.url+'/api/state?reserve=19'));assert.equal(retained.sessions.find(s=>s.id===grind.id).harvestSummary.total,1);
- await phone.goto(base+'/#settings',{waitUntil:'domcontentloaded'});await phone.locator('[data-action="cache-delete"]').click();await phone.locator('#submitDialog').click();await phone.locator('[data-action="cache-enable"]').waitFor();saved=await cacheRoot(phone);assert.equal(saved.enabled,false);assert.deepEqual(saved.records,[]);
+ await enableCache(phone);await phone.locator('[data-action="cache-delete"]').click();await phone.locator('[data-action="cache-enable"]').waitFor();saved=await cacheRoot(phone);assert.equal(saved.enabled,false);assert.deepEqual(saved.records,[]);
  assert.equal(createHash('sha256').update(readFileSync(log)).digest('hex'),createHash('sha256').update(bytes).digest('hex'));
  proof.checks.push('Reconnecting restores live controls without replay; deleting phone copies disables capture and preserves the actual PC journal and game-save bytes');
  await enableCache(phone);

@@ -23,3 +23,9 @@ test('client binding fails closed on missing, duplicated or already applied hook
  assert.throws(()=>bindPhoneCacheClient(input.replace('async function get(url){','async function movedGet(url){')));
  assert.throws(()=>bindPhoneCacheClient(input+"\nfunction warning(){const failed=0;}"));
 });
+
+test('deleting a browser copy does not depend on the offline-disabled PC write dialog',()=>{
+ const output=bindPhoneCacheClient(original());
+ const deletion=output.split("if(action==='cache-delete')")[1]?.split("if(action==='zone-track'")[0];
+ assert.ok(deletion);assert.match(deletion,/await phoneCache\.forget\(\)/);assert.doesNotMatch(deletion,/openDialog|command\(/);assert.match(deletion,/await refresh\(true\)/);
+});
