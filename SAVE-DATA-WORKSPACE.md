@@ -1,6 +1,18 @@
-# GrindZone saved-game workspace — continuation checkpoint
+# GrindZone saved-game workspace — current release
 
-Status: implemented source candidate; not installed, merged into production, or deployed.
+**September 21, 2026:** the saved-game dashboard and reader corrections are released at `37cfef8f2a3ff44de7dca5b726d19be03eea9437`, integrated through PR #6 into `fix/hunting-workflow-20260918` as `63b0f3c2c4fd95978094b1ae84434726148e36be`. The integration has no content difference from the tested runtime. App main remains unmerged.
+
+The existing host `1ad02955fbf70744f5e2a38cfe8b0ac2feabddf9` serves that relay and matching Windows package. Final public-verification deployment `dep-daop4bdg1s2s7382iho0` finished live at `2026-09-21T20:29:15.152147Z`. All 648 native tests and all six local/live browser workflows passed with the actual app, SQLite, production catalogs and disposable synthetic saves. The public saved-game workflow verifies profile/history consistency, automatic updates, failed-source retention, narrow-screen controls, equipment-map navigation, spoiler revocation and restart/reconnect. No owner-device or personal-save acceptance is claimed.
+
+The package has 68 files, 36,278,700 bytes, SHA-256 `e030295b39204c143b5748fccfd5112073b966ef369eff236ccc19286b02a960`, with runtime included and no player data/enrollment secret. Existing PC installations were not automatically updated. Preserve the companion data directory and existing pairing when opening the new complete package.
+
+**Current continuation:** `.selective-intelligence/progress/latest.json`. Phase 1 is not complete. Exact automatic shot/death/pickup capture, remaining useful save mappings, accounts/recovery, profiles/community and broader game support remain open. The separately reported location artifact was not recovered as source in this workspace. Honest unavailable labels do not close required capabilities.
+
+## Historical source-candidate checkpoint — status and next actions below are superseded
+
+The following original record is retained as evidence of the earlier bounded implementation, not the current deployment or resume point.
+
+Status at that checkpoint: implemented source candidate; not installed, merged into production, or deployed.
 Baseline: `38418b356d95c1148c5352abde7e5e77a95c3fdb`.
 Branch: `feat/save-data-workspace-20260921`.
 Scope: use already decoded game data to deliver useful read-only player information without changing game saves or unrelated projects.
