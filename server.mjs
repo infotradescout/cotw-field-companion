@@ -1,4 +1,6 @@
 import {locationSearchParams} from './lib/hunt-locations.mjs';
+import {herdSearchParams,projectHerdView} from './lib/herd-view.mjs';
+import {loadHerdReference,withHerdReference} from './lib/herd-reference.mjs';
 import http from 'node:http';
 import {readFileSync,existsSync,realpathSync,mkdirSync} from 'node:fs';
 import path from 'node:path';
@@ -19,7 +21,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
   mkdirSync(dataDir,{recursive:true});dataDir=realpathSync(dataDir);
   if(saveDir&&process.permission?.has('fs.write',saveDir))throw Error('Refusing to start with save-folder write permission');
   const ratingFile=path.join(appDir,'lib/rating-data.json');
-  const ratingCatalog=existsSync(ratingFile)?JSON.parse(readFileSync(ratingFile,'utf8')):null;
+  const ratingCatalog=withHerdReference(existsSync(ratingFile)?JSON.parse(readFileSync(ratingFile,'utf8')):null,loadHerdReference());
   const gearCatalog=JSON.parse(readFileSync(path.join(appDir,'lib/gear-data.json'),'utf8'));
   const mapsCatalog=JSON.parse(readFileSync(path.join(appDir,'lib/maps-data.json'),'utf8'));
   const reference=JSON.parse(readFileSync(path.join(appDir,'lib/reference.json'),'utf8'));
@@ -37,7 +39,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
   if(feedbackEndpoint){feedbackEndpoint.pathname=feedbackEndpoint.pathname.replace(/\/+$/,'')+'/';feedbackEndpoint.search='';feedbackEndpoint.hash='';}
   const token=randomBytes(32).toString('hex');
   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
-  const assets=new Map(['/','/index.html','/app.js','/dashboard.js','/save-data.js','/save-data.css','/hunt-locations.js','/hunt-locations.css','/grinds.js','/species-style.js','/commands.js','/route-stops.js','/route-setup.js','/setup-catalog.js','/harvest-view.js','/phone-ui.js','/phone.css','/qrcode.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/hunting-workspace.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
+  const assets=new Map(['/herd-view.js','/herd-view.css','/','/index.html','/app.js','/dashboard.js','/save-data.js','/save-data.css','/hunt-locations.js','/hunt-locations.css','/grinds.js','/species-style.js','/commands.js','/route-stops.js','/route-setup.js','/setup-catalog.js','/harvest-view.js','/phone-ui.js','/phone.css','/qrcode.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/hunting-workspace.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
   const server=http.createServer(async(req,res)=>{
     const actualPort=server.address().port;
     const goodHosts=[`127.0.0.1:${actualPort}`,`localhost:${actualPort}`];
@@ -92,6 +94,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
         if(!localTokenOk())return json(403,{error:'Missing local session token'});
         return feedbackProxy(`/v1/owner/feedback/${feedbackRead[1]}/read`,'POST');
       }
+      if(req.method==='GET'&&url.pathname==='/api/herds')return json(200,projectHerdView(observer.herdView(herdSearchParams(url.searchParams))));
       if(req.method==='GET'&&url.pathname==='/api/locations')return json(200,observer.locationHistory(locationSearchParams(url.searchParams)));
       if(req.method==='GET'&&url.pathname==='/api/state')return json(200,observer.state(reserveId(url.searchParams.get('reserve')??19)));
       if(req.method==='GET'&&url.pathname==='/api/export'){

@@ -1,4 +1,6 @@
 import {locationSearchParams} from '../lib/hunt-locations.mjs';
+import {herdSearchParams,projectHerdView} from '../lib/herd-view.mjs';
+import {loadHerdReference,withHerdReference} from '../lib/herd-reference.mjs';
 /** A bounded, single-instance live relay. The PC owns all journal persistence. */
 import http from 'node:http';
 import path from 'node:path';
@@ -14,7 +16,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const assets=['hunt-locations.js','hunt-locations.css','save-data.js','save-data.css','app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
+const assets=['herd-view.js','herd-view.css','hunt-locations.js','hunt-locations.css','save-data.js','save-data.css','app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
 
@@ -28,6 +30,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
   const connectPage=mountClientSource(readFileSync(new URL('./connect.html',import.meta.url),'utf8'),mount);
   const connectScript=mountClientSource(readFileSync(new URL('./connect.js',import.meta.url),'utf8'),mount);
   const catalogs=Object.fromEntries([['maps','maps-data'],['gear','gear-data'],['reference','rating-data']].map(([name,file])=>[name,JSON.parse(readFileSync(path.join(root,'lib',file+'.json'),'utf8'))]));
+  catalogs.reference=withHerdReference(catalogs.reference,loadHerdReference());
   function limited(key,limit,windowMs=60000){
     let r=rates.get(key);if(!r||r.until<=now()){if(rates.size>=2048){for(const [k,v]of rates)if(v.until<=now())rates.delete(k);if(rates.size>=2048)return true;}r={count:0,until:now()+windowMs};rates.set(key,r);}return ++r.count>limit;
   }
@@ -98,6 +101,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       }
       if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(res,200,{token:session.csrf,version:'0.4.1',selectedReserve:sessionReserve.get(session.sid)?.reserve??19,phone:{remote:true,online:peers.has(session.deviceId),mode:'live_relay'}});
       if(req.method==='GET'&&Object.hasOwn(catalogs,url.pathname.slice(5))&&url.pathname.startsWith('/api/'))return json(res,200,catalogs[url.pathname.slice(5)]);
+      if(req.method==='GET'&&url.pathname==='/api/herds'){const query=herdSearchParams(url.searchParams);return json(res,200,projectHerdView(await relay(peers.get(session.deviceId),'herds',{query})));}
       if(req.method==='GET'&&url.pathname==='/api/locations'){
         const query=locationSearchParams(url.searchParams);
         return json(res,200,await relay(peers.get(session.deviceId),'locations',{query}));
