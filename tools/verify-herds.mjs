@@ -55,6 +55,31 @@ try{
  await phone.locator('[data-herd-filter="trophy"]').selectOption('all');await until(async()=>await phone.locator('[data-herd-id]').count()===3,'all herds restored');
  deerGroups=[deerGroups[1],{...deerGroups[0],Animals:[...deerGroups[0].Animals].reverse()}];writePopulation('2026-09-21T12:01:00Z');expected=saveHashes(save);await until(async()=>{const v=(await read(phone)).data;return v.savedAt==='2026-09-21T12:01:00.000Z';},'automatic population update');assert.deepEqual((await read(phone)).data.herds.map(h=>h.id),ids);assert.deepEqual(saveHashes(save),expected);
  proof.checks.push('Signed phone uses the same IDs and counts, rejects caller profile selection, filters both zone-to-herds and female-capable species, fits 320/390px and retains identities after binary group/member reordering.');
+
+ // Exercise the real grind shell as well as Harvests: generic toolbar SVG rules and
+ // display:contents placement previously hid usable maps and pushed recent results down.
+ app.observer.command({op:'session.start',reserve:19,name:'Herd workflow verification',targetSpecies:whitetail.name,goal:10});
+ proof.grindLayouts=[];
+ for(const [page,width] of [[pc,1440],[phone,390],[phone,320]]){
+  await page.setViewportSize({width,height:width===1440?1000:844});
+  await page.goto((page===pc?app.url:base)+'/#grinds',{waitUntil:'domcontentloaded'});
+  await page.locator('[data-herd-id]').first().waitFor();
+  await page.locator(`[data-herd-map="${firstDeer.id}"]`).click();
+  await until(()=>page.locator('gz-herds').evaluate(e=>!!e.map&&e.map.data.zones.length===3),'grind herd map at '+width);
+  const layout=await page.evaluate(()=>{
+   const host=document.querySelector('gz-herds'),svg=host.querySelector('.gz-herd-map svg'),map=svg.getBoundingClientRect();
+   const results=document.querySelector('.grind-results').getBoundingClientRect(),herds=host.getBoundingClientRect();
+   return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,mapWidth:map.width,mapHeight:map.height,mapParentWidth:svg.parentElement.getBoundingClientRect().width,resultsBottom:results.bottom,herdsTop:herds.top};
+  });
+  assert.ok(layout.herdsTop>=layout.resultsBottom-1,'Supporting herd details must follow current grind results');
+  assert.ok(layout.mapWidth>=200&&layout.mapWidth>=layout.mapParentWidth*.95,'Herd map must fill its panel, not inherit toolbar-icon sizing');
+  assert.ok(layout.mapHeight>=300,'Herd map must have a usable actual viewport');
+  assert.ok(layout.scrollWidth<=layout.width+1,'Grind herd map must fit '+width+'px');
+  proof.grindLayouts.push(layout);
+ }
+ await phone.setViewportSize({width:390,height:844});await phone.goto(base+'/#harvests',{waitUntil:'domcontentloaded'});await phone.locator('[data-herd-id]').first().waitFor();
+ proof.checks.push('The real grind shell keeps herd details after current results; actual FieldMap viewports fill their panels at 1440, 390 and 320px without inheriting toolbar icon sizing or page overflow.');
+
  await app.close();app=null;app=await open(base);await until(async()=>{try{return (await read(phone)).status===200;}catch{return false;}},'PC reconnect');assert.deepEqual((await read(phone)).data.herds.map(h=>h.id),ids);
  app.observer.command({op:'settings',spoilers:false});await phone.locator('[data-herd-retry]').click();await until(async()=>await phone.locator('[data-herd-id]').count()===0,'spoiler revocation');assert.equal((await read(phone)).data.summary,null);assert.equal(await phone.locator('.gz-herd-map svg').count(),0);
  app.observer.command({op:'settings',spoilers:true,confirmSpoilers:true});await phone.locator('[data-herd-retry]').click();await phone.locator('[data-herd-id]').first().waitFor();assert.deepEqual(saveHashes(save),expected);
