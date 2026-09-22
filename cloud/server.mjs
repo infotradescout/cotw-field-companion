@@ -1,3 +1,4 @@
+import {locationSearchParams} from '../lib/hunt-locations.mjs';
 /** A bounded, single-instance live relay. The PC owns all journal persistence. */
 import http from 'node:http';
 import path from 'node:path';
@@ -13,7 +14,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const random=()=>randomBytes(32).toString('base64url');
 const hash=v=>createHash('sha256').update(v).digest('hex');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
-const assets=['save-data.js','save-data.css','app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
+const assets=['hunt-locations.js','hunt-locations.css','save-data.js','save-data.css','app.js','dashboard.js','grinds.js','map.js','style.css','icon.svg','reference.js','reference-core.js','data-client.js','career.js','studio.js','field-library.js','field-theme.css','map-geometry.js','terrain-layer.js','map-atlas.js','maps.css','hunting-workspace.css','species-style.js','commands.js','route-stops.js','route-setup.js','setup-catalog.js','harvest-view.js','phone-ui.js','phone.css','qrcode.js'];
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mathartbang.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"};
 
@@ -97,6 +98,10 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       }
       if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(res,200,{token:session.csrf,version:'0.4.1',selectedReserve:sessionReserve.get(session.sid)?.reserve??19,phone:{remote:true,online:peers.has(session.deviceId),mode:'live_relay'}});
       if(req.method==='GET'&&Object.hasOwn(catalogs,url.pathname.slice(5))&&url.pathname.startsWith('/api/'))return json(res,200,catalogs[url.pathname.slice(5)]);
+      if(req.method==='GET'&&url.pathname==='/api/locations'){
+        const query=locationSearchParams(url.searchParams);
+        return json(res,200,await relay(peers.get(session.deviceId),'locations',{query}));
+      }
       if(req.method==='GET'&&['/api/state','/api/export'].includes(url.pathname)){
         const reserve=Number(url.searchParams.get('reserve')??sessionReserve.get(session.sid)?.reserve??19);if(!Number.isInteger(reserve)||reserve<0||reserve>999)return json(res,400,{error:'Invalid reserve'});
         if(sessionReserve.size<2048||sessionReserve.has(session.sid))sessionReserve.set(session.sid,{reserve,expiresAt:session.exp});
@@ -105,7 +110,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
         return json(res,200,result,url.pathname==='/api/export'?{'Content-Disposition':'attachment; filename="COTW-phone-view.json"'}:{});
       }
       return json(res,404,{error:'Not found'});
-    }catch(e){return json(res,[400,403,409,413,415,429,503,504].includes(e.status)?e.status:500,{error:[400,403,409,413,415,429,503,504].includes(e.status)?e.message:'The phone service could not complete the request.'});}
+    }catch(e){return json(res,[400,403,404,409,413,415,429,503,504].includes(e.status)?e.status:500,{error:[400,403,404,409,413,415,429,503,504].includes(e.status)?e.message:'The phone service could not complete the request.'});}
   });
   server.requestTimeout=15000;server.headersTimeout=10000;
   const wss=new WebSocketServer({noServer:true,maxPayload:PHONE_MAX_BYTES,perMessageDeflate:false,handleProtocols:protocols=>protocols.has(PHONE_PROTOCOL)?PHONE_PROTOCOL:false});
@@ -151,7 +156,7 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
           const waiting=pending.get(m.id);if(!waiting||waiting.peer!==peer)return;
           clearTimeout(waiting.timer);pending.delete(m.id);
           if(m.status===200&&m.data&&typeof m.data==='object')waiting.resolve(m.data);
-          else waiting.reject(Object.assign(Error(m.status===409?'The journal changed. Refresh before saving.':'The PC could not complete this request.'),{status:[400,403,409,413,429].includes(m.status)?m.status:503}));
+          else waiting.reject(Object.assign(Error(m.status===409?'The journal changed. Refresh before saving.':'The PC could not complete this request.'),{status:[400,403,404,409,413,429].includes(m.status)?m.status:503}));
           return;
         }
         socket.close(1008,'Unsupported message');
