@@ -1,5 +1,34 @@
 # GrindZone — Phase 1 acceptance and subsequent SI remediation
 
+## Primary audience correction — September 22, 2026
+
+**Xbox players are the main target. They currently have no working GrindZone connection to their game. This is a defining unmet product requirement, not an optional platform enhancement.**
+
+The owner rejected the substitution of a PC-oriented reader plus a console-labelled manual browser journal for Xbox integration. Preserve the working PC and guest features, but do not let further PC packaging, pairing tutorials, guest forms or unrelated polish displace the Xbox connection dependency. A player must not need a PC, developer tools, developer-issued credentials or manual entry for every harvest to obtain the intended Xbox experience.
+
+### Required Xbox proof
+
+1. A player opens GrindZone on a phone and completes a real Microsoft/Xbox authorization flow for GrindZone. The backend verifies the Xbox identity; entering a gamertag or selecting Xbox is not proof of ownership. No borrowed first-party application identity or token copied from developer tools.
+2. The same player receives actual, authorized COTW data from the connected source. Record exactly which title, fields, observation times and permissions were verified. Identity linking, achievements, title statistics, capture ingestion and private game-save access are separate capabilities. None automatically establishes the others, and aggregate changes must not be fabricated into individual harvests or exact coordinates.
+3. Demonstrate a real Xbox-origin gameplay record reaching the correct grind/account without a PC and without retyping the harvest. A capture-derived record must be labelled as such, preserve its evidence, and contain only supported visible fields; it does not prove native harvest telemetry, unseen herd populations or exact kill/pickup coordinates. Repeated ingestion must not duplicate the record. A profile-only or achievement-only result is not acceptance of automatic grind tracking.
+4. The connected player's durable progress reopens on another phone under the same verified identity. Another account cannot retrieve it. Unlink, revoked authorization, expired sessions and source unavailability have explicit behavior without erasing the journal or exposing credentials.
+5. Retain all other agreed Phase 1 outcomes. An unavailable required Xbox field remains an open integration requirement until supported or explicitly changed by the owner. Do not redefine the target product as a manual notebook to close it.
+
+### Next dependency and factual limits
+
+Prioritize a real registered Microsoft application, the documented Microsoft-to-Xbox authentication exchange and a scoped COTW read against the player's granted permissions. Inspect returned title statistics before promising specific fields. Microsoft documents web sign-in and read-only Xbox data access; its statistics service distinguishes open from restricted statistics. That is a viable integration investigation, not evidence that GrindZone already has authorization or that every COTW metric is available.
+
+The publisher's Xbox save-export limitation does not mean every Xbox API is inaccessible, and Microsoft sign-in does not by itself grant access to COTW's private save contents. For missing detailed harvest, herd and zone data, investigate an authorized title/publisher interface. Xbox's built-in OneDrive capture backup plus a consented Microsoft Graph reader is a separate candidate for capture-based ingestion, not full game-state synchronization. No provider approval, extracted record or live connection has been established merely by documenting those paths.
+
+Official references checked September 22, 2026:
+- Microsoft website/Xbox authentication: https://learn.microsoft.com/en-us/gaming/gdk/docs/services/fundamentals/s2s-auth-calls/service-authentication/live-website-authentication
+- Xbox statistics authorization: https://learn.microsoft.com/en-us/gaming/gdk/docs/reference/live/rest/uri/userstats/uri-usersxuidscidsscidstatsgetvaluemetadata
+- COTW platform save-export guidance: https://support.thehunter.com/hc/en-us/articles/4415681575058-How-to-send-your-savegame-files-to-support
+- Xbox capture backup: https://news.xbox.com/en-us/2023/09/27/bonus-xbox-update-for-september/
+- Microsoft Graph delegated file reads: https://learn.microsoft.com/en-us/graph/api/driveitem-get
+
+This correction changes priority and acceptance criteria only. It does not implement a connector, register a Microsoft app, provision managed authentication, obtain publisher access, deploy code or connect a player's Xbox. Keep the latest actual implementation/release checkpoint intact and read this correction alongside it.
+
 ## Owner decision — September 21, 2026
 
 The owner defines completion of EVERYTHING listed in the September 21 GrindZone work recap as the END OF PHASE 1. That finished scope is what the original first deliverable should have been. A working preview, incremental feature release, pairing success, source candidate or test count is not that deliverable.
