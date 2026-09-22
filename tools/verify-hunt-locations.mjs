@@ -18,6 +18,18 @@ const root=mkdtempSync(path.join(tmpdir(),'grindzone-location-browser-')),save=p
 const proof={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),at:new Date().toISOString(),mode,passed:false,checks:[],viewports:[],fixture:'Actual application and canonical FieldMap with generated binary saves, synthetic journal observations, real SQLite and signed phone pairing',physicalPhoneVerified:false,windowsLaunchVerified:false,automaticExactKillGpsVerified:false};
 let app,relay,browser;const errors=[],secrets=[];
 const until=async(fn,label)=>{for(let i=0;i<200;i++){if(await fn())return;await new Promise(r=>setTimeout(r,100));}throw Error('Timed out: '+label);};
+// FieldMap has invisible click targets and visible marker groups with the same data-pin.
+// Assert the visible group, its exact world coordinates and its actual rendered geometry.
+const verifyMarker=async(page,x,z)=>{
+ const marker=page.locator('.gz-location-map svg g[data-pin]');
+ assert.equal(await marker.count(),1);
+ assert.equal(await marker.isVisible(),true);
+ assert.equal(Number(await marker.getAttribute('data-world-x')),x);
+ assert.equal(Number(await marker.getAttribute('data-world-z')),z);
+ assert.equal(await marker.getAttribute('role'),'button');
+ assert.equal(await marker.locator(':scope > path').count(),1);
+ const box=await marker.boundingBox();assert(box&&box.width>0&&box.height>0,'Visible marker must have rendered geometry');
+};
 const read=async(page,query='')=>page.evaluate(async query=>{const r=await fetch(new URL('api/locations'+(query?'?'+query:''),location.href),{cache:'no-store'});return {status:r.status,data:await r.json()};},query);
 try{
  if(mode==='local')relay=await createActivatedPhoneRelay({key:randomBytes(32),publicOrigin:'http://127.0.0.1:0/grindzone',allowInsecureLoopback:true});
@@ -50,9 +62,10 @@ try{
  assert.equal(await pc.locator('[data-location-event]').count(),4);
  await pc.locator('[data-location-kind="death"]').click();await until(async()=>await pc.locator('[data-location-event]').count()===1,'death filter');
  assert.match(await pc.locator('[data-location-event]').innerText(),/Death reported/);
- await pc.locator('[data-location-show]').click();await until(()=>pc.locator('.gz-location-map svg [data-pin]').count().then(n=>n===1),'canonical death marker');
+ await pc.locator('[data-location-show]').click();await until(()=>pc.locator('.gz-location-map svg g[data-pin]').count().then(n=>n===1),'canonical death marker');
  const rendered=await pc.locator('gz-hunt-locations').evaluate(e=>e.map.data.pins.map(p=>({x:p.x,z:p.z})));
  assert.deepEqual(rendered,[{x:zone.x+20,z:zone.z+20}]);
+ await verifyMarker(pc,zone.x+20,zone.z+20);
  proof.checks.push('Existing grind screen loads its own durable events; shot/death/pickup coordinates remain distinct and the real FieldMap renders the selected death point.');
  await pc.goto(app.url+'/#settings',{waitUntil:'domcontentloaded'});await pc.locator('[data-action="phone-enable"]').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();await pc.locator('[data-phone-link]').waitFor({timeout:30000});
  const pair=await pc.locator('[data-phone-link]').inputValue();secrets.push(new URL(pair).hash.slice(6));
@@ -68,8 +81,9 @@ try{
  await phone.setViewportSize({width:390,height:844});
  await phone.locator('[data-location-filter="precision"]').selectOption('zone');await until(async()=>await phone.locator('[data-location-event]').count()===1,'selected-zone filter');
  assert.match(await phone.locator('[data-location-event]').innerText(),/Player-selected zone · not exact GPS/);
- await phone.locator('[data-location-show]').click();await until(()=>phone.locator('.gz-location-map svg [data-pin]').count().then(n=>n===1),'phone selected-zone marker');
+ await phone.locator('[data-location-show]').click();await until(()=>phone.locator('.gz-location-map svg g[data-pin]').count().then(n=>n===1),'phone selected-zone marker');
  assert.equal(await phone.locator('gz-hunt-locations').evaluate(e=>e.map.data.pins[0].x),zone.x);
+ await verifyMarker(phone,zone.x,zone.z);
  await phone.reload({waitUntil:'domcontentloaded'});await phone.locator('[data-location-event]').first().waitFor();
  // Reload does not persist private filter state to disk; filters survive ordinary parent rerenders below.
  await phone.locator('[data-location-kind="death"]').click();await until(async()=>await phone.locator('[data-location-event]').count()===1,'phone death filter');
@@ -89,7 +103,8 @@ try{
  assert.deepEqual(saveHashes(save),expected);
  const exported=app.store.exportJournal(profile);assert(exported.harvestZones.some(a=>a.snapshot));assert(exported.encounterZones.some(a=>a.snapshot));
  proof.checks.push('Older attributed receipts beyond the ordinary 500-record state window remain queryable; pages do not repeat records, current-grind totals stay scoped, and explicit journal exports retain attribution snapshots.');
- await phone.locator('[data-location-show]').click();await until(()=>phone.locator('.gz-location-map svg [data-pin]').count().then(n=>n===1),'final death map');
+ await phone.locator('[data-location-show]').click();await until(()=>phone.locator('.gz-location-map svg g[data-pin]').count().then(n=>n===1),'final death map');
+ await verifyMarker(phone,zone.x+20,zone.z+20);
  mkdirSync(output,{recursive:true});await phone.locator('.gz-location-map').scrollIntoViewIfNeeded();await phone.screenshot({path:path.join(output,mode+'-locations.png'),fullPage:false});
  assert.deepEqual(errors,[]);
  await app.phone.disable();
