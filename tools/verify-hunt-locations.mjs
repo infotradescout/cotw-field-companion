@@ -29,6 +29,10 @@ const verifyMarker=async(page,x,z)=>{
  assert.equal(await marker.getAttribute('role'),'button');
  assert.equal(await marker.locator(':scope > path').count(),1);
  const box=await marker.boundingBox();assert(box&&box.width>0&&box.height>0,'Visible marker must have rendered geometry');
+ const canvas=await page.locator('.gz-location-map > svg').boundingBox();
+ const frame=await page.locator('.gz-location-map').boundingBox();
+ assert(canvas&&frame&&canvas.height>=250&&canvas.width>=200,'Recorded map must be usable, not shrunk to a toolbar icon');
+ assert(canvas.width>=frame.width-4,'Recorded map must fill the available map panel');
 };
 const read=async(page,query='')=>page.evaluate(async query=>{const r=await fetch(new URL('api/locations'+(query?'?'+query:''),location.href),{cache:'no-store'});return {status:r.status,data:await r.json()};},query);
 try{
