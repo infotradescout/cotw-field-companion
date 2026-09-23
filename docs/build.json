@@ -2,27 +2,27 @@
   "schema": "field.public_build.v1",
   "version": "0.4.1",
   "mode": "public_no_player_data",
-  "buildTag": "012215d1fbddf7c0",
+  "buildTag": "a1692f1a956ecae4",
   "files": [
     {
       "path": "index.html",
       "bytes": 2943,
-      "sha256": "01e481a71eea7fbf0fa8fddf3b332f6c5a2373e7344aa480978c47cba94a4063"
+      "sha256": "d397bc120728a13fbb17c89d06e699e23a7eed099a35f32401f0a4a860b1271d"
     },
     {
       "path": "public.js",
       "bytes": 6138,
-      "sha256": "6af9b49387aaad0de63a9ba23144bbb9e2b6001380437a00d7dab98fbcd89f2c"
+      "sha256": "5965a18d6772afb9dd52babf2d57516baa5e32eb341fdad0dd162876dd4f42a2"
     },
     {
       "path": "feedback.js",
       "bytes": 3371,
-      "sha256": "47f3bf7c572aa0ce184b9f4ce60e483cf4efbcb0d85ea425ca84fb0bb41cfcb7"
+      "sha256": "3f317e0ed323081c496b3cfdb8526ed09ead98ea6f9f3e23575be6e9ebec967f"
     },
     {
       "path": "species-style.js",
-      "bytes": 1350,
-      "sha256": "209d4b0057b2e5e0334dda264b6f0d801ee5bde711c0d64aa558e328a4ea6898"
+      "bytes": 2939,
+      "sha256": "70060190c2d879a423e1423a69184476bba4abe4fa9e0b5ace61dd699479a8c8"
     },
     {
       "path": "data-client.js",
@@ -32,7 +32,7 @@
     {
       "path": "reference.js",
       "bytes": 11683,
-      "sha256": "6d6c8f23cec6dc4245877f0796c192f66aa1cf9e64eaf6f554ab25913b67b61f"
+      "sha256": "f892d6401761cfbd0c4213fd901bdb713b7873ee939f9ca86ce9bef26d9898c5"
     },
     {
       "path": "reference-core.js",
@@ -42,17 +42,17 @@
     {
       "path": "field-library.js",
       "bytes": 21227,
-      "sha256": "0205d43959dc922d48c644071750aefe832d4944a24000934bff2f94696cb512"
+      "sha256": "c294c8eea98ba83720429bb93539933d356f611808441ffdffd208f8949bbc5a"
     },
     {
       "path": "career.js",
       "bytes": 14777,
-      "sha256": "da9273212bab8ab3cb13edd40cebd20b6a71b6e7e43cb460380adf0fd0bea4c1"
+      "sha256": "b9c2a6cbf2b145045b418d4a18bfb7f58804df9be08a3829346949d5fffc2a40"
     },
     {
       "path": "studio.js",
-      "bytes": 25519,
-      "sha256": "9f1d45c3050801465548c5872f3705e788ba6df50bcbac933578e450dd992104"
+      "bytes": 32176,
+      "sha256": "36c2a7104ced695e049330fa0b43bbb083662d3c3502b30a71d2ff5059e51ff9"
     },
     {
       "path": "style.css",
@@ -72,12 +72,12 @@
     {
       "path": "map.js",
       "bytes": 28386,
-      "sha256": "54b80f92060763ac59de60596ef682376890f961212c70d81e557d4b23f7bf30"
+      "sha256": "8517d50f223bfcfe4e53499b419553a726ac371f83a128b7fda069c5f308497f"
     },
     {
       "path": "route-stops.js",
-      "bytes": 1591,
-      "sha256": "05efc62c2cfa284c968dc955bb5f26755c12c7b9d43f69282cc1bd314d3eec15"
+      "bytes": 13253,
+      "sha256": "dc31104aba5293c70e70ff63d63d20d09b6df1d2e67b060a5f8bed044ec7ab7a"
     },
     {
       "path": "map-geometry.js",
@@ -87,12 +87,12 @@
     {
       "path": "terrain-layer.js",
       "bytes": 4082,
-      "sha256": "7baa85b3050822e1aa55cbcd30016d2fee8e0a17a49a542e7743fbb8242ef706"
+      "sha256": "128e72aaf228c91ca2a55c98bf8d559dd2cdd0ea4aef5f840caad16da57be11c"
     },
     {
       "path": "map-atlas.js",
       "bytes": 10010,
-      "sha256": "ade89cad7db09b0e77725f467d85362fabc5972b2d1530ba201c6aee420cf975"
+      "sha256": "9f2bf0f23ddcbe031d3e02c5082406f7796b64b89d8a72405b86bd9aa07edcae"
     },
     {
       "path": "maps.css",
