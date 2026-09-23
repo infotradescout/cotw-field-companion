@@ -73,7 +73,8 @@ async function loadCatalogs(){
  const get=async name=>{const r=await fetch(new URL('catalog/'+name+'.json',import.meta.url),{credentials:'omit',cache:'no-cache'});if(!r.ok)throw Error('Map reference catalog could not load.');return r.json();};
  try{const value=await get('maps');if(value.schema!=='field.reserve_maps.v1'||!Array.isArray(value.reserves))throw Error('Map reference format is unavailable.');maps=value;catalogError=null;}catch(e){catalogError=e.message;}
  try{const value=await get('reference');if(Array.isArray(value.species))references=value;}catch{}
- if(!dialog.open)render();
+ // The welcome form owns unsaved consent/platform choices; catalogs cannot replace it.
+ if(doc&&!dialog.open)render();
 }
 async function refresh(){try{doc=await storage.read();fatal=null;foreignChange=false;if(!dialog.open)render();}catch(e){fatal=e.message;if(!dialog.open)render();}}
 async function chooseBackup(file){if(!file)return;try{if(file.size>JOURNAL_LIMITS.bytes+10000)throw Error('This backup is too large.');const imported=importJournal(await file.text());openEditor('restore',{imported});}catch(e){notice(e.message);}finally{const n=document.querySelector('#backup-file');if(n)n.value='';}}
