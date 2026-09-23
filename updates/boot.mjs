@@ -5,10 +5,12 @@ import {spawn} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {loadState,readRelease,verifyDirectory,fallbackCode,plainPath,acquireLock} from './engine.mjs';
 import {launchContext} from './context.mjs';
+import {isMain} from './entry.mjs';
 export async function boot(home,{launchBrowser=true}={}){
  home=plainPath(home);const trust=JSON.parse(fs.readFileSync(path.join(home,'kernel/trust.json'),'utf8')),config=JSON.parse(fs.readFileSync(path.join(home,'config.json'),'utf8'));
  const context=launchContext({config});
- if(context.dataDir!==path.resolve(config.dataDir)||(context.saveDir||null)!==(config.saveDir||null)||context.port!==config.port)throw Error('This managed installation is configured for another journal, save profile or port.');
+ const equalPath=(a,b)=>process.platform==='win32'?path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase():path.resolve(a)===path.resolve(b);
+ if(!equalPath(context.dataDir,config.dataDir)||((context.saveDir||null)!==(config.saveDir||null)&&(!context.saveDir||!config.saveDir||!equalPath(context.saveDir,config.saveDir)))||context.port!==config.port)throw Error('This managed installation is configured for another journal, save profile or port.');
  let selected,supervisor,unlock;
  try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){if(launchBrowser&&process.platform==='win32'){const c=spawn('cmd.exe',['/d','/s','/c','start','','http://127.0.0.1:'+context.port],{stdio:'ignore',windowsHide:true});c.on('error',()=>{});}return {status:'already_running'};}throw e;}
  try{
@@ -20,7 +22,7 @@ export async function boot(home,{launchBrowser=true}={}){
  }finally{unlock();}
  return supervisor.supervise({home,trust,context,launchBrowser});
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+if(isMain(import.meta)){
  try{const result=await boot(path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'));process.exitCode=result.code??0;}
  catch(e){console.error('GrindZone: '+e.message);process.exitCode=1;}
 }

@@ -1,3 +1,4 @@
+import {isMain} from './updates/entry.mjs';
 import {ManagedChild} from './updates/child.mjs';
 import {runtimeIdentity,runtimeScope} from './lib/runtime-identity.mjs';
 import {locationSearchParams} from './lib/hunt-locations.mjs';
@@ -137,6 +138,6 @@ export async function createApp({managedGate=null,dataDir,saveDir=null,port=4783
   const app={server,store,observer,phone,close,url:`http://127.0.0.1:${server.address().port}`};
   managedGate?.ready(app,runtime,()=>phone.start());return app;
 }
-if(process.argv[1]&&fileURLToPath(import.meta.url)===path.resolve(process.argv[1])){
+if(isMain(import.meta)){
   try{const app=await createApp({managedGate:new ManagedChild(),dataDir:process.env.COMPANION_DATA_DIR,saveDir:process.env.COTW_SAVE_DIR||null,port:Number(process.env.COMPANION_PORT||47831)});console.log(`COTW Field Companion listening at ${app.url}\nSave access: READ ONLY. Data: ${process.env.COMPANION_DATA_DIR}\nClose this window or press Ctrl+C to stop.`);let ending=false;for(const signal of ['SIGINT','SIGTERM'])process.on(signal,async()=>{if(ending)return;ending=true;await app.close();process.exit(0);});}catch(e){console.error(e.message);process.exitCode=1;}
 }
