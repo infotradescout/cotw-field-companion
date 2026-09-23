@@ -1,3 +1,4 @@
+import {runtimeIdentity,runtimeScope} from './lib/runtime-identity.mjs';
 import {locationSearchParams} from './lib/hunt-locations.mjs';
 import {herdSearchParams,projectHerdView} from './lib/herd-view.mjs';
 import {loadHerdReference,withHerdReference} from './lib/herd-reference.mjs';
@@ -10,10 +11,14 @@ import {Store} from './lib/store.mjs';
 import {Observer,inside} from './lib/observer.mjs';
 import {reserveId} from './lib/core.mjs';
 import {createPhoneAccess} from './lib/phone-access.mjs';
+// Capture the build before serving assets; later disk changes cannot relabel a running process.
+const bootRuntime=runtimeIdentity(path.dirname(fileURLToPath(import.meta.url)));
 const DEFAULT_GITHUB_FEEDBACK_URL='https://api.github.com/repos/infotradescout/cotw-field-companion/issues?state=open&labels=feedback&per_page=20';
 export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,phoneRelayUrl=process.env.COMPANION_PHONE_RELAY_URL,phoneEnrollmentToken=process.env.COMPANION_PHONE_ENROLLMENT_TOKEN,allowInsecurePhoneLoopback=false,feedbackUrl=process.env.COMPANION_FEEDBACK_URL,feedbackOwnerToken=process.env.COMPANION_FEEDBACK_OWNER_TOKEN,feedbackOwnerOrigin=process.env.COMPANION_FEEDBACK_OWNER_ORIGIN,githubFeedbackUrl=process.env.COMPANION_FEEDBACK_GITHUB_URL||DEFAULT_GITHUB_FEEDBACK_URL}={}) {
   const appDir=path.dirname(fileURLToPath(import.meta.url));
   if(!dataDir)throw Error('Companion data directory is required');
+  const identity=bootRuntime;
+  if(process.env.GRINDZONE_EXPECTED_FINGERPRINT&&process.env.GRINDZONE_EXPECTED_FINGERPRINT!==identity.fingerprint)throw Error('The selected package changed during startup. No journal was opened; restart the complete package.');
   saveDir=saveDir?realpathSync(saveDir):null;dataDir=path.resolve(dataDir);
   let parent=dataDir;while(!existsSync(parent))parent=path.dirname(parent);
   const resolved=path.join(realpathSync(parent),path.relative(parent,dataDir));
@@ -38,6 +43,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
   if(feedbackEndpoint&&!['https:','http:'].includes(feedbackEndpoint.protocol))throw Error('Companion feedback URL must use HTTP or HTTPS');
   if(feedbackEndpoint){feedbackEndpoint.pathname=feedbackEndpoint.pathname.replace(/\/+$/,'')+'/';feedbackEndpoint.search='';feedbackEndpoint.hash='';}
   const token=randomBytes(32).toString('hex');
+  const runtime=Object.freeze({...identity,scope:runtimeScope(dataDir,saveDir)});
   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
   const assets=new Map(['/herd-view.js','/herd-view.css','/','/index.html','/app.js','/dashboard.js','/save-data.js','/save-data.css','/hunt-locations.js','/hunt-locations.css','/grinds.js','/species-style.js','/commands.js','/route-stops.js','/route-setup.js','/setup-catalog.js','/harvest-view.js','/phone-ui.js','/phone.css','/qrcode.js','/map.js','/style.css','/icon.svg','/reference.js','/reference-core.js','/data-client.js','/career.js','/studio.js','/field-library.js','/field-theme.css','/hunting-workspace.css','/map-geometry.js','/terrain-layer.js','/map-atlas.js','/maps.css'].map(url=>[url,readFileSync(path.join(appDir,'public',url==='/'?'index.html':url.slice(1)))]));
   const server=http.createServer(async(req,res)=>{
@@ -76,7 +82,7 @@ export async function createApp({dataDir,saveDir=null,port=47831,interval=5000,p
     if(!goodHosts.includes(req.headers.host)||!sameOrigin||!allowedSite)return json(403,{error:'Only same-origin local access is accepted'});
     try {
       const url=new URL(req.url,'http://127.0.0.1');
-      if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(200,{token,version:'0.4.1',selectedReserve:observer.source('reserveworlddata_adf')?.payload?.reserve??19});
+      if(req.method==='GET'&&url.pathname==='/api/bootstrap')return json(200,{token,version:identity.version,runtime,selectedReserve:observer.source('reserveworlddata_adf')?.payload?.reserve??19});
       if(req.method==='GET'&&url.pathname==='/api/phone/status')return json(200,phone.status());
       if(req.method==='GET'&&url.pathname==='/api/maps')return json(200,mapsCatalog);
       if(req.method==='GET'&&url.pathname==='/api/gear')return json(200,gearCatalog);
