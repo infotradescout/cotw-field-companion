@@ -1,5 +1,6 @@
 /** Build-only Windows distribution. Never installs, changes policy, or reads player data. */
 import {buildPortable} from './build-portable.mjs';
+import {buildHerdReference} from './build-herd-reference.mjs';
 import {createHash} from 'node:crypto';
 import {deflateRawSync,inflateRawSync} from 'node:zlib';
 import {execFileSync} from 'node:child_process';
@@ -85,5 +86,6 @@ export async function buildWindowsDownload({sourceRoot,outputRoot,sourceRevision
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const root=path.dirname(path.dirname(fileURLToPath(import.meta.url))),revision=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+  await buildHerdReference();
   console.log(JSON.stringify(await buildWindowsDownload({sourceRoot:root,outputRoot:path.join(root,'downloads'),sourceRevision:revision})));
 }

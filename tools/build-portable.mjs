@@ -3,6 +3,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFile
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildHerdReference } from './build-herd-reference.mjs';
 
 export const portableFiles = Object.freeze([
   'package.json', 'START.cmd', 'launcher.mjs', 'server.mjs', 'README.md',
@@ -49,6 +50,7 @@ export function buildPortable(root, destination) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (!process.argv[2]) throw Error('Provide a new output directory: node tools/build-portable.mjs <directory>');
+  await buildHerdReference();
   const receipt = buildPortable(sourceRoot, process.argv[2]);
   console.log(JSON.stringify({ output: path.resolve(process.argv[2]), files: receipt.files.length, bytes: receipt.files.reduce((sum, item) => sum + item.bytes, 0), published: false }));
 }
