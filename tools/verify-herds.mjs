@@ -56,6 +56,30 @@ try{
  deerGroups=[deerGroups[1],{...deerGroups[0],Animals:[...deerGroups[0].Animals].reverse()}];writePopulation('2026-09-21T12:01:00Z');expected=saveHashes(save);await until(async()=>{const v=(await read(phone)).data;return v.savedAt==='2026-09-21T12:01:00.000Z';},'automatic population update');assert.deepEqual((await read(phone)).data.herds.map(h=>h.id),ids);assert.deepEqual(saveHashes(save),expected);
  proof.checks.push('Signed phone uses the same IDs and counts, rejects caller profile selection, filters both zone-to-herds and female-capable species, fits 320/390px and retains identities after binary group/member reordering.');
 
+
+ // Check the owner's actual Insights route under the complete PC and signed-phone app shell.
+ proof.insightsLayouts=[];
+ for(const [page,width] of [[pc,1440],[phone,390],[phone,320]]){
+  await page.setViewportSize({width,height:width===1440?1000:844});
+  await page.goto((page===pc?app.url:base)+'/#insights',{waitUntil:'domcontentloaded'});
+  await page.locator('[data-population-species]').first().waitFor();
+  assert.equal(await page.locator('[data-population-species]').count(),2);
+  const deer=page.locator(`[data-population-species="${whitetail.key}"]`);
+  assert.equal(await deer.locator('[data-label="Herds"]').innerText(),'2');
+  assert.equal(await deer.locator('[data-label="Animals"]').innerText(),'3');
+  assert.equal(await deer.locator('[data-label="Diamond potential"]').innerText(),'1');
+  assert.equal(await deer.locator('[data-label="Saved Great Ones"]').innerText(),'1');
+  const females=page.locator(`[data-population-species="${femaleSpecies.key}"]`);
+  assert.equal(await females.locator('[data-label="Diamond potential"]').innerText(),'1');
+  assert.equal(await females.locator('.female-diamond-mark').count(),1);
+  const layout=await page.locator('.gz-population-table').evaluate(table=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,tableWidth:table.getBoundingClientRect().width}));
+  assert.ok(layout.scrollWidth<=layout.width+1,'Insights must fit '+width+'px');
+  assert.ok(layout.tableWidth>=200,'Insights trophy table must remain readable');proof.insightsLayouts.push(layout);
+  if(width===390){mkdirSync(output,{recursive:true});await page.locator('.gz-population-overview').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,mode+'-insights.png'),fullPage:false});}
+ }
+ proof.insightsVerified=true;
+ proof.checks.push('Actual #insights on PC and signed phone shows per-species Diamond potential, separate saved Great Ones, real herd/animal counts and female eligibility at 1440/390/320px without page overflow.');
+
  // Exercise the real grind shell as well as Harvests: generic toolbar SVG rules and
  // display:contents placement previously hid usable maps and pushed recent results down.
  app.observer.command({op:'session.start',reserve:19,name:'Herd workflow verification',targetSpecies:whitetail.name,goal:10});
