@@ -1,7 +1,7 @@
 name: Managed Windows updates
 on:
   push:
-    branches: [feat/managed-updates-20260923]
+    branches: [feat/managed-updates-20260923, fix/windows-installer-startup-20260923]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,10 +20,10 @@ jobs:
         run: node tools/build-herd-reference.mjs
       - name: Install existing relay dependencies without lifecycle scripts
         run: npm ci --prefix cloud --ignore-scripts --no-audit --no-fund
-      - name: Exercise the Windows installation and update cycle
+      - name: Exercise Windows setup, CLI dispatch, repair, and update cycle
         shell: pwsh
         run: |
-          node --test --test-reporter=tap tests/update-engine.test.mjs tests/update-lifecycle.test.mjs tests/update-full-app.test.mjs *> managed-update-windows.tap
+          node --test --test-reporter=tap tests/windows-entry.test.mjs tests/install-repair.test.mjs tests/update-engine.test.mjs tests/update-lifecycle.test.mjs tests/update-full-app.test.mjs *> managed-update-windows.tap
           $result = $LASTEXITCODE
           Get-Content managed-update-windows.tap
           exit $result
