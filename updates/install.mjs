@@ -65,22 +65,45 @@ export function install({source,home,context,trust,desktop=false}={}){
  if(desktop&&process.platform==='win32'){
   const ps=spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"$s=New-Object -ComObject WScript.Shell; $l=$s.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'GrindZone.lnk')); $l.TargetPath=Join-Path $env:GZ_INSTALL_HOME 'START.cmd'; $l.WorkingDirectory=$env:GZ_INSTALL_HOME; $l.Save()"],{env:{...process.env,GZ_INSTALL_HOME:home},encoding:'utf8',timeout:15000,windowsHide:true});shortcut=ps.status===0;
  }
- return {...result,home,shortcut,revision:loadState(home).current,updateStaged,repaired};
+ return {...result,home,shortcut,revision:loadState(home).current,setupRevision:m.revision,updateStaged,repaired};
 }
 
-export async function runInstaller({source=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),home=path.join(process.env.LOCALAPPDATA||path.join(os.homedir(),'AppData/Local'),'GrindZone'),open=process.argv.includes('--open'),platform=process.platform,arch=process.arch}={}){
+/** A signed setup may start its own staged supervisor to repair an older supervisor. */
+async function stagedSupervisor(home,trust,result){
+ const installedTrust=JSON.parse(fs.readFileSync(path.join(home,'kernel/trust.json'),'utf8'));
+ if(canonical(installedTrust)!==canonical(trust))throw Error('The installed trust policy changed before setup startup.');
+ const state=loadState(home);
+ if(!state.current||state.current!==result.revision||state.staged!==result.setupRevision||state.pending||state.rejected.includes(result.setupRevision))throw Error('The verified setup update changed before startup.');
+ const current=readRelease(home,state.current,installedTrust),next=readRelease(home,state.staged,installedTrust);
+ if(next.manifest.sequence!==state.highWater||next.manifest.sequence<=current.manifest.sequence||next.manifest.storageContract!==current.manifest.storageContract||next.manifest.journalEpoch!==current.manifest.journalEpoch)throw Error('The staged setup is not a newer compatible update.');
+ verifyDirectory(next.dir,next.manifest);
+ const supervisor=await import(pathToFileURL(path.join(next.dir,'updates/supervisor.mjs')).href);
+ if(typeof supervisor.supervise!=='function')throw Error('Signed setup supervisor is missing.');
+ return {supervise:supervisor.supervise,expectedStaged:{revision:next.manifest.revision,sequence:next.manifest.sequence},trust:installedTrust};
+}
+
+export async function runInstaller({source=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),home=path.join(process.env.LOCALAPPDATA||path.join(os.homedir(),'AppData/Local'),'GrindZone'),open=process.argv.includes('--open'),platform=process.platform,arch=process.arch,context=launchContext(),desktop=true,launchBrowser=true,fetcher=fetch,onStarted}={}){
  console.log('GrindZone setup: checking the complete signed package...');
  if(platform!=='win32'||arch!=='x64')throw Error('This installer requires Windows x64.');
  const trust=JSON.parse(fs.readFileSync(path.join(source,'updates/trust.json'),'utf8'));
- const result=install({source,home,context:launchContext(),trust,desktop:true});
+ const result=install({source,home,context,trust,desktop});
  console.log(result.installed?'GrindZone files installed.':result.updateStaged?'GrindZone repair installed; the verified update will activate now.':'GrindZone installation checked and repaired.');
  console.log('Journal and phone pairing remain in their existing data directory.');
- if(!result.shortcut)console.log('Desktop shortcut could not be created. The installed launcher is: '+path.join(home,'START.cmd'));
+ if(desktop&&!result.shortcut)console.log('Desktop shortcut could not be created. The installed launcher is: '+path.join(home,'START.cmd'));
  if(open){
   console.log('Starting GrindZone. Keep this window open; startup errors will appear here.');
   // Keep startup in this visible process. Detached/ignored output previously hid every boot failure.
-  const {boot}=await import(pathToFileURL(path.join(home,'kernel/boot.mjs')).href);
-  const started=await boot(home);if(started.code)throw Error('GrindZone stopped with exit code '+started.code);return {...result,startup:started};
+  let started;
+  if(result.updateStaged){
+   const selected=await stagedSupervisor(home,trust,result);
+   started=await selected.supervise({home,trust:selected.trust,context,launchBrowser,fetcher,onStarted,expectedStaged:selected.expectedStaged});
+  }else{
+   const {boot}=await import(pathToFileURL(path.join(home,'kernel/boot.mjs')).href);
+   started=await boot(home,{launchBrowser,fetcher,onStarted});
+  }
+  if(started.code)throw Error('GrindZone stopped with exit code '+started.code);
+  if(started.status==='already_running'&&result.updateStaged)console.log('GrindZone is already running; the verified update will activate on its next launch.');
+  return {...result,startup:started};
  }
  return result;
 }

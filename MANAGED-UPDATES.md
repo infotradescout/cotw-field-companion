@@ -23,6 +23,8 @@ Ed25519 application-release signatures are **not Windows Authenticode signing**.
 
 The initial bootstrap kernel and trust policy are pinned. Versioned signed supervisors can update within that protocol; arbitrary trust-root or bootstrap-protocol migrations are not promised by the current implementation.
 
+When a newer complete signed setup is rerun with `--open`, it verifies and stages the release, then starts that release's verified supervisor under the same installation lock. This allows a repaired supervisor to activate a compatible update even when the currently installed supervisor cannot complete its cold journal backup. The normal desktop shortcut still selects the committed release.
+
 ## Journal and pairing recovery
 
 The installation lock prevents competing managed supervisors. The next-launch activation checks that the selected local port is no longer serving another companion. It verifies the staged release and creates a hashed cold backup of the journal database and its SQLite sidecars. Those records include existing private pairing metadata.

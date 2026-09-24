@@ -6,7 +6,7 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 import {loadState,readRelease,verifyDirectory,fallbackCode,plainPath,acquireLock} from './engine.mjs';
 import {launchContext} from './context.mjs';
 import {isMain} from './entry.mjs';
-export async function boot(home,{launchBrowser=true}={}){
+export async function boot(home,{launchBrowser=true,fetcher=fetch,onStarted}={}){
  home=plainPath(home);const trust=JSON.parse(fs.readFileSync(path.join(home,'kernel/trust.json'),'utf8')),config=JSON.parse(fs.readFileSync(path.join(home,'config.json'),'utf8'));
  const context=launchContext({config});
  const equalPath=(a,b)=>process.platform==='win32'?path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase():path.resolve(a)===path.resolve(b);
@@ -20,7 +20,7 @@ export async function boot(home,{launchBrowser=true}={}){
   catch(e){if(attempt||!fallbackCode(home,trust))throw e;}
  }
  }finally{unlock();}
- return supervisor.supervise({home,trust,context,launchBrowser});
+ return supervisor.supervise({home,trust,context,launchBrowser,fetcher,onStarted});
 }
 if(isMain(import.meta)){
  try{const result=await boot(path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'));process.exitCode=result.code??0;}
