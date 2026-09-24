@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import * as fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,7 +10,8 @@ import * as E from '../updates/engine.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const oldContract='dc432ed6c7310c3c4838c3cc1bc75ca39a94360415a7a5a7c1b7923262ea78e1';
 const newContract='36fa80548ed26eda06101b2db3c271a00547d1d14f5b94e18108ad4a86209e33';
-const oldStore=execFileSync('git',['show','ea4214c:lib/store.mjs'],{cwd:root});
+// Keep the installed Store preimage in the source tree: release builds use shallow clones.
+const oldStore=Buffer.from(fs.readFileSync(new URL('./fixtures/ea4214c-store.b64',import.meta.url),'utf8').trim(),'base64');
 const newStore=Buffer.from(fs.readFileSync(path.join(root,'lib/store.mjs'),'utf8').replace(/\r\n/g,'\n'));
 assert.equal(E.digest(oldStore),oldContract,'audited installed Store bytes changed');
 assert.equal(E.digest(newStore),newContract,'migration target Store bytes changed');

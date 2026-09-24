@@ -5,7 +5,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {tmpdir} from 'node:os';
 import {createServer} from 'node:net';
-import {execFileSync} from 'node:child_process';
 import {generateKeyPairSync} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {buildPortable} from '../tools/build-portable.mjs';
@@ -31,7 +30,7 @@ test('verified setup activates the directed Store upgrade and keeps synthetic jo
  const context={dataDir,saveDir,port:await freePort()},pair=generateKeyPairSync('ed25519');
  const trust={keys:{fixture:pair.publicKey.export({format:'pem',type:'spki'})},updateUrl:'https://fixture.invalid/latest.json'};
  const privateKey=pair.privateKey.export({format:'pem',type:'pkcs8'});
- const oldStore=execFileSync('git',['show','ea4214c:lib/store.mjs'],{cwd:source});
+ const oldStore=Buffer.from(fs.readFileSync(new URL('./fixtures/ea4214c-store.b64',import.meta.url),'utf8').trim(),'base64');
  const newStore=Buffer.from(fs.readFileSync(path.join(source,'lib/store.mjs'),'utf8').replace(/\r\n/g,'\n'));
  assert.equal(digest(oldStore),oldContract);assert.equal(digest(newStore),newContract);
  const signed=(n,store)=>{
