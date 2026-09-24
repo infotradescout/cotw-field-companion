@@ -13,6 +13,7 @@ test('hosted cache hooks bind the actual canonical app and retain its original w
  assert.match(output,/phoneCache\.updateStatus\(badge\)/);
  assert.match(output,/phoneCache\.settings\(\)/);
  assert.match(output,/e\.cacheDenied\|\|state&&state\.selectedReserve!==requestedReserve/);
+ assert.match(output,/if\(state&&!cachedReserveMatches\)\{clearZoneSelection\(\);state=null;map\?\.destroy\(\);map=null;\}/,'a failed reserve switch clears private selection before phone cache fallback');
  const mounted=mountClientSource(output,'/grindzone');
  const checked=spawnSync(process.execPath,['--check','--input-type=module'],{input:mounted,encoding:'utf8'});
  assert.equal(checked.status,0,checked.stderr);
