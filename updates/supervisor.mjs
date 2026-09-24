@@ -11,6 +11,16 @@ async function deadline(promise,ms){let timer;try{return await Promise.race([pro
 export function openBrowser(port,{spawnImpl=spawn}={}){
  if(process.platform==='win32'){const c=spawnImpl('cmd.exe',['/d','/s','/c','start','','http://127.0.0.1:'+port],{stdio:'ignore',windowsHide:true});c.on('error',()=>{});}
 }
+/** The signed desktop host owns only the window. Its exit closes this supervisor's app child. */
+export function spawnDesktopWindow({directory,home,port,spawnImpl=spawn}={}){
+ if(process.platform!=='win32')throw Error('The desktop window requires Windows.');
+ const executable=path.join(directory,'desktop','GrindZone.Desktop.exe');
+ if(!fs.existsSync(executable))throw Error('The verified release has no desktop window.');
+ const child=spawnImpl(executable,['--url','http://127.0.0.1:'+port+'/','--profile',path.join(home,'desktop-profile')],{cwd:directory,stdio:['pipe','inherit','inherit'],windowsHide:false});
+ child.stdin?.on('error',()=>{});
+ const exit=new Promise(resolve=>{child.once('error',error=>resolve({error}));child.once('exit',(code,signal)=>resolve({code,signal}));});
+ return {child,exit,close:()=>{if(child.stdin?.writable)child.stdin.write('close\n');}};
+}
 async function portUnused(port){
  try{const r=await fetch('http://127.0.0.1:'+port+'/api/bootstrap',{signal:AbortSignal.timeout(1200),redirect:'error'});await r.body?.cancel();return false;}
  catch(e){if(e?.cause?.code==='ECONNREFUSED')return true;throw Error('The companion port is not responding reliably. No update was activated.');}
@@ -45,18 +55,20 @@ export function spawnApp({directory,context,fingerprint,executable,spawnImpl=spa
  };
  return {child,nonce,send,ready,commit,stop,exit,isAlive:()=>!ended,result:()=>exitResult};
 }
-export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchBrowser=true,log=console.log,onStarted,expectedStaged}={}){
+export async function supervise({home,trust,context,spawnRuntime=spawnApp,desktopLauncher=spawnDesktopWindow,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchDesktop=false,launchBrowser=!launchDesktop,log=console.log,onStarted,expectedStaged}={}){
  home=plainPath(home);let unlock;
  try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){
   if(expectedStaged)throw Error('GrindZone started while setup was completing. Close it and rerun this signed setup to activate the verified update.');
-  log('GrindZone is already running. Updates will apply on its next launch.');if(launchBrowser)openBrowser(context.port);return {status:'already_running'};
+  log('GrindZone is already running. Updates will apply on its next launch.');if(launchDesktop)log('Bring the existing GrindZone desktop window to the front.');else if(launchBrowser)openBrowser(context.port);return {status:'already_running'};
  }throw e;}
- let runtime,timer,checking,shutting=false;const checkAbort=new AbortController();const signalHandlers=[];
+ let runtime,desktop,timer,checking,shutting=false;const checkAbort=new AbortController();const signalHandlers=[];
  const check=()=>checking||(checking=checkAndStage(home,trust,{fetcher,signal:checkAbort.signal}).then(result=>{log(result.status==='staged'?'GrindZone update downloaded and verified. It will activate on the next launch.':result.status==='current'?'GrindZone is up to date.':'Update check unavailable; the installed version remains usable.');return result;}).finally(()=>{checking=null;}));
  const launch=async(revision)=>{
   const release=readRelease(home,revision,trust);verifyDirectory(release.dir,release.manifest);
+  if(launchDesktop&&!release.manifest.files.some(f=>f.path==='desktop/GrindZone.Desktop.exe'))throw Error('The signed release does not include its desktop window.');
   const executable=path.join(release.dir,'runtime','node.exe');
   runtime=spawnRuntime({directory:release.dir,context,fingerprint:release.manifest.runtimeFingerprint,executable});
+  runtime.directory=release.dir;
   runtime.child.on('message',async m=>{
    if(m?.nonce!==runtime?.nonce||m.type!=='gz-request'||typeof m.id!=='string'||m.id.length>100)return;
    try{if(m.operation==='check')await check();else if(m.operation!=='status')throw Error('Unsupported update action');runtime.send({type:'gz-result',id:m.id,result:publicStatus(home)});}
@@ -79,17 +91,25 @@ export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=
    catch(e){await runtime?.stop({probation:true});recoverActivation(home,context.dataDir);log('Update startup failed. Restored the previous working version and journal.');runtime=null;await launch(loadState(home).current);}
   }else {try{await launch(s.current);}catch(e){await runtime?.stop({probation:true});if(!fallbackCode(home,trust))throw e;runtime=null;await launch(loadState(home).current);}}
   // Persist successful activation BEFORE allowing either phone or browser writes.
-  await runtime.commit();if(launchBrowser)openBrowser(context.port);
+  await runtime.commit();
+  if(launchDesktop){
+   desktop=desktopLauncher({directory:runtime.directory,home,port:context.port});
+   const early=await Promise.race([desktop.exit.then(result=>result),wait(750).then(()=>null)]);
+   if(early)throw Error('The GrindZone desktop window closed before startup completed.');
+   void desktop.exit.then(result=>{if(!shutting){shutting=true;void runtime.stop().catch(e=>log(e.message));}});
+  }else if(launchBrowser)openBrowser(context.port);
   void check();timer=setInterval(()=>{if(!shutting)void check();},Math.max(60000,checkInterval));
   const stop=()=>{if(shutting)return;shutting=true;void runtime.stop().catch(e=>log(e.message));};
   for(const sig of ['SIGINT','SIGTERM']){process.on(sig,stop);signalHandlers.push([sig,stop]);}
   if(onStarted)await onStarted(runtime);
-  const result=await runtime.exit;return {status:'closed',...result};
+  const result=await runtime.exit;
+  if(desktop){desktop.close();if(!await deadline(desktop.exit.then(()=>true),5000))log('The GrindZone desktop window is still closing.');}
+  return {status:'closed',...result};
  }catch(e){if(runtime?.isAlive())await runtime.stop({probation:!!loadState(home).pending});throw e;}
- finally{shutting=true;checkAbort.abort();clearInterval(timer);for(const [sig,fn] of signalHandlers)process.off(sig,fn);if(checking)await checking;unlock();}
+ finally{shutting=true;desktop?.close();checkAbort.abort();clearInterval(timer);for(const [sig,fn] of signalHandlers)process.off(sig,fn);if(checking)await checking;unlock();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  try{const home=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),trust=JSON.parse(fs.readFileSync(path.join(home,'kernel','trust.json'),'utf8')),config=JSON.parse(fs.readFileSync(path.join(home,'config.json'),'utf8'));
-  const result=await supervise({home,trust,context:launchContext({config})});process.exitCode=result.code??0;
+  const launchDesktop=process.argv.includes('--desktop');const result=await supervise({home,trust,context:launchContext({config}),launchDesktop});process.exitCode=result.code??0;
  }catch(e){console.error('GrindZone: '+e.message);process.exitCode=1;}
 }

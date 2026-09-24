@@ -8,19 +8,26 @@ import {execFileSync} from 'node:child_process';
 import {zipEntry,writeZip} from './build-windows-download.mjs';
 import {runtimeIdentity} from '../lib/runtime-identity.mjs';
 import {canonical,digest,encodeBundle,signedManifest,verifyDirectory,validateManifest} from '../updates/engine.mjs';
+const legacyStoreContract='dc432ed6c7310c3c4838c3cc1bc75ca39a94360415a7a5a7c1b7923262ea78e1';
+const concurrentGrindsStoreContract='36fa80548ed26eda06101b2db3c271a00547d1d14f5b94e18108ad4a86209e33';
+export function storageMigrationDeclaration(storageContract){
+ return storageContract===concurrentGrindsStoreContract?{fromContract:legacyStoreContract,toContract:concurrentGrindsStoreContract}:undefined;
+}
 export function signPackage({directory,revision,sequence,trust,privateKey,publishedAt}={}){
  const files=[];function walk(relative=''){for(const e of fs.readdirSync(path.join(directory,relative),{withFileTypes:true})){const p=path.posix.join(relative,e.name);if(e.isSymbolicLink())throw Error('Signing inputs cannot follow links');if(e.isDirectory())walk(p);else if(p!=='SIGNED-RELEASE.json'){const bytes=fs.readFileSync(path.join(directory,p));files.push({path:p,bytes:bytes.length,sha256:digest(bytes)});}}}walk();files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
  const entries=new Map(files.map(f=>[f.path,fs.readFileSync(path.join(directory,f.path))])),bundle=encodeBundle(entries),key=createPrivateKey(privateKey);
  if(key.asymmetricKeyType!=='ed25519')throw Error('Ed25519 signing material is required');
  const publicPem=createPublicKey(key).export({format:'pem',type:'spki'}),keyId=Object.keys(trust.keys).find(k=>trust.keys[k]===publicPem);if(!keyId)throw Error('Signing key does not match the pinned public trust policy');
- const manifest=validateManifest({schema:'grindzone.update-manifest.v1',product:'GrindZone',channel:'stable',platform:'win32-x64',protocol:1,revision,sequence,journalEpoch:1,storageContract:digest(fs.readFileSync(path.join(directory,'lib/store.mjs'))),runtimeFingerprint:runtimeIdentity(directory).fingerprint,publishedAt,expiresAt:new Date(Date.parse(publishedAt)+90*86400000).toISOString(),bundle:{name:`payload-${digest(bundle)}.gz`,bytes:bundle.length,sha256:digest(bundle)},files});
+ const storageContract=digest(fs.readFileSync(path.join(directory,'lib/store.mjs')));
+ const manifest=validateManifest({schema:'grindzone.update-manifest.v1',product:'GrindZone',channel:'stable',platform:'win32-x64',protocol:1,revision,sequence,journalEpoch:1,storageContract,...(storageMigrationDeclaration(storageContract)?{storageMigration:storageMigrationDeclaration(storageContract)}:{}),runtimeFingerprint:runtimeIdentity(directory).fingerprint,publishedAt,expiresAt:new Date(Date.parse(publishedAt)+90*86400000).toISOString(),bundle:{name:`payload-${digest(bundle)}.gz`,bytes:bundle.length,sha256:digest(bundle)},files});
  const payload=Buffer.from(canonical(manifest)),envelope={schema:'grindzone.signed-release.v1',keyId,payload:payload.toString('base64'),signature:sign(null,payload,key).toString('base64')};
  signedManifest(envelope,trust);fs.writeFileSync(path.join(directory,'SIGNED-RELEASE.json'),canonical(envelope)+'\n',{flag:'wx'});verifyDirectory(directory,manifest);return {manifest,envelope,bundle};
 }
 export function buildManagedDownload({sourceRoot,downloadRoot,revision,sequence,publishedAt,privateKey,trust}={}){
  const portable=JSON.parse(fs.readFileSync(path.join(downloadRoot,'release.json'),'utf8')),zip=fs.readFileSync(path.join(downloadRoot,portable.filename));
  if(portable.sourceRevision!==revision||zip.length!==portable.bytes||digest(zip)!==portable.sha256)throw Error('Portable download identity does not match the release candidate');
- const metadata=JSON.parse(zipEntry(zip,'GrindZone/PORTABLE-PACKAGE.json').toString('utf8'));
+  const metadata=JSON.parse(zipEntry(zip,'GrindZone/PORTABLE-PACKAGE.json').toString('utf8'));
+  if(!metadata.files.some(f=>f.path==='desktop/GrindZone.Desktop.exe')||!metadata.files.some(f=>f.path==='desktop/WebView2Loader.dll'))throw Error('Managed setup requires the built native desktop window');
  const work=fs.mkdtempSync(path.join(os.tmpdir(),'grindzone-managed-build-'));
  try{
   const stage=path.join(work,'GrindZone');fs.mkdirSync(stage);
@@ -34,7 +41,7 @@ export function buildManagedDownload({sourceRoot,downloadRoot,revision,sequence,
   fs.writeFileSync(path.join(updates,signed.manifest.bundle.name),signed.bundle,{flag:'wx'});fs.writeFileSync(path.join(updates,'latest.json'),canonical(signed.envelope)+'\n',{flag:'wx'});
   const entries=signed.manifest.files.map(f=>({name:'GrindZone/'+f.path,bytes:fs.readFileSync(path.join(stage,f.path))}));entries.push({name:'GrindZone/SIGNED-RELEASE.json',bytes:Buffer.from(canonical(signed.envelope)+'\n')});
   const filename='GrindZone-Setup-Windows-x64.zip',output=path.join(downloadRoot,filename);writeZip(output,entries);const bytes=fs.readFileSync(output);
-  const receipt={schema:'grindzone.managed-download.v1',revision,sequence,filename,bytes:bytes.length,sha256:digest(bytes),bundle:signed.manifest.bundle,files:entries.length,keyId:signed.envelope.keyId,signatureAlgorithm:'Ed25519',authenticodeSigned:false,playerDataIncluded:false,privateKeyIncluded:false,physicalWindowsVerified:false};
+  const receipt={schema:'grindzone.managed-download.v1',revision,sequence,filename,bytes:bytes.length,sha256:digest(bytes),bundle:signed.manifest.bundle,files:entries.length,keyId:signed.envelope.keyId,signatureAlgorithm:'Ed25519',desktopWindow:'WebView2 WinForms',authenticodeSigned:false,playerDataIncluded:false,privateKeyIncluded:false,physicalWindowsVerified:false};
   fs.writeFileSync(path.join(downloadRoot,'managed-release.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});return receipt;
  }finally{fs.rmSync(work,{recursive:true,force:true});}
 }

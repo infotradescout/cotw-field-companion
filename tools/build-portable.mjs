@@ -14,7 +14,7 @@ export const portableFiles = Object.freeze([
 ]);
 const sourceRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-export function buildPortable(root, destination) {
+export function buildPortable(root, destination, {desktopFiles=[]}={}) {
   const source = realpathSync(root), output = path.resolve(destination);
   if (existsSync(output)) throw Error('Portable destination already exists; use a new release directory.');
   const prepared = portableFiles.map(name => {
@@ -28,6 +28,12 @@ export function buildPortable(root, destination) {
     const bytes = readFileSync(full);
     return { name, full, bytes, sha256: hash(bytes) };
   });
+  if(!Array.isArray(desktopFiles)||desktopFiles.length>16)throw Error('Invalid desktop build file list');
+  const seen=new Set(prepared.map(item=>item.name.toLowerCase()));
+  for(const item of desktopFiles){
+    if(!item||typeof item.path!=='string'||!/^desktop\/[A-Za-z0-9_.-]+$/.test(item.path)||seen.has(item.path.toLowerCase())||!Buffer.isBuffer(item.bytes)||item.bytes.length<1||item.bytes.length>10*1024*1024)throw Error('Invalid desktop build member');
+    seen.add(item.path.toLowerCase());prepared.push({name:item.path,bytes:item.bytes,sha256:hash(item.bytes)});
+  }
   const version = JSON.parse(prepared.find(item => item.name === 'package.json').bytes).version;
   // Snapshot all reviewed input before creating output. Publication is a separate action.
   mkdirSync(output, { recursive: false });
