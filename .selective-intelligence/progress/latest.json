@@ -1,8 +1,8 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T210212Z-fc252946",
-  "createdAt": "2026-09-24T21:02:12.536049+00:00",
-  "outcome": "Legacy browser release remains visible after deferred or failed native desktop activation",
+  "checkpointId": "progress-20260924T211324Z-d8ebb318",
+  "createdAt": "2026-09-24T21:13:24.620047+00:00",
+  "outcome": "Native WebView2 readiness is verified before directed journal migration commits",
   "scope": [
     "GrindZone signed desktop release candidate"
   ],
@@ -11,27 +11,27 @@
   ],
   "progress": {
     "completedVerified": [
-      "Rollback fix committed at 2890d59 with synthetic legacy setup and repaired shortcut lifecycle tests"
+      "Precommit native readiness protocol committed at 58692c4; legacy rollback fix at 2890d59"
     ],
     "changedUnverified": [],
     "proof": [
-      "Windows targeted update lifecycle: 11 pass, 0 fail"
+      "Windows updater gate 68 pass 0 fail; disposable Windows WebView2 bootstrap-ACK-open-close smoke receipt in Temp grindzone-native-protocol-2efc39aeed864ad4be070b47be4f84fa"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Resolve native-window precommit readiness gap, then run full release gates and prepare PRs"
+    "nextSafeAction": "Run full Linux suite and production-style package at exact source HEAD, then prepare source and host PRs"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "2890d59dc25502c6387bca721832dcd0b0189359",
+    "headBefore": "58692c4d55d8e7b22485bc431bad7d22dfab2f66",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 1
+    "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
