@@ -1,62 +1,54 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T045611Z-2b6a8956",
-  "createdAt": "2026-09-24T04:56:11.656437+00:00",
-  "outcome": "Bound crowded Hunt zone sidebar to 60 cards and debounced search",
+  "checkpointId": "progress-20260924T203615Z-10d880e0",
+  "createdAt": "2026-09-24T20:36:15.893417+00:00",
+  "outcome": "Integrated bounded Hunt zone list with concurrent grind and active-location slices",
   "scope": [
-    "GrindZone Hunt map sidebar"
+    "GrindZone source integration"
   ],
   "prohibitions": [
-    "Preserve installed journal and phone metadata; no unrelated process stops"
+    "Do not reset journal, phone metadata, security settings, or unrelated processes"
   ],
   "progress": {
     "completedVerified": [
-      "Committed 6f63448 on fix/grindzone-map-performance-20260924; no live install changed"
+      "Cherry-picked grind commits as d141d8a and a37e0b2 over sidebar commit 6f63448; worktree clean; live installed app untouched"
     ],
     "changedUnverified": [],
     "proof": [
-      "Focused 45/45 tests; syntax checks; signed portable and local static asset lists include new module"
+      "Integrated focused run: 118 passed, 1 failed only because cloud/ws dependency absent in isolated worktree"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Integrate active grind and native desktop work, then verify combined build"
+    "nextSafeAction": "Install isolated cloud test dependency, rerun focused suite, integrate map renderer and desktop window"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "6f634480413f6a467342f987a8e561632d880896",
+    "headBefore": "a37e0b29c1e3544c34e7f50d269f9f3ba4fab2da",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 1
+    "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [
     {
       "path": "public/app.js",
-      "sha256": "40b85e394c1e07ef7836a1b293aae5c53d2d5a153255fa712a4023ddc530ec43"
+      "sha256": "9c63586ed25b8139f2cebd3e92c4451858f8c75c1d6c9b11e39d3370d0779e09"
     },
     {
-      "path": "public/hunting-workspace.css",
-      "sha256": "b960fa7539d508409b206cd47c7f2e5ad08d3dbca51165a4f9c8d5aaa0c33d36"
+      "path": "lib/store.mjs",
+      "sha256": "b427275f6c8b3eceb3765eb6fb4ad46e37afc3dd92a928021601ce62f58ad1c5"
+    },
+    {
+      "path": "lib/hunt-locations.mjs",
+      "sha256": "741c733d6521b95b8b11cb7f76fc897f50b44b70996721ff413c4eb674a3db98"
     },
     {
       "path": "public/zone-window.js",
       "sha256": "10137163b14297334dd1a9df33c16db5bb0e59c77ff98aa7a77e85828b9e01c5"
-    },
-    {
-      "path": "server.mjs",
-      "sha256": "d715a53d5402b7a3766fc2a0b575ca129e69ae065576aa4787c5cfc759ace5f3"
-    },
-    {
-      "path": "tools/build-portable.mjs",
-      "sha256": "3f9b51e4c67970084c7e5f01abe8b26faad6a86215039f479937543403746a30"
-    },
-    {
-      "path": "tests/zone-window.test.mjs",
-      "sha256": "ad5262a26e4c786a8400d35885c0be6c4841277efa2b9edec00d345df509ba55"
     }
   ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
