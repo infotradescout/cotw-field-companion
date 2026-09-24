@@ -119,6 +119,9 @@ body.hunting-app {
 .hunting-app .zone-browser-head label { font-size: 12px; letter-spacing: 0; }
 .hunting-app .zone-browser-head input { font-size: 14px; padding: 10px 12px; margin: 7px 0; min-height: 44px; }
 .hunting-app .zone-list { padding: 6px; overflow: auto; min-height: 0; }
+.hunting-app .zone-pinned-note { margin: 6px 8px; color: var(--muted); font-size: 11px; }
+.hunting-app .zone-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 6px 6px; }
+.hunting-app .zone-page-controls span { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .hunting-app .zone-card { padding: 13px 11px; border-radius: 6px; }
 .hunting-app .zone-card.selected { border-color: #75967e; background: #293c30; box-shadow: inset 3px 0 0 var(--accent); }
 .hunting-app .zone-title strong { font-size: 14px; line-height: 1.4; }
