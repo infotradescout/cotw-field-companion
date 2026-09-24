@@ -72,7 +72,7 @@ export async function buildWindowsDownload({sourceRoot,outputRoot,sourceRevision
   if(existsSync(outputRoot))throw Error('Download destination already exists');
   const runtime=verifiedRuntime(await downloadRuntime(fetchImpl));const work=mkdtempSync(path.join(tmpdir(),'grindzone-package-'));
   try{
-    const stage=path.join(work,'app'),desktopFiles=desktopBuilder({sourceRoot}),manifest=buildPortable(sourceRoot,stage,{desktopFiles});
+    const stage=path.join(work,'app'),desktopFiles=await desktopBuilder({sourceRoot}),manifest=buildPortable(sourceRoot,stage,{desktopFiles});
     const launch=readFileSync(path.join(stage,'START.cmd'),'utf8');if(!launch.includes('runtime\\node.exe'))throw Error('Bundled-runtime launcher missing');
     const extras=[{path:'runtime/node.exe',bytes:runtime.exe},{path:'runtime/LICENSE',bytes:runtime.license}];
     manifest.requires='Included Windows x64 Node runtime; .NET Framework 4.8 and Microsoft Edge WebView2 Runtime for the signed desktop install';manifest.distribution='portable-preview';manifest.sourceRevision=sourceRevision;
