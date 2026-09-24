@@ -1,37 +1,41 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T211324Z-d8ebb318",
-  "createdAt": "2026-09-24T21:13:24.620047+00:00",
-  "outcome": "Native WebView2 readiness is verified before directed journal migration commits",
+  "checkpointId": "progress-20260924T213651Z-e054cf04",
+  "createdAt": "2026-09-24T21:36:52.397307+00:00",
+  "outcome": "Shallow Render build fixture repaired at source commit 57a268e",
   "scope": [
-    "GrindZone signed desktop release candidate"
+    "GrindZone signed native desktop release"
   ],
   "prohibitions": [
-    "Do not alter live owner journal or pairing; no production publication without owner approval"
+    "Preserve owner journal and pairing; no owner install until signed release is live"
   ],
   "progress": {
     "completedVerified": [
-      "Precommit native readiness protocol committed at 58692c4; legacy rollback fix at 2890d59"
+      "Both migration tests use pinned old Store preimage; old and new contract hashes unchanged"
     ],
     "changedUnverified": [],
     "proof": [
-      "Windows updater gate 68 pass 0 fail; disposable Windows WebView2 bootstrap-ACK-open-close smoke receipt in Temp grindzone-native-protocol-2efc39aeed864ad4be070b47be4f84fa"
+      "Windows targeted migration tests 5 pass, 0 fail; one-commit shallow clone has no old Git object and storage migration test 4 pass"
     ],
-    "externalEffects": [],
-    "doNotRepeat": [],
-    "nextSafeAction": "Run full Linux suite and production-style package at exact source HEAD, then prepare source and host PRs"
+    "externalEffects": [
+      "Source PR 19 branch pushed at 57a268e; Sway PR 291 merged but Render deploy failed before publication"
+    ],
+    "doNotRepeat": [
+      "Do not retry failed Render deploy at e6d7; host pin must advance to 57a268e"
+    ],
+    "nextSafeAction": "Review corrective Sway host pin PR, obtain exact merge/deploy approval, verify live signed release, then update owner install through Computer Use"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "58692c4d55d8e7b22485bc431bad7d22dfab2f66",
+    "headBefore": "57a268e79318a46caf6568ac04474302e4931212",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
+    "unrelatedChangeCountExcluded": 1
   },
   "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
