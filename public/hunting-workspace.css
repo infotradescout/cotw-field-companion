@@ -119,6 +119,9 @@ body.hunting-app {
 .hunting-app .zone-browser-head label { font-size: 12px; letter-spacing: 0; }
 .hunting-app .zone-browser-head input { font-size: 14px; padding: 10px 12px; margin: 7px 0; min-height: 44px; }
 .hunting-app .zone-list { padding: 6px; overflow: auto; min-height: 0; }
+.hunting-app .zone-pinned-note { margin: 6px 8px; color: var(--muted); font-size: 11px; }
+.hunting-app .zone-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 6px 6px; }
+.hunting-app .zone-page-controls span { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .hunting-app .zone-card { padding: 13px 11px; border-radius: 6px; }
 .hunting-app .zone-card.selected { border-color: #75967e; background: #293c30; box-shadow: inset 3px 0 0 var(--accent); }
 .hunting-app .zone-title strong { font-size: 14px; line-height: 1.4; }
@@ -669,6 +672,13 @@ body.hunting-app {
 .hunting-app .grind-screen h1{font-size:27px;line-height:1.25;letter-spacing:-.035em;overflow-wrap:anywhere}
 .hunting-app .grind-screen h2{font-size:17px;line-height:1.35;font-weight:600;letter-spacing:-.02em}
 .hunting-app .grind-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.hunting-app .grind-active-switch{margin:0 0 14px;padding:12px;border:1px solid #435747;border-radius:12px;background:#1b2a20}
+.hunting-app .grind-active-switch>strong{display:block;margin-bottom:8px;color:#dbe9d3;font-size:13px}
+.hunting-app .grind-active-switch>div{display:flex;flex-wrap:wrap;gap:8px}
+.hunting-app .grind-active-switch button{display:grid;gap:2px;min-height:44px;padding:8px 12px;border:1px solid #506451;border-radius:9px;background:#243428;color:#f1f5ed;text-align:left;cursor:pointer}
+.hunting-app .grind-active-switch button[aria-current="page"]{border-color:#f2b569;background:#34402a}
+.hunting-app .grind-active-switch button small{color:#bdcdb7}
+.hunting-app .grind-active-switch button:focus-visible{outline:2px solid #ffa758;outline-offset:2px}
 .hunting-app .grind-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
 .hunting-app .grind-main,.hunting-app .grind-side{display:grid;gap:16px;min-width:0}
 .hunting-app .grind-screen section{border:1px solid #354139;border-radius:12px;background:#1a241e;min-width:0;overflow:hidden}

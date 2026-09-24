@@ -106,7 +106,7 @@ test('setup uses the selected session while pause, resume, finish and history re
  const current=session({id:'current'}),finished=session({id:'finished',name:'Older grind',endedAt:'2026-09-18T13:00:00Z'});
  const selected=grindsView({sessions:[current,finished]},{selectedId:'finished'});
  assert.match(selected,/data-action="grind-setup" data-id="finished"/);assert.match(selected,/data-action="grind-open" data-id="current"/);
- assert.match(selected,/Another grind is active/);assert.doesNotMatch(selected,/data-action="session-end"/);
+ assert.match(selected,/Continue this grind/);assert.match(selected,/data-action="grind-open" data-id="current"/);assert.doesNotMatch(selected,/data-action="session-end"/);
  const active=view(current);assert.match(active,/data-action="session-pause"/);assert.match(active,/data-action="session-end"/);assert.match(active,/data-action="grind-route"/);
  assert.match(view({...current,pausedAt:'2026-09-18T12:30:00Z'}),/data-action="session-resume"/);
  assert.match(view(finished),/Continue this grind/);
@@ -123,8 +123,15 @@ test('phone grind flow keeps map route and tracking controls one tap away',()=>{
  const finished=view(session({endedAt:'2026-09-18T13:00:00Z'})).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
  assert.match(finished,/data-action="session-resume"/);assert.match(finished,/>Continue<\/button>/);
  const chosen=session({id:'chosen',endedAt:'2026-09-18T13:00:00Z'}),other=session({id:'other',targetSpecies:'Red Deer'});
- const blocked=grindsView({sessions:[chosen,other],reserves:[{id:19,name:'Askiy Ridge'}]},{selectedId:'chosen'}).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
- assert.match(blocked,/Other grind active/);assert.doesNotMatch(blocked,/data-action="session-resume"/);
+ const continueDock=grindsView({sessions:[chosen,other],reserves:[{id:19,name:'Askiy Ridge'}]},{selectedId:'chosen'}).match(/<nav class="grind-phone-dock"[\s\S]*?<\/nav>/)?.[0];
+ assert.match(continueDock,/data-action="session-resume"/);assert.doesNotMatch(continueDock,/Other grind active/);
+});
+test('multiple current grinds have visible switch controls and keep start and pause independent',()=>{
+ const one=session({id:'one',name:'Moose',startedAt:'2026-09-18T12:00:00Z'}),two=session({id:'two',name:'Red Deer',startedAt:'2026-09-19T12:00:00Z',pausedAt:'2026-09-19T12:30:00Z'});
+ const html=grindsView({sessions:[one,two],reserves:[{id:19,name:'Askiy Ridge'}]},{selectedId:'one'});
+ assert.match(html,/Current grinds · 2/);assert.match(html,/data-action="grind-open" data-id="two"/);assert.match(html,/data-action="session-start"/);
+ assert.match(html,/data-action="session-pause" data-id="one"/);assert.doesNotMatch(html,/Another grind is active/);
+ const paused=grindsView({sessions:[one,two]},{selectedId:'two'});assert.match(paused,/data-action="session-resume" data-id="two"/);
 });
 
 

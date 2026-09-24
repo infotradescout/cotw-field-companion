@@ -96,17 +96,23 @@ try{
  assert.equal(await phone.locator('[data-location-kind="death"]').getAttribute('aria-pressed'),'true');
  proof.checks.push('Signed phone reads use the same filtered history, reject caller profile injection and duplicate filters, distinguish selected-zone references, fit 320/390px, and preserve filters across parent rerenders.');
  const profile=app.observer.profile;
- const historic=Array.from({length:620},(_,i)=>({id:'old-location-'+i,timestamp:timestamp-100000-i,speciesHash:'1124598738',score:100,origin:'baseline'}));
- app.store.importHarvests(profile,null,historic);
- const original=app.store.harvests(profile).find(h=>h.recordId==='old-location-619');
- app.store.put(profile,'harvestZones',{id:'old-location-link',harvestId:original.id,zoneId:zone.id,reserve:19,basis:'player_selected_zone',snapshot:{id:zone.id,reserve:19,x:zone.x,z:zone.z,name:'Older captured zone',source:'save',capturedAt:new Date().toISOString()}});
- response=await read(phone,'precision=zone&kind=harvest');assert.equal(response.status,200);assert(response.data.events.some(e=>e.harvestId===original.id));
+ // The page-size fixture must fall inside the current tracking period. Keep a
+ // separate older receipt to prove retained journal data does not leak to phone locations.
+ const historic=Array.from({length:620},(_,i)=>({id:'in-grind-location-'+i,timestamp,speciesHash:'1124598738',score:100,origin:'baseline'}));
+ const preGrindReceipt={id:'pre-grind-location',timestamp:timestamp-100000,speciesHash:'1124598738',score:100,origin:'baseline'};
+ app.store.importHarvests(profile,null,[...historic,preGrindReceipt]);
+ const original=app.store.harvests(profile).find(h=>h.recordId==='in-grind-location-619');
+ const preGrind=app.store.harvests(profile).find(h=>h.recordId===preGrindReceipt.id);
+ const snapshot={id:zone.id,reserve:19,x:zone.x,z:zone.z,name:'Captured zone',source:'save',capturedAt:new Date().toISOString()};
+ app.store.put(profile,'harvestZones',{id:'in-grind-location-link',harvestId:original.id,zoneId:zone.id,reserve:19,basis:'player_selected_zone',snapshot});
+ app.store.put(profile,'harvestZones',{id:'pre-grind-location-link',harvestId:preGrind.id,zoneId:zone.id,reserve:19,basis:'player_selected_zone',snapshot});
+ response=await read(phone,'precision=zone&kind=harvest');assert.equal(response.status,200);assert(response.data.events.some(e=>e.harvestId===original.id));assert.equal(response.data.events.some(e=>e.harvestId===preGrind.id),false);
  const page1=(await read(phone,'limit=50')).data,page2=(await read(phone,'limit=50&offset=50&revision='+page1.revision)).data;
  assert(page1.summary.total>500);assert.equal(page2.events.some(e=>page1.events.some(a=>a.id===e.id)),false);
- assert.equal((await read(phone,'session='+grind.id)).data.summary.total,4);
+ assert.equal((await read(phone,'session='+grind.id)).data.summary.total,624);
  assert.deepEqual(saveHashes(save),expected);
- const exported=app.store.exportJournal(profile);assert(exported.harvestZones.some(a=>a.snapshot));assert(exported.encounterZones.some(a=>a.snapshot));
- proof.checks.push('Older attributed receipts beyond the ordinary 500-record state window remain queryable; pages do not repeat records, current-grind totals stay scoped, and explicit journal exports retain attribution snapshots.');
+ const exported=app.store.exportJournal(profile);assert(exported.harvestZones.some(a=>a.harvestId===preGrind.id&&a.snapshot));assert(exported.harvests.some(h=>h.id===preGrind.id));assert(exported.encounterZones.some(a=>a.snapshot));
+ proof.checks.push('In-grind attributed receipts beyond the ordinary 500-record state window remain queryable; pages do not repeat records, pre-grind receipts stay off phone locations, and explicit journal exports retain their records and attribution snapshots.');
  await phone.locator('[data-location-show]').click();await until(()=>phone.locator('.gz-location-map svg g[data-pin]').count().then(n=>n===1),'final death map');
  await verifyMarker(phone,zone.x+20,zone.z+20);
  mkdirSync(output,{recursive:true});await phone.locator('.gz-location-map').scrollIntoViewIfNeeded();await phone.screenshot({path:path.join(output,mode+'-locations.png'),fullPage:false});

@@ -11,3 +11,5 @@ data/
 *.jpg
 *.zip
 lib/herd-reference.json
+desktop/bin/
+desktop/obj/

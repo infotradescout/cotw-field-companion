@@ -1,6 +1,7 @@
 /** Build-only Windows distribution. Never installs, changes policy, or reads player data. */
 import {buildPortable} from './build-portable.mjs';
 import {buildHerdReference} from './build-herd-reference.mjs';
+import {buildDesktopWindow} from './build-desktop.mjs';
 import {createHash} from 'node:crypto';
 import {deflateRawSync,inflateRawSync} from 'node:zlib';
 import {execFileSync} from 'node:child_process';
@@ -66,15 +67,15 @@ async function downloadRuntime(fetchImpl){
   const response=await fetchImpl(windowsRuntime.url,{redirect:'error',signal:AbortSignal.timeout(180000)});if(!response.ok)throw Error('Official runtime download unavailable');
   const chunks=[];let size=0;for await(const chunk of response.body){size+=chunk.length;if(size>128*1024*1024)throw Error('Runtime download too large');chunks.push(chunk);}return Buffer.concat(chunks);
 }
-export async function buildWindowsDownload({sourceRoot,outputRoot,sourceRevision,fetchImpl=fetch}={}){
+export async function buildWindowsDownload({sourceRoot,outputRoot,sourceRevision,fetchImpl=fetch,desktopBuilder=buildDesktopWindow}={}){
   if(!/^[a-f0-9]{40}$/.test(sourceRevision||''))throw Error('Exact source revision required');
   if(existsSync(outputRoot))throw Error('Download destination already exists');
   const runtime=verifiedRuntime(await downloadRuntime(fetchImpl));const work=mkdtempSync(path.join(tmpdir(),'grindzone-package-'));
   try{
-    const stage=path.join(work,'app'),manifest=buildPortable(sourceRoot,stage);
+    const stage=path.join(work,'app'),desktopFiles=await desktopBuilder({sourceRoot}),manifest=buildPortable(sourceRoot,stage,{desktopFiles});
     const launch=readFileSync(path.join(stage,'START.cmd'),'utf8');if(!launch.includes('runtime\\node.exe'))throw Error('Bundled-runtime launcher missing');
     const extras=[{path:'runtime/node.exe',bytes:runtime.exe},{path:'runtime/LICENSE',bytes:runtime.license}];
-    manifest.requires='Included Windows x64 runtime';manifest.distribution='portable-preview';manifest.sourceRevision=sourceRevision;
+    manifest.requires='Included Windows x64 Node runtime; .NET Framework 4.8 and Microsoft Edge WebView2 Runtime for the signed desktop install';manifest.distribution='portable-preview';manifest.sourceRevision=sourceRevision;
     manifest.bundledRuntime={...windowsRuntime,downloadedDuringBuild:true};manifest.files.push(...extras.map(e=>({path:e.path,bytes:e.bytes.length,sha256:hash(e.bytes)})));
     const firstStart=Buffer.from('GrindZone Windows preview\r\n\r\nExtract the whole GrindZone folder, then open START.cmd.\r\nThe runtime is included. No Desktop Commander, Node installation or browser extension is needed.\r\nThis download does not update or stop another installed copy automatically.\r\nGame saves are read-only; retained GrindZone history stays in its existing app data folder.\r\nPhone access is an enrolled preview. No private enrollment credential is included in this public package.\r\nAn existing older copy may open when it is already running; this is not proof that it was updated.\r\n');
     const entries=manifest.files.filter(e=>!e.path.startsWith('runtime/')).map(e=>({name:'GrindZone/'+e.path,bytes:readFileSync(path.join(stage,e.path))}));

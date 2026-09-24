@@ -6,6 +6,12 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 export const PROTOCOL=1, MAX_BUNDLE=160*1024*1024, MAX_EXPANDED=256*1024*1024;
 const MAGIC=Buffer.from('GZUP001\0'), HEX=/^[a-f0-9]{64}$/, SHA=/^[a-f0-9]{40}$/;
+// This directed transition was verified against both Store versions with a synthetic journal.
+// The declaration must also be present in the signed candidate manifest.
+const STORAGE_MIGRATION={
+ fromContract:'dc432ed6c7310c3c4838c3cc1bc75ca39a94360415a7a5a7c1b7923262ea78e1',
+ toContract:'36fa80548ed26eda06101b2db3c271a00547d1d14f5b94e18108ad4a86209e33',
+};
 export function fileDigest(file){const fd=fs.openSync(file,'r'),buf=Buffer.alloc(1024*1024),h=createHash('sha256');try{let n;while((n=fs.readSync(fd,buf,0,buf.length,null)))h.update(buf.subarray(0,n));return h.digest('hex');}finally{fs.closeSync(fd);}}
 export const digest=b=>createHash('sha256').update(b).digest('hex');
 const fail=m=>{throw Error(m);};
@@ -38,6 +44,10 @@ function readJson(file,max=1024*1024){plainPath(file);const st=fs.statSync(file)
 export function validateManifest(m){
  if(!m||m.schema!=='grindzone.update-manifest.v1'||m.product!=='GrindZone'||m.channel!=='stable'||m.platform!=='win32-x64'||m.protocol!==PROTOCOL)fail('Incompatible signed release');
  if(!Number.isSafeInteger(m.sequence)||m.sequence<1||!SHA.test(m.revision)||!HEX.test(m.runtimeFingerprint)||!HEX.test(m.storageContract)||m.journalEpoch!==1)fail('Invalid release identity or storage contract');
+ if(m.storageMigration!==undefined){
+  const migration=m.storageMigration;
+  if(!migration||typeof migration!=='object'||Array.isArray(migration)||Object.keys(migration).sort().join(',')!=='fromContract,toContract'||!HEX.test(migration.fromContract)||migration.toContract!==m.storageContract||migration.fromContract===migration.toContract)fail('Invalid signed storage migration');
+ }
  if(!Number.isFinite(Date.parse(m.publishedAt))||!Number.isFinite(Date.parse(m.expiresAt))||Date.parse(m.expiresAt)<=Date.parse(m.publishedAt))fail('Invalid release dates');
  if(!m.bundle||m.bundle.name!==`payload-${m.bundle.sha256}.gz`||!HEX.test(m.bundle.sha256)||!Number.isSafeInteger(m.bundle.bytes)||m.bundle.bytes<1||m.bundle.bytes>MAX_BUNDLE)fail('Invalid release bundle');
  if(!Array.isArray(m.files)||m.files.length<4||m.files.length>512)fail('Invalid release file list');
@@ -47,6 +57,19 @@ export function validateManifest(m){
  for(const n of ['package.json','server.mjs','launcher.mjs','runtime/node.exe'])if(!seen.has(n))fail('Incomplete application release');
  if(!Array.isArray(m.files)||m.files.some(f=>/\.(sqlite|pem|key|env)(?:$|\.)/i.test(f.path)||/(^|\/)\.env/.test(f.path)))fail('Private files cannot enter a release');
  return m;
+}
+/** Signed contract equality or the one audited, directed journal transition. */
+export function canActivateStorageContract(oldManifest,nextManifest){
+ if(!oldManifest||!nextManifest||oldManifest.journalEpoch!==1||nextManifest.journalEpoch!==oldManifest.journalEpoch||!HEX.test(oldManifest.storageContract)||!HEX.test(nextManifest.storageContract))return false;
+ if(oldManifest.storageContract===nextManifest.storageContract)return true;
+ const migration=nextManifest.storageMigration;
+ return Number.isSafeInteger(oldManifest.sequence)&&Number.isSafeInteger(nextManifest.sequence)&&nextManifest.sequence>oldManifest.sequence
+  &&oldManifest.storageContract===STORAGE_MIGRATION.fromContract
+  &&nextManifest.storageContract===STORAGE_MIGRATION.toContract
+  &&migration?.fromContract===STORAGE_MIGRATION.fromContract
+  &&migration?.toContract===STORAGE_MIGRATION.toContract
+  &&oldManifest.files?.some(file=>file.path==='lib/store.mjs'&&file.sha256===oldManifest.storageContract)
+  &&nextManifest.files?.some(file=>file.path==='lib/store.mjs'&&file.sha256===nextManifest.storageContract);
 }
 export function signedManifest(envelope,trust,{network=false,now=Date.now()}={}){
  if(!envelope||envelope.schema!=='grindzone.signed-release.v1'||typeof envelope.keyId!=='string'||typeof envelope.payload!=='string'||typeof envelope.signature!=='string')fail('Signed release required');
@@ -134,7 +157,7 @@ export async function checkAndStage(home,trust,{fetcher=fetch,now=Date.now(),sig
   if(m.sequence<s.highWater||m.sequence===s.highWater&&!([s.current,s.staged].includes(m.revision)))fail('Older or conflicting update metadata was rejected');
   if(m.revision===s.current){s.lastCheck=new Date(now).toISOString();s.lastError=null;saveState(home,s);return {status:'current',revision:m.revision};}
   if(s.rejected.includes(m.revision))fail('This update previously failed startup; the working version is retained');
-  if(m.journalEpoch!==old.journalEpoch||m.storageContract!==old.storageContract)fail('This release changes journal compatibility and requires a separately verified migration');
+  if(!canActivateStorageContract(old,m))fail('This release changes journal compatibility and requires a separately verified migration');
   const bytes=await download(new URL(m.bundle.name,base).href,{maxBytes:m.bundle.bytes,fetcher,signal});const entries=decodeBundle(bytes,m);stageEntries(home,envelope,trust,entries);
   s={...s,staged:m.revision,highWater:m.sequence,lastCheck:new Date(now).toISOString(),lastError:null};saveState(home,s);return {status:'staged',revision:m.revision};
  }catch(e){s.lastCheck=new Date(now).toISOString();s.lastError=String(e.message).slice(0,200);saveState(home,s);return {status:'unavailable',error:s.lastError};}
@@ -163,7 +186,7 @@ export function restoreJournal(home,dataDir,name){
 export function beginActivation(home,dataDir,trust){
  const s=loadState(home);if(!s.staged||s.pending)return null;
  const old=readRelease(home,s.current,trust),next=readRelease(home,s.staged,trust);verifyDirectory(next.dir,next.manifest);
- if(old.manifest.storageContract!==next.manifest.storageContract)fail('Unsafe journal migration');
+ if(!canActivateStorageContract(old.manifest,next.manifest))fail('Unsafe journal migration');
  const backup=snapshotJournal(home,dataDir);s.pending={previous:s.current,candidate:s.staged,backup,phase:'prepared'};saveState(home,s);return s.pending;
 }
 export function commitActivation(home){
@@ -180,6 +203,14 @@ export function recoverActivation(home,dataDir){
  s.pending=null;saveState(home,s);return true;
 }
 export function publicStatus(home){const s=loadState(home);return {schema:'grindzone.updates.v1',managed:true,current:s.current,previous:s.previous,staged:s.staged,lastCheck:s.lastCheck,lastError:s.lastError,policy:'Downloads automatically. Activates on the next launch; an active hunt is never restarted.'};}
+
+// The last browser-based installed release must remain visible if a desktop update
+// cannot activate. No other signed release may silently substitute a browser.
+export function desktopWindowMode(manifest){
+ if(manifest.files.some(file=>file.path==='desktop/GrindZone.Desktop.exe'))return 'native';
+ if(manifest.revision==='ea4214c3d60011b4f1ae201d39d90fc157f329d5')return 'legacy-browser';
+ fail('The signed release does not include its desktop window.');
+}
 
 /** Revert executable code only after commitment. Never rewind post-activation player writes. */
 export function fallbackCode(home,trust){

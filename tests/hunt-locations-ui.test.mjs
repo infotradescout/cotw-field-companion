@@ -7,8 +7,16 @@ test('the location workspace is absent from public reference-only states',()=>{
  assert.equal(huntLocationsView({}), '');assert.equal(huntLocationsView({app:{name:'Public reference'}}),'');
 });
 test('private grind scope is attached without guessing a current reserve',()=>{
- const html=huntLocationsView({app:{name:'GrindZone',startedAt:'source'},settings:{terrain:false}},{sessionId:'grind-19'});
+ const html=huntLocationsView({app:{name:'GrindZone',startedAt:'source'},settings:{terrain:false},sessions:[{id:'grind-19',endedAt:null,pausedAt:null}]},{sessionId:'grind-19'});
  assert.match(html,/data-session="grind-19"/);assert.match(html,/data-terrain="false"/);assert.doesNotMatch(html,/data-reserve/);
+});
+test('the shared Harvests location view uses current grinds, and finished details do not load locations',()=>{
+ const state={app:{name:'GrindZone'},sessions:[{id:'paused',endedAt:null,pausedAt:'2026-09-20T12:00:00Z'},{id:'finished',endedAt:'2026-09-20T12:00:00Z',pausedAt:null}]};
+ assert.match(huntLocationsView(state),/data-session="active"/);
+ assert.match(huntLocationsView(state,{sessionId:'paused'}),/data-session="paused"/);
+ for(const sessionId of ['finished','missing']){
+  const html=huntLocationsView(state,{sessionId});assert.doesNotMatch(html,/<gz-hunt-locations/);assert.match(html,/journal is preserved/);
+ }
 });
 test('cached parent views explicitly make live location history unavailable',()=>{
  const html=huntLocationsView({app:{name:'GrindZone'},phone:{mode:'cached_snapshot'}});assert.match(html,/data-offline="true"/);
@@ -18,7 +26,7 @@ test('only explicit terrain consent enables imagery',()=>{
  assert.match(huntLocationsView({app:{name:'GrindZone'},settings:{terrain:true}}),/data-terrain="true"/);
 });
 test('source and session attributes are escaped, not executable markup',()=>{
- const html=huntLocationsView({app:{name:'GrindZone',startedAt:'" onload="x'}},{sessionId:'"><script>x</script>'});
+ const html=huntLocationsView({app:{name:'GrindZone',startedAt:'" onload="x'},sessions:[{id:'"><script>x</script>',endedAt:null,pausedAt:null}]},{sessionId:'"><script>x</script>'});
  assert.doesNotMatch(html,/<script>|onload="x/);assert.match(html,/&lt;script&gt;/);
 });
 test('event cards distinguish saved receipts from unlinked harvest reports',()=>{
