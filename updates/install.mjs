@@ -5,7 +5,7 @@ import os from 'node:os';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
-import {acquireLock,installSeed,atomicJson,plainPath,inside,verifyDirectory,signedManifest,loadState,readRelease,stageEntries,saveState,canonical} from './engine.mjs';
+import {acquireLock,installSeed,atomicJson,plainPath,inside,verifyDirectory,signedManifest,loadState,readRelease,stageEntries,saveState,canonical,canActivateStorageContract} from './engine.mjs';
 import {launchContext} from './context.mjs';
 import {isMain} from './entry.mjs';
 export const kernelFiles=['engine.mjs','context.mjs','entry.mjs','boot.mjs','trust.json'];
@@ -52,7 +52,7 @@ export function install({source,home,context,trust,desktop=false}={}){
   if(before.current&&before.current!==m.revision){
    const old=readRelease(home,before.current,trust).manifest;
    if(m.sequence===before.highWater&&before.staged!==m.revision)throw Error('Setup conflicts with an already verified release sequence.');
-   if(old.storageContract!==m.storageContract||old.journalEpoch!==m.journalEpoch)throw Error('This setup needs a separately verified journal migration. Your journal was not changed.');
+   if(!canActivateStorageContract(old,m))throw Error('This setup needs a separately verified journal migration. Your journal was not changed.');
    if(before.rejected.includes(m.revision))throw Error('This release previously failed startup. The working version was retained.');
    stageEntries(home,envelope,trust,new Map(m.files.map(f=>[f.path,fs.readFileSync(path.join(source,f.path))])));
    saveState(home,{...loadState(home),staged:m.revision,highWater:m.sequence,lastError:null});updateStaged=true;
@@ -75,7 +75,7 @@ async function stagedSupervisor(home,trust,result){
  const state=loadState(home);
  if(!state.current||state.current!==result.revision||state.staged!==result.setupRevision||state.pending||state.rejected.includes(result.setupRevision))throw Error('The verified setup update changed before startup.');
  const current=readRelease(home,state.current,installedTrust),next=readRelease(home,state.staged,installedTrust);
- if(next.manifest.sequence!==state.highWater||next.manifest.sequence<=current.manifest.sequence||next.manifest.storageContract!==current.manifest.storageContract||next.manifest.journalEpoch!==current.manifest.journalEpoch)throw Error('The staged setup is not a newer compatible update.');
+ if(next.manifest.sequence!==state.highWater||next.manifest.sequence<=current.manifest.sequence||!canActivateStorageContract(current.manifest,next.manifest))throw Error('The staged setup is not a newer compatible update.');
  verifyDirectory(next.dir,next.manifest);
  const supervisor=await import(pathToFileURL(path.join(next.dir,'updates/supervisor.mjs')).href);
  if(typeof supervisor.supervise!=='function')throw Error('Signed setup supervisor is missing.');
