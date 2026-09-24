@@ -1,41 +1,37 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T213651Z-e054cf04",
-  "createdAt": "2026-09-24T21:36:52.397307+00:00",
-  "outcome": "Shallow Render build fixture repaired at source commit 57a268e",
+  "checkpointId": "progress-20260924T231045Z-83e9e9ff",
+  "createdAt": "2026-09-24T23:10:45.528019+00:00",
+  "outcome": "New isolated Hunt species-gate branch from released 97d995f; inherited 252f928 release checkpoint is superseded for this task",
   "scope": [
-    "GrindZone signed native desktop release"
+    "Hunt map species gate only; no owner installation or production release"
   ],
   "prohibitions": [
-    "Preserve owner journal and pairing; no owner install until signed release is live"
+    "Preserve owner installed app, journal, phone pairing, Sway and Render state"
   ],
   "progress": {
     "completedVerified": [
-      "Both migration tests use pinned old Store preimage; old and new contract hashes unchanged"
+      "Verified original source branch clean at 97d995f and created isolated branch fix/grindzone-hunt-species-gate-20260924"
     ],
     "changedUnverified": [],
     "proof": [
-      "Windows targeted migration tests 5 pass, 0 fail; one-commit shallow clone has no old Git object and storage migration test 4 pass"
+      "git status clean; git log shows 97d995f contains 252f928"
     ],
-    "externalEffects": [
-      "Source PR 19 branch pushed at 57a268e; Sway PR 291 merged but Render deploy failed before publication"
-    ],
-    "doNotRepeat": [
-      "Do not retry failed Render deploy at e6d7; host pin must advance to 57a268e"
-    ],
-    "nextSafeAction": "Review corrective Sway host pin PR, obtain exact merge/deploy approval, verify live signed release, then update owner install through Computer Use"
+    "externalEffects": [],
+    "doNotRepeat": [],
+    "nextSafeAction": "Gate Hunt zone and route map/list data by selected species; verify default and selected flows"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
-    "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "57a268e79318a46caf6568ac04474302e4931212",
+    "branch": "fix/grindzone-hunt-species-gate-20260924",
+    "headBefore": "97d995f7a47d68af543e2d8d0c6e46df3a60f8ec",
     "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
+    "pushRequested": false,
+    "pushRemote": null,
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 1
+    "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
