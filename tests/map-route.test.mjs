@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FieldMap} from '../public/map.js';
+import {huntRouteForSpecies,huntZonesForSpecies,visibleZonePage} from '../public/zone-window.js';
 
 // Stub only SVG nodes and terrain/pressure rendering. The real update, draw,
 // layer, selection and fitRoute methods execute against the saved route data.
@@ -44,6 +45,28 @@ function harness(t, size = {width: 500, height: 500}) {
   return {map, update, nodes, selected, terrainCalls, pressureCalls};
 }
 const zone = (id, x, z, extra = {}) => ({id, x, z, species: 'Moose', need: 'drinking', start: 6, end: 10, ...extra});
+
+test('Hunt requires a species before rendering reference zones, saved zones, cards or route markers', t => {
+  const h=harness(t),references=Array.from({length:2970},(_,i)=>zone(`mallard-${i}`,50+i%55*70,50+Math.floor(i/55)*70,{species:'Mallard',source:'population_path_reference'}));
+  const moose=zone('saved-moose',200,200,{source:'save'}),zones=[...references,moose],route=['mallard-0','saved-moose'];
+  h.map.box=[0,0,4000,4000];
+  const unselected={zones:huntZonesForSpecies(zones,'all'),...huntRouteForSpecies(zones,route,'all')};
+  assert.equal(visibleZonePage(unselected.zones).total,0,'the zone list has no cards before selection');
+  h.update({...unselected,equipment:[{id:'tent',x:300,z:300,kind:'tent',label:'Saved tent'}]});
+  assert.equal(h.map.data.zones.length,0,'the map receives no zones to cluster');
+  assert.equal(h.nodes('data-zone').length,0);
+  assert.equal(h.nodes('data-zone-cluster').length,0);
+  assert.equal(h.nodes('data-route-stop').length,0,'another animal’s route cannot leak a location');
+  assert.equal(h.nodes('data-pin').some(item=>item.getAttribute('data-pin')==='tent'),true,'equipment remains useful without animal markers');
+  const selected={zones:huntZonesForSpecies(zones,'Moose'),...huntRouteForSpecies(zones,route,'Moose')};
+  assert.deepEqual(selected.zones.map(item=>item.id),['saved-moose']);
+  assert.deepEqual(selected.route,['saved-moose']);
+  assert.equal(visibleZonePage(selected.zones).total,1);
+  h.update({...selected,equipment:[{id:'tent',x:300,z:300,kind:'tent',label:'Saved tent'}]});
+  assert.deepEqual([...new Set(h.nodes('data-zone').filter(item=>item.tag==='g').map(item=>item.getAttribute('data-zone')))],['saved-moose']);
+  assert.deepEqual(h.nodes('data-route-stop').map(item=>item.getAttribute('data-zone')),['saved-moose']);
+  assert.equal(h.nodes('data-zone-cluster').length,0);
+});
 
 test('a crowded whole-reserve map groups reference zones and zooms to individual markers', t => {
   const h=harness(t),references=Array.from({length:2971},(_,i)=>zone(`reference-${i}`,50+i%55*70,50+Math.floor(i/55)*70,{source:'population_path_reference'}));

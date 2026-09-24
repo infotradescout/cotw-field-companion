@@ -1,38 +1,62 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T231045Z-83e9e9ff",
-  "createdAt": "2026-09-24T23:10:45.528019+00:00",
-  "outcome": "New isolated Hunt species-gate branch from released 97d995f; inherited 252f928 release checkpoint is superseded for this task",
+  "checkpointId": "progress-20260924T231605Z-c8ce8b7e",
+  "createdAt": "2026-09-24T23:16:06.133762+00:00",
+  "outcome": "Hunt species gate implemented in isolated branch; default map and list carry no zone or route markers",
   "scope": [
-    "Hunt map species gate only; no owner installation or production release"
+    "Hunt map species gate and verifier only"
   ],
   "prohibitions": [
-    "Preserve owner installed app, journal, phone pairing, Sway and Render state"
+    "No owner install or production release; preserve journal and pairing"
   ],
   "progress": {
     "completedVerified": [
-      "Verified original source branch clean at 97d995f and created isolated branch fix/grindzone-hunt-species-gate-20260924"
+      "Default All animals now prompts for species; selected species limits Hunt zones and route overlays; zone deep links select their animal; active-grind location view untouched"
     ],
-    "changedUnverified": [],
+    "changedUnverified": [
+      "Paired-phone browser verifier updated but not yet executed"
+    ],
     "proof": [
-      "git status clean; git log shows 97d995f contains 252f928"
+      "Node targeted map-route and zone-window suite 21 passed, 0 failed; node syntax checks passed; diff check passed"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Gate Hunt zone and route map/list data by selected species; verify default and selected flows"
+    "nextSafeAction": "Run paired-phone hidden-zone verifier; integrate native-only scoped state API once server contract lands"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-hunt-species-gate-20260924",
-    "headBefore": "97d995f7a47d68af543e2d8d0c6e46df3a60f8ec",
+    "headBefore": "155db71b33c2d76808111937d2ed36c952a5775e",
     "checkpointCommit": "containing_commit",
-    "pushRequested": false,
-    "pushRemote": null,
+    "pushRequested": true,
+    "pushRemote": "origin",
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
+    "selectedStatusBefore": [
+      " M public/app.js",
+      " M public/zone-window.js",
+      " M tests/map-route.test.mjs",
+      " M tools/verify-hidden-zones.mjs"
+    ],
     "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [],
+  "savedFiles": [
+    {
+      "path": "public/app.js",
+      "sha256": "91209062e339e86ab1dff1093ed00e21ac1302d5b2f6a86f3a082e7df14f0800"
+    },
+    {
+      "path": "public/zone-window.js",
+      "sha256": "9679dc4860ef06ffc8a046342ab7d51572827aea06da15ea8c971ba895a6cd81"
+    },
+    {
+      "path": "tests/map-route.test.mjs",
+      "sha256": "9ebb8847e81a5f8b0d02a1cd1c294fb90eeaba5216e280fa7b362c5676ca9543"
+    },
+    {
+      "path": "tools/verify-hidden-zones.mjs",
+      "sha256": "f6498fa91f2e46c9abe914bc8d10aaf581e62032ffbe8bce329764283bfe40e0"
+    }
+  ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }
