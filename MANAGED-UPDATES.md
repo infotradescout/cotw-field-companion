@@ -24,6 +24,7 @@ Ed25519 application-release signatures are **not Windows Authenticode signing**.
 The initial bootstrap kernel and trust policy are pinned. Versioned signed supervisors can update within that protocol; arbitrary trust-root or bootstrap-protocol migrations are not promised by the current implementation.
 
 When a newer complete signed setup is rerun with `--open`, it verifies and stages the release, then starts that release's verified supervisor under the same installation lock. This allows a repaired supervisor to activate a compatible update even when the currently installed supervisor cannot complete its cold journal backup. The normal desktop shortcut still selects the committed release.
+If GrindZone starts during setup, close it and rerun the same signed setup. If the new candidate fails startup and is rejected, the previous app remains usable; a newer corrected signed setup is required.
 
 ## Journal and pairing recovery
 

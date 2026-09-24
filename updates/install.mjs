@@ -87,7 +87,7 @@ export async function runInstaller({source=path.resolve(path.dirname(fileURLToPa
  if(platform!=='win32'||arch!=='x64')throw Error('This installer requires Windows x64.');
  const trust=JSON.parse(fs.readFileSync(path.join(source,'updates/trust.json'),'utf8'));
  const result=install({source,home,context,trust,desktop});
- console.log(result.installed?'GrindZone files installed.':result.updateStaged?'GrindZone repair installed; the verified update will activate now.':'GrindZone installation checked and repaired.');
+ console.log(result.installed?'GrindZone files installed.':result.updateStaged?'GrindZone repair installed; checking verified update activation.':'GrindZone installation checked and repaired.');
  console.log('Journal and phone pairing remain in their existing data directory.');
  if(desktop&&!result.shortcut)console.log('Desktop shortcut could not be created. The installed launcher is: '+path.join(home,'START.cmd'));
  if(open){
@@ -96,13 +96,18 @@ export async function runInstaller({source=path.resolve(path.dirname(fileURLToPa
   let started;
   if(result.updateStaged){
    const selected=await stagedSupervisor(home,trust,result);
-   started=await selected.supervise({home,trust:selected.trust,context,launchBrowser,fetcher,onStarted,expectedStaged:selected.expectedStaged});
+   started=await selected.supervise({home,trust:selected.trust,context,launchBrowser,fetcher,expectedStaged:selected.expectedStaged,onStarted:async runtime=>{
+    if(loadState(home).current===result.setupRevision)console.log('GrindZone verified update activated.');
+    else console.error('The verified update did not activate. The previous app remains usable; a newer corrected signed setup is needed.');
+    if(onStarted)await onStarted(runtime);
+   }});
   }else{
    const {boot}=await import(pathToFileURL(path.join(home,'kernel/boot.mjs')).href);
    started=await boot(home,{launchBrowser,fetcher,onStarted});
   }
   if(started.code)throw Error('GrindZone stopped with exit code '+started.code);
-  if(started.status==='already_running'&&result.updateStaged)console.log('GrindZone is already running; the verified update will activate on its next launch.');
+  if(result.updateStaged&&started.status==='already_running')throw Error('GrindZone started while setup was completing. Close it and rerun this signed setup to activate the verified update.');
+  if(result.updateStaged&&loadState(home).current!==result.setupRevision)throw Error('The verified update did not activate. The previous app and journal were retained; use a newer corrected signed setup.');
   return {...result,startup:started};
  }
  return result;

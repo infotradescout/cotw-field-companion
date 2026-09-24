@@ -11,7 +11,8 @@ import {buildPortable} from '../tools/build-portable.mjs';
 import {signPackage} from '../tools/build-managed-download.mjs';
 import {install,runInstaller} from '../updates/install.mjs';
 import {boot} from '../updates/boot.mjs';
-import {digest,loadState,readRelease,verifyDirectory} from '../updates/engine.mjs';
+import {acquireLock,digest,loadState,readRelease,verifyDirectory} from '../updates/engine.mjs';
+import {supervise} from '../updates/supervisor.mjs';
 import {Store} from '../lib/store.mjs';
 
 const source=fileURLToPath(new URL('../',import.meta.url)),revision=n=>n.toString(16).padStart(40,'0');
@@ -76,8 +77,11 @@ test('signed setup recovers from the Windows read-only fsync defect and retains 
   assert.equal(loadState(home).current,revision(2));await runtime.stop();
  }});
  assert.equal(normal.code,0);retained();
- const failed=await runInstaller({source:bad,home,open:true,context,desktop:false,launchBrowser:false,fetcher:offline,onStarted:async runtime=>{
+ install({source:bad,home,context,trust});
+ const unlock=acquireLock(home);
+ try{await assert.rejects(supervise({home,trust,context,launchBrowser:false,fetcher:offline,expectedStaged:{revision:revision(3),sequence:3}}),/Close it and rerun this signed setup/);}finally{unlock();}
+ await assert.rejects(runInstaller({source:bad,home,open:true,context,desktop:false,launchBrowser:false,fetcher:offline,onStarted:async runtime=>{
   const current=loadState(home);assert.equal(current.current,revision(2));assert(current.rejected.includes(revision(3)));await runtime.stop();
- }});
- assert.equal(failed.startup.code,0);state=loadState(home);assert.equal(state.current,revision(2));assert(state.rejected.includes(revision(3)));assert.equal(state.pending,null);retained();
+ }}),/verified update did not activate/);
+ state=loadState(home);assert.equal(state.current,revision(2));assert(state.rejected.includes(revision(3)));assert.equal(state.pending,null);retained();
 });

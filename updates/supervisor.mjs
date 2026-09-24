@@ -47,7 +47,10 @@ export function spawnApp({directory,context,fingerprint,executable,spawnImpl=spa
 }
 export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchBrowser=true,log=console.log,onStarted,expectedStaged}={}){
  home=plainPath(home);let unlock;
- try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){log('GrindZone is already running. Updates will apply on its next launch.');if(launchBrowser)openBrowser(context.port);return {status:'already_running'};}throw e;}
+ try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){
+  if(expectedStaged)throw Error('GrindZone started while setup was completing. Close it and rerun this signed setup to activate the verified update.');
+  log('GrindZone is already running. Updates will apply on its next launch.');if(launchBrowser)openBrowser(context.port);return {status:'already_running'};
+ }throw e;}
  let runtime,timer,checking,shutting=false;const checkAbort=new AbortController();const signalHandlers=[];
  const check=()=>checking||(checking=checkAndStage(home,trust,{fetcher,signal:checkAbort.signal}).then(result=>{log(result.status==='staged'?'GrindZone update downloaded and verified. It will activate on the next launch.':result.status==='current'?'GrindZone is up to date.':'Update check unavailable; the installed version remains usable.');return result;}).finally(()=>{checking=null;}));
  const launch=async(revision)=>{
