@@ -52,6 +52,35 @@ try{
  proof.checks.push('Actual PC and paired phone start with discoveries only and no public-reference request');
  await pc.locator('#spoilerSetting').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();
  await until(async()=>{p=await phoneState();return p.zoneActivity?.discovery?.hiddenZones===2;});
+ const allResponse=pc.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/api/state'&&url.searchParams.get('huntSpecies')==='all';});
+ await pc.locator('nav [data-view="map"]').click();
+ const allState=await (await allResponse).json();await pc.locator('#fieldMap').waitFor();
+ assert.deepEqual(allState.zones.map(zone=>zone.source),['save']);
+ assert.ok(allState.huntSpeciesOptions.includes('Whitetail Deer'));
+ assert.equal(allState.zoneActivity.discovery.status,'selection_required');
+ assert.equal(await pc.locator('.zone-card').count(),0);
+ assert.equal(await pc.locator('#fieldMap [data-zone],#fieldMap [data-zone-cluster]').count(),0);
+ assert.match(await pc.locator('#zoneList').innerText(),/Choose an animal/);
+ mkdirSync(output,{recursive:true});await pc.screenshot({path:path.join(output,mode+'-native-hunt-choose-animal.png'),fullPage:false});
+ const speciesResponse=pc.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/api/state'&&url.searchParams.get('huntSpecies')==='Whitetail Deer';});
+ await pc.locator('#filterSpecies').selectOption('Whitetail Deer');
+ const speciesState=await (await speciesResponse).json();
+ await pc.locator('.zone-card[data-discovery="undiscovered"]').first().waitFor({state:'attached'});
+ assert.equal(speciesState.zones.length,3);
+ assert.equal(await pc.locator('.zone-card').count(),3);
+ await pc.screenshot({path:path.join(output,mode+'-native-hunt-selected-animal.png'),fullPage:false});
+ let releaseFullState;const isUnscopedState=url=>url.pathname==='/api/state'&&url.searchParams.has('reserve')&&!url.searchParams.has('huntSpecies');
+ await pc.route(isUnscopedState,async route=>{await new Promise(resolve=>{releaseFullState=resolve;});await route.continue();});
+ const fullResponse=pc.waitForResponse(response=>isUnscopedState(new URL(response.url())));
+ await pc.locator('nav [data-view="career"]').click();
+ await pc.getByText('Loading your hunt data…').waitFor();
+ assert.equal(await pc.locator('.career-screen').count(),0,'Stats must not render from a scoped Hunt response');
+ await until(async()=>typeof releaseFullState==='function');releaseFullState();
+ const fullState=await (await fullResponse).json();await pc.locator('.career-screen').waitFor();await pc.unroute(isUnscopedState);
+ assert.equal(fullState.huntSpeciesOptions,undefined);
+ assert.equal(fullState.zones.length,3);
+ assert.match(await pc.locator('.career-screen').innerText(),/Hunting record/);
+ proof.checks.push('Native Hunt requests all-animal lightweight state, chooses one species, and restores full data before Stats renders');
  assert.equal(await phone.locator('.zone-card').count(),0,'spoilers do not reveal all-animal markers');
  await phone.locator('#filterSpecies').selectOption('Whitetail Deer');
  await phone.locator('.zone-card[data-discovery="undiscovered"]').first().waitFor({state:'attached'});
@@ -90,7 +119,7 @@ try{
  await phone.goto(base+'/#herds');await phone.locator('[data-zone-stop]').waitFor();mkdirSync(output,{recursive:true});await phone.screenshot({path:path.join(output,mode+'-discovery.png'),fullPage:false});
  assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
  for(const name of ['animal_population_19','reserveworlddata_adf'])assert.equal(hash(readFileSync(path.join(save,name))),hash(initial[name]));
- await pc.locator('[data-action="phone-disable"]').click();await pc.locator('#submitDialog').click();await until(async()=>await phone.evaluate(async()=> (await fetch('/grindzone/api/state')).status)===503);
+ await pc.goto(app.url+'/#settings');await pc.locator('[data-action="phone-disable"]').click();await pc.locator('#submitDialog').click();await until(async()=>await phone.evaluate(async()=> (await fetch('/grindzone/api/state')).status)===503);
  assert.equal((await fetch(base+'/api/state')).status,401);assert.deepEqual(errors,[]);proof.checks.push('Existing pairing, revocation and anonymous denial remain enforced; no browser runtime errors');proof.passed=true;
 }catch(e){let text=String(e.stack||e);for(const secret of secrets)text=text.split(secret).join('[redacted]');proof.error=text.replace(/pair=[A-Za-z0-9_-]{43}/g,'pair=[redacted]');process.exitCode=1;}
 finally{await browser?.close();await app?.close().catch(()=>{});await relay?.close();rmSync(root,{recursive:true,force:true});proof.finishedAt=new Date().toISOString();mkdirSync(output,{recursive:true});writeFileSync(path.join(output,mode+'-discovery.json'),JSON.stringify(proof,null,2));console.log('GRINDZONE_HIDDEN_ZONES '+JSON.stringify(proof));}

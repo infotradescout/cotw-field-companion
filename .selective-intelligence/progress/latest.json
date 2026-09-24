@@ -1,40 +1,57 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T232153Z-810ebda6",
-  "createdAt": "2026-09-24T23:21:53.483143+00:00",
-  "outcome": "Combined Hunt species gate and native state scope at source commit 9ae0500",
+  "checkpointId": "progress-20260924T232647Z-b7488d84",
+  "createdAt": "2026-09-24T23:26:47.331728+00:00",
+  "outcome": "Phone cache anchor restored and native/phone Hunt verifier extended with scoped navigation assertions",
   "scope": [
-    "Hunt species gate and native PC state scope"
+    "Hunt UI verifier and phone cache compatibility"
   ],
   "prohibitions": [
-    "No owner install, journal changes, Sway or production release"
+    "No owner install or production release"
   ],
   "progress": {
     "completedVerified": [
-      "Cherry-picked backend scope commit a2d925f as 9ae0500 without conflicts; native Hunt query and legacy phone behavior composed"
+      "Added desktop-like screenshots, lightweight all-animal state assertion, selected species assertion, and full Stats state transition assertion to synthetic paired-phone verifier"
     ],
     "changedUnverified": [
-      "Browser navigation and synthetic paired-phone flow have not yet been executed"
+      "Extended browser verifier not yet executed"
     ],
     "proof": [
-      "Combined focused tests 44 passed, 0 failed, 0 skipped; syntax and diff checks passed"
+      "Phone access and zone-discovery UI contract focused tests 7 passed, 0 failed; syntax and diff checks passed"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Run unchanged full source test suite and paired-phone UI verifier, then inspect map screenshots"
+    "nextSafeAction": "Cherry-pick backend corrective commit 952e616; run browser verifier and full gate with generated herd reference"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-hunt-species-gate-20260924",
-    "headBefore": "9ae05000620df2c52dad4b1f83bab3147de4d31b",
+    "headBefore": "b640342fd03fc5dbc6d87519f13ae6f66e518e12",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
+    "selectedStatusBefore": [
+      " M public/app.js",
+      " M tests/zone-discovery-ui-contract.test.mjs",
+      " M tools/verify-hidden-zones.mjs"
+    ],
     "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [],
+  "savedFiles": [
+    {
+      "path": "public/app.js",
+      "sha256": "91e2151561e4c75dedf3d3956a790275633a9a7bafbe5031f09a6ca468f4f665"
+    },
+    {
+      "path": "tests/zone-discovery-ui-contract.test.mjs",
+      "sha256": "8669104f1bbe9af9c879ef5d919b72c757df2f2de41c393afcad2bd477e37846"
+    },
+    {
+      "path": "tools/verify-hidden-zones.mjs",
+      "sha256": "d8240e1e28afa4383689861e732af63dfebbc6bee6536f0cbbd7c8d4bf7e227f"
+    }
+  ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }

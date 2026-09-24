@@ -18,7 +18,8 @@ test('map, list and selection keep undiscovered areas labelled after map redraws
  assert.match(css,/stroke-dasharray:4 3/);
 });
 test('loaded hidden species enter the current filter and coverage is updated without another view',()=>{
- assert.match(app,/visibleSpecies=\[\.\.\.new Set\(state\.zones\.map/);
+ assert.match(app,/visibleSpecies=huntSpeciesOptions\(\)/);
+ assert.match(app,/Array\.isArray\(state\.huntSpeciesOptions\)/);
  assert.match(app,/speciesPicker\.innerHTML=speciesOptions/);
  assert.match(app,/zoneDiscoveryNotice\(state\)/);
  assert.match(app,/state\.zoneActivity,state\.encounters/);
