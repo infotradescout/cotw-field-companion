@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {createApp} from '../server.mjs';
+import {discoveryCatalog,readyDiscoveryReader,writeDiscoveryFixture} from './zone-discovery-fixture.mjs';
+
+test('Hunt state scopes reference zones without changing the legacy phone response',async t=>{
+ const root=mkdtempSync(path.join(tmpdir(),'grindzone-hunt-state-')),saveDir=path.join(root,'save');mkdirSync(saveDir);writeDiscoveryFixture(saveDir);
+ const app=await createApp({dataDir:path.join(root,'journal'),saveDir,port:0,managedGate:{managed:true,blocked:false,ready(){}}});
+ t.after(async()=>{await app.close();rmSync(root,{recursive:true,force:true});});
+ const reader=readyDiscoveryReader(discoveryCatalog());app.observer.zoneReference.close();app.observer.zoneReference=reader;
+ app.observer.command({op:'settings',spoilers:true,confirmSpoilers:true});
+ const get=async query=>{const response=await fetch(app.url+'/api/state?reserve=19'+query);return {status:response.status,state:await response.json()};};
+ const before=app.store.db.prepare('SELECT total_changes() AS n').get().n;
+ const all=await get('&huntSpecies=all');assert.equal(all.status,200);assert.equal(reader.calls,0,'default Hunt must not even request reference projection');
+ assert.equal(all.state.zones.length,1);assert.equal(all.state.zoneActivity.discovery.status,'selection_required');
+ assert.ok(all.state.huntSpeciesOptions.includes('Whitetail Deer'));
+ const chosen=await get('&huntSpecies=Whitetail%20Deer');assert.equal(chosen.status,200);
+ assert.equal(chosen.state.zones.filter(z=>z.source==='population_path_reference').length,2);
+ const unrelated=await get('&huntSpecies=Mallard');assert.equal(unrelated.status,200);
+ assert.equal(unrelated.state.zones.filter(z=>z.source==='population_path_reference').length,0);
+ const legacy=await get('');assert.equal(legacy.status,200);
+ assert.equal(legacy.state.zones.filter(z=>z.source==='population_path_reference').length,2);
+ assert.equal(Object.hasOwn(legacy.state,'huntSpeciesOptions'),false);
+ assert.ok(Buffer.byteLength(JSON.stringify(all.state))<Buffer.byteLength(JSON.stringify(legacy.state)));
+ assert.equal((await get('&huntSpecies=all&huntSpecies=Mallard')).status,400);
+ assert.equal((await get('&huntSpecies=')).status,400);
+ assert.equal(app.store.db.prepare('SELECT total_changes() AS n').get().n,before,'GET requests do not alter the journal');
+});
