@@ -1,40 +1,38 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T232647Z-b7488d84",
-  "createdAt": "2026-09-24T23:26:47.331728+00:00",
-  "outcome": "Phone cache anchor restored and native/phone Hunt verifier extended with scoped navigation assertions",
+  "checkpointId": "progress-20260924T233153Z-5274b918",
+  "createdAt": "2026-09-24T23:31:53.304138+00:00",
+  "outcome": "Synthetic native Hunt and paired-phone browser verifier passed with clear default and species-selected screenshots",
   "scope": [
-    "Hunt UI verifier and phone cache compatibility"
+    "Hunt species gate, native scope, phone cache compatibility"
   ],
   "prohibitions": [
-    "No owner install or production release"
+    "No owner install, journal changes or production release"
   ],
   "progress": {
     "completedVerified": [
-      "Added desktop-like screenshots, lightweight all-animal state assertion, selected species assertion, and full Stats state transition assertion to synthetic paired-phone verifier"
+      "Default Map places layer off with session-persistent toggle; cache hook updated for stale request guard; verifier covers all-animal lightweight state, selected species, full Stats refetch, phone pairing and spoiler flow"
     ],
-    "changedUnverified": [
-      "Extended browser verifier not yet executed"
-    ],
+    "changedUnverified": [],
     "proof": [
-      "Phone access and zone-discovery UI contract focused tests 7 passed, 0 failed; syntax and diff checks passed"
+      "Paired-phone/PC browser verifier passed 8 checks in local mode; screenshots saved in C:\\Users\\flavo\\Documents\\Codex\\2026-09-24\\grindzone-hunt-species-evidence; pinned herd reference generated and npm ci --prefix cloud completed"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Cherry-pick backend corrective commit 952e616; run browser verifier and full gate with generated herd reference"
+    "nextSafeAction": "Run full source test gate after pinned herd-reference generation and cloud dependency setup; inspect exact failures, then push draft PR"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-hunt-species-gate-20260924",
-    "headBefore": "b640342fd03fc5dbc6d87519f13ae6f66e518e12",
+    "headBefore": "26e0270124f343734ba4f50178abab7a7472174b",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [
+      " M cloud/phone-cache-client.mjs",
       " M public/app.js",
-      " M tests/zone-discovery-ui-contract.test.mjs",
       " M tools/verify-hidden-zones.mjs"
     ],
     "unrelatedChangeCountExcluded": 0
@@ -42,15 +40,15 @@
   "savedFiles": [
     {
       "path": "public/app.js",
-      "sha256": "91e2151561e4c75dedf3d3956a790275633a9a7bafbe5031f09a6ca468f4f665"
+      "sha256": "6a50406ea458249d9da9a785cda1c6120708392f557068b41398be9d24043190"
     },
     {
-      "path": "tests/zone-discovery-ui-contract.test.mjs",
-      "sha256": "8669104f1bbe9af9c879ef5d919b72c757df2f2de41c393afcad2bd477e37846"
+      "path": "cloud/phone-cache-client.mjs",
+      "sha256": "a293955245454bc911ad6cee417991055e9c75ca1636ce16e9e0f523256bd114"
     },
     {
       "path": "tools/verify-hidden-zones.mjs",
-      "sha256": "d8240e1e28afa4383689861e732af63dfebbc6bee6536f0cbbd7c8d4bf7e227f"
+      "sha256": "5d03b197f2df27f48783127b7a5001a7ac6cf3b1bc341bddb5ecf8f24c84acf9"
     }
   ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
