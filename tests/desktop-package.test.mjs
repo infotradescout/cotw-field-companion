@@ -20,7 +20,7 @@ test('native window members survive portable staging and Ed25519 managed signing
  const pair=generateKeyPairSync('ed25519'),trust={keys:{test:pair.publicKey.export({format:'pem',type:'spki'})},updateUrl:'https://example.test/latest.json'};
  fs.writeFileSync(path.join(stage,'updates/trust.json'),JSON.stringify(trust));
  const {manifest}=signPackage({directory:stage,revision:'a'.repeat(40),sequence:1,publishedAt:'2026-09-24T00:00:00Z',trust,privateKey:pair.privateKey.export({format:'pem',type:'pkcs8'})});
- assert.equal(manifest.storageMigration,undefined);
+ assert.deepEqual(manifest.storageMigration,storageMigrationDeclaration(manifest.storageContract));
  assert(manifest.files.some(f=>f.path==='desktop/GrindZone.Desktop.exe'));
  assert(verifyDirectory(stage,manifest));
 });
