@@ -16,7 +16,7 @@ function node(tag = 'g') {
     set textContent(value) { this.text = String(value); },
     get textContent() { return this.text + this.children.map(child => child.textContent).join(' '); },
     getComputedTextLength() { return this.textContent.length * Number(this.getAttribute('font-size')) * .6; },
-    get dataset() { return Object.fromEntries([...this.attributes].filter(([name]) => name.startsWith('data-')).map(([name, value]) => [name.slice(5), value])); },
+    get dataset() { return Object.fromEntries([...this.attributes].filter(([name]) => name.startsWith('data-')).map(([name, value]) => [name.slice(5).replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase()), value])); },
     closest(selector) { return this.attributes.has(selector.slice(1, -1)) ? this : this.parent?.closest(selector) ?? null; },
     get classList() { return {toggle: (name, enabled) => enabled ? this.classes.add(name) : this.classes.delete(name)}; },
     querySelectorAll(selector) { return descendants(this).filter(child => child.attributes.has(selector.slice(1, -1))); },
@@ -44,6 +44,36 @@ function harness(t, size = {width: 500, height: 500}) {
   return {map, update, nodes, selected, terrainCalls, pressureCalls};
 }
 const zone = (id, x, z, extra = {}) => ({id, x, z, species: 'Moose', need: 'drinking', start: 6, end: 10, ...extra});
+
+test('a crowded whole-reserve map groups reference zones and zooms to individual markers', t => {
+  const h=harness(t),references=Array.from({length:2971},(_,i)=>zone(`reference-${i}`,50+i%55*70,50+Math.floor(i/55)*70,{source:'population_path_reference'}));
+  const discovered=zone('discovered',150,150,{source:'save'}),offscreen=zone('offscreen',10000,10000,{source:'population_path_reference'});
+  h.map.box=[0,0,4000,4000];
+  h.update({zones:[...references,discovered,offscreen],routeZones:references,route:['reference-0'],selectedZone:'reference-2970'});
+  const markerGroups=h.nodes('data-zone').filter(n=>n.tag==='g'),clusters=h.nodes('data-zone-cluster').filter(n=>n.tag==='g');
+  assert.ok(markerGroups.length+clusters.length<350,'the initial SVG does not contain thousands of zone markers');
+  assert.ok(clusters.length>0);
+  assert.ok(clusters.every(n=>/\d+ undiscovered reference areas/.test(n.getAttribute('aria-label'))),'clusters report real counts and their zoom action');
+  assert.ok(markerGroups.some(n=>n.getAttribute('data-zone')==='discovered'),'discovered zones stay individually selectable');
+  assert.ok(markerGroups.some(n=>n.getAttribute('data-zone')==='reference-2970'),'selected reference stays individually selectable');
+  assert.ok(h.nodes('data-route-stop').some(n=>n.getAttribute('data-zone')==='reference-0'),'route stop remains numbered');
+  assert.ok(!markerGroups.some(n=>n.getAttribute('data-zone')==='offscreen'),'offscreen references do not get SVG markers');
+  const before=h.map.box[2];let prevented=false;
+  clusters[0].listeners.get('keydown')({key:'Enter',preventDefault(){prevented=true;}});
+  assert.equal(prevented,true);
+  assert.ok(h.map.box[2]<before,'cluster action zooms into its area');
+  assert.equal(h.nodes('data-zone-cluster').filter(n=>n.tag==='g').length,0,'detail zoom reveals individual references');
+  assert.ok(h.nodes('data-zone').some(n=>n.tag==='g'&&n.getAttribute('data-zone')?.startsWith('reference-')));
+  assert.equal(h.map.data.selectedZone,'reference-2970','zoom does not change selection');
+  assert.equal(h.map.point,null,'zoom does not invent a selected coordinate');
+  h.map.box=[0,0,4000,4000];h.map.draw();
+  Object.assign(h.map,{abort:new AbortController(),pointers:new Map(),pinch:null,toWorld:e=>[e.clientX,e.clientY]});
+  h.map.svg.setPointerCapture=()=>{};h.map.svg.hasPointerCapture=()=>false;h.map.setEvents();
+  const target=h.nodes('data-zone-cluster').find(n=>n.tag==='g'),event={target,button:0,pointerId:1,clientX:100,clientY:100};
+  h.map.svg.listeners.get('pointerdown')(event);h.map.svg.listeners.get('pointerup')(event);
+  assert.ok(h.map.box[2]<4000,'pointer activation also zooms the cluster');
+  assert.deepEqual(h.selected,[],'cluster activation does not select an arbitrary animal zone');
+});
 
 test('route markers and directed legs survive an empty species-filtered zone list', t => {
   const h = harness(t), full = [zone('a', 100, 100), zone('b', 700, 700)];
