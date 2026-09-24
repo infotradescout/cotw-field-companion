@@ -1,8 +1,8 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T204941Z-84019e3e",
-  "createdAt": "2026-09-24T20:49:41.607707+00:00",
-  "outcome": "Integrated pinned Linux native-window build path with green source and updater gates",
+  "checkpointId": "progress-20260924T210212Z-fc252946",
+  "createdAt": "2026-09-24T21:02:12.536049+00:00",
+  "outcome": "Legacy browser release remains visible after deferred or failed native desktop activation",
   "scope": [
     "GrindZone signed desktop release candidate"
   ],
@@ -11,45 +11,28 @@
   ],
   "progress": {
     "completedVerified": [
-      "Combined source includes desktop SDK bootstrap 0973539; live owner install still ea4214c and closed"
+      "Rollback fix committed at 2890d59 with synthetic legacy setup and repaired shortcut lifecycle tests"
     ],
     "changedUnverified": [],
     "proof": [
-      "Linux full suite at parent 762a068: 942 pass, 0 fail, 2 expected skips; Windows updater 62/62; agent Linux native package smoke passed"
+      "Windows targeted update lifecycle: 11 pass, 0 fail"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Verify exact candidate full suite and full Windows package on Linux, then prepare host pin PR"
+    "nextSafeAction": "Resolve native-window precommit readiness gap, then run full release gates and prepare PRs"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "09735399f94c84dea53bac122e30ebf3b8076fa4",
+    "headBefore": "2890d59dc25502c6387bca721832dcd0b0189359",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
+    "unrelatedChangeCountExcluded": 1
   },
-  "savedFiles": [
-    {
-      "path": "tools/build-desktop.mjs",
-      "sha256": "162a349b9d5f5b032196db4ba7d9eb05b154fbfe2188e79ac72a3bada1f4d418"
-    },
-    {
-      "path": "tests/desktop-package.test.mjs",
-      "sha256": "4628c517a10e577658a01f13476db7ceba2f74eb7d1cbc96974bfab76c859a26"
-    },
-    {
-      "path": "updates/install.mjs",
-      "sha256": "c057679c8cdb76fb5812e3361e615d372dc441b24543c0f522d7091864c77685"
-    },
-    {
-      "path": "cloud/server.mjs",
-      "sha256": "a5953db65b6126ad84b72c929717c00d5d619fecbbcc04b6ff5caa4be862c712"
-    }
-  ],
+  "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }
