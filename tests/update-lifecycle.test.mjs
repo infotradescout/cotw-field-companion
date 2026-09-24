@@ -39,11 +39,12 @@ test('real app child starts, downloads next release without interruption, then a
 });
 test('signed desktop window owns both current and next-launch staged server lifetimes without browser launch',async t=>{
  const f=await fixture(t),a=build(f.root,1),b=build(f.root,2);install({source:a.dir,home:f.home,context:f.context,trust});
- const windows=[];let active;
+ const windows=[];let active,opened=0;
  const desktopLauncher=({directory,home,port})=>{
   assert.equal(home,f.home);assert.equal(port,f.context.port);assert(fs.existsSync(path.join(directory,'desktop/GrindZone.Desktop.exe')));
+  if(windows.length===1){assert.equal(E.loadState(f.home).current,rev(1));assert.equal(E.loadState(f.home).pending?.candidate,rev(2));}
   let resolve;const exit=new Promise(r=>{resolve=r;});let closed=false;
-  const window={exit,close:()=>{if(!closed){closed=true;resolve({code:0});}},userClose:()=>{if(!closed){closed=true;resolve({code:0});}}};
+  const window={exit,ready:Promise.resolve(),canOpen:()=>!closed,open:()=>{assert(!closed);if(windows.length===2){assert.equal(E.loadState(f.home).current,rev(2));assert.equal(E.loadState(f.home).pending,null);}opened++;},close:()=>{if(!closed){closed=true;resolve({code:0});}},userClose:()=>{if(!closed){closed=true;resolve({code:0});}}};
   windows.push({revision:path.basename(directory),window});active=window;return window;
  };
  const common={home:f.home,trust,context:f.context,spawnRuntime,desktopLauncher,fetcher:fetchFor(b),launchDesktop:true,log:()=>{}};
@@ -57,7 +58,31 @@ test('signed desktop window owns both current and next-launch staged server life
   active.userClose();
  }});assert.equal(second.code,0);
  assert.deepEqual(windows.map(w=>w.revision),[rev(1),rev(2)]);
+ assert.equal(opened,2);
  assert.equal(fs.readFileSync(path.join(f.context.dataDir,'journal.sqlite'),'utf8'),'harvests|private-pairing');
+});
+test('desktop preflight failure keeps user writes gated and restores the legacy journal and browser',async t=>{
+ const f=await fixture(t),old=build(f.root,1,{desktop:false,revision:legacyRevision}),next=build(f.root,2);
+ install({source:old.dir,home:f.home,context:f.context,trust});install({source:next.dir,home:f.home,context:f.context,trust});
+ const opened=[];let nativeLaunches=0,nativeOpens=0;
+ const desktopLauncher=({port})=>{
+  nativeLaunches++;let resolveExit;const exit=new Promise(resolve=>{resolveExit=resolve;});
+  const ready=(async()=>{
+   const state=E.loadState(f.home);assert.equal(state.current,legacyRevision);assert.equal(state.pending?.candidate,rev(2));
+   const bootstrap=await fetch('http://127.0.0.1:'+port+'/api/bootstrap');assert.equal(bootstrap.status,200);
+   const write=await fetch('http://127.0.0.1:'+port+'/write');assert.equal(write.status,503);
+   throw Error('WebView2 startup failed');
+  })();
+  return {ready,exit,canOpen:()=>true,open:()=>{nativeOpens++;},close:()=>resolveExit({code:0})};
+ };
+ const result=await supervise({home:f.home,trust,context:f.context,spawnRuntime,desktopLauncher,
+  browserLauncher:port=>opened.push(port),launchDesktop:true,fetcher:async()=>{throw Error('offline');},log:()=>{},
+  onStarted:async runtime=>{
+   const state=E.loadState(f.home);assert.equal(state.current,legacyRevision);assert.deepEqual(state.rejected,[rev(2)]);
+   assert.equal(fs.readFileSync(path.join(f.context.dataDir,'journal.sqlite'),'utf8'),'harvests|private-pairing');
+   await runtime.stop();
+  }});
+ assert.equal(result.code,0);assert.equal(nativeLaunches,1);assert.equal(nativeOpens,0);assert.deepEqual(opened,[f.context.port]);
 });
 test('failed real candidate startup rolls back DB before the previous child accepts writes',async t=>{
  const f=await fixture(t),a=build(f.root,1),bad=build(f.root,2,{crash:true});install({source:a.dir,home:f.home,context:f.context,trust});await E.checkAndStage(f.home,trust,{fetcher:fetchFor(bad)});
