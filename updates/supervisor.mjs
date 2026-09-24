@@ -4,7 +4,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawn} from 'node:child_process';
 import {randomBytes} from 'node:crypto';
-import {acquireLock,loadState,readRelease,verifyDirectory,checkAndStage,beginActivation,commitActivation,recoverActivation,publicStatus,plainPath,fallbackCode,saveState} from './engine.mjs';
+import {acquireLock,loadState,readRelease,verifyDirectory,checkAndStage,beginActivation,commitActivation,recoverActivation,publicStatus,plainPath,fallbackCode,saveState,desktopWindowMode} from './engine.mjs';
 import {launchContext} from './context.mjs';
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function deadline(promise,ms){let timer;try{return await Promise.race([promise,new Promise(resolve=>{timer=setTimeout(()=>resolve(false),ms);})]);}finally{clearTimeout(timer);}}
@@ -55,20 +55,21 @@ export function spawnApp({directory,context,fingerprint,executable,spawnImpl=spa
  };
  return {child,nonce,send,ready,commit,stop,exit,isAlive:()=>!ended,result:()=>exitResult};
 }
-export async function supervise({home,trust,context,spawnRuntime=spawnApp,desktopLauncher=spawnDesktopWindow,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchDesktop=false,launchBrowser=!launchDesktop,log=console.log,onStarted,expectedStaged}={}){
+export async function supervise({home,trust,context,spawnRuntime=spawnApp,desktopLauncher=spawnDesktopWindow,browserLauncher=openBrowser,activate=beginActivation,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchDesktop=false,launchBrowser=!launchDesktop,log=console.log,onStarted,expectedStaged}={}){
  home=plainPath(home);let unlock;
  try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){
   if(expectedStaged)throw Error('GrindZone started while setup was completing. Close it and rerun this signed setup to activate the verified update.');
-  log('GrindZone is already running. Updates will apply on its next launch.');if(launchDesktop)log('Bring the existing GrindZone desktop window to the front.');else if(launchBrowser)openBrowser(context.port);return {status:'already_running'};
+  log('GrindZone is already running. Updates will apply on its next launch.');if(launchDesktop)log('Bring the existing GrindZone desktop window to the front.');else if(launchBrowser)browserLauncher(context.port);return {status:'already_running'};
  }throw e;}
  let runtime,desktop,timer,checking,shutting=false;const checkAbort=new AbortController();const signalHandlers=[];
  const check=()=>checking||(checking=checkAndStage(home,trust,{fetcher,signal:checkAbort.signal}).then(result=>{log(result.status==='staged'?'GrindZone update downloaded and verified. It will activate on the next launch.':result.status==='current'?'GrindZone is up to date.':'Update check unavailable; the installed version remains usable.');return result;}).finally(()=>{checking=null;}));
  const launch=async(revision)=>{
   const release=readRelease(home,revision,trust);verifyDirectory(release.dir,release.manifest);
-  if(launchDesktop&&!release.manifest.files.some(f=>f.path==='desktop/GrindZone.Desktop.exe'))throw Error('The signed release does not include its desktop window.');
+  const windowMode=launchDesktop?desktopWindowMode(release.manifest):null;
   const executable=path.join(release.dir,'runtime','node.exe');
   runtime=spawnRuntime({directory:release.dir,context,fingerprint:release.manifest.runtimeFingerprint,executable});
   runtime.directory=release.dir;
+  runtime.windowMode=windowMode;
   runtime.child.on('message',async m=>{
    if(m?.nonce!==runtime?.nonce||m.type!=='gz-request'||typeof m.id!=='string'||m.id.length>100)return;
    try{if(m.operation==='check')await check();else if(m.operation!=='status')throw Error('Unsupported update action');runtime.send({type:'gz-result',id:m.id,result:publicStatus(home)});}
@@ -84,7 +85,7 @@ export async function supervise({home,trust,context,spawnRuntime=spawnApp,deskto
   // A manager killed unexpectedly leaves its child briefly draining over IPC. Never restore under it.
   for(let i=0;!await probe(context.port);i++){if(i>=10)throw Error('Another GrindZone copy is running. Close that app window before starting the managed copy.');await wait(500);}
   recoverActivation(home,context.dataDir);
-  let pending;try{pending=beginActivation(home,context.dataDir,trust);}catch(e){log('Update activation deferred: '+e.message);const state=loadState(home);if(state.pending)throw e;state.lastError=String(e.message).slice(0,200);saveState(home,state);}let s=loadState(home);
+  let pending;try{pending=activate(home,context.dataDir,trust);}catch(e){log('Update activation deferred: '+e.message);const state=loadState(home);if(state.pending)throw e;state.lastError=String(e.message).slice(0,200);saveState(home,state);}let s=loadState(home);
   if(pending){
    log('Activating the verified GrindZone update…');
    try{await launch(pending.candidate);commitActivation(home);}
@@ -92,12 +93,15 @@ export async function supervise({home,trust,context,spawnRuntime=spawnApp,deskto
   }else {try{await launch(s.current);}catch(e){await runtime?.stop({probation:true});if(!fallbackCode(home,trust))throw e;runtime=null;await launch(loadState(home).current);}}
   // Persist successful activation BEFORE allowing either phone or browser writes.
   await runtime.commit();
-  if(launchDesktop){
+  if(launchDesktop&&runtime.windowMode==='native'){
    desktop=desktopLauncher({directory:runtime.directory,home,port:context.port});
    const early=await Promise.race([desktop.exit.then(result=>result),wait(750).then(()=>null)]);
    if(early)throw Error('The GrindZone desktop window closed before startup completed.');
    void desktop.exit.then(result=>{if(!shutting){shutting=true;void runtime.stop().catch(e=>log(e.message));}});
-  }else if(launchBrowser)openBrowser(context.port);
+  }else if(launchBrowser||launchDesktop&&runtime.windowMode==='legacy-browser'){
+   if(launchDesktop)log('The previous verified GrindZone release uses a browser window. Opening it while the desktop update is unavailable.');
+   browserLauncher(context.port);
+  }
   void check();timer=setInterval(()=>{if(!shutting)void check();},Math.max(60000,checkInterval));
   const stop=()=>{if(shutting)return;shutting=true;void runtime.stop().catch(e=>log(e.message));};
   for(const sig of ['SIGINT','SIGTERM']){process.on(sig,stop);signalHandlers.push([sig,stop]);}

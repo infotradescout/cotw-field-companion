@@ -204,6 +204,14 @@ export function recoverActivation(home,dataDir){
 }
 export function publicStatus(home){const s=loadState(home);return {schema:'grindzone.updates.v1',managed:true,current:s.current,previous:s.previous,staged:s.staged,lastCheck:s.lastCheck,lastError:s.lastError,policy:'Downloads automatically. Activates on the next launch; an active hunt is never restarted.'};}
 
+// The last browser-based installed release must remain visible if a desktop update
+// cannot activate. No other signed release may silently substitute a browser.
+export function desktopWindowMode(manifest){
+ if(manifest.files.some(file=>file.path==='desktop/GrindZone.Desktop.exe'))return 'native';
+ if(manifest.revision==='ea4214c3d60011b4f1ae201d39d90fc157f329d5')return 'legacy-browser';
+ fail('The signed release does not include its desktop window.');
+}
+
 /** Revert executable code only after commitment. Never rewind post-activation player writes. */
 export function fallbackCode(home,trust){
  const s=loadState(home);if(s.pending||!s.previous)return false;
