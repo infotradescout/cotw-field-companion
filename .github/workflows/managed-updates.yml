@@ -23,7 +23,7 @@ jobs:
       - name: Exercise Windows setup, CLI dispatch, repair, and update cycle
         shell: pwsh
         run: |
-          node --test --test-reporter=tap tests/windows-entry.test.mjs tests/install-repair.test.mjs tests/update-engine.test.mjs tests/update-lifecycle.test.mjs tests/update-full-app.test.mjs *> managed-update-windows.tap
+          node --test --test-reporter=tap tests/windows-entry.test.mjs tests/install-repair.test.mjs tests/install-recovery.test.mjs tests/update-engine.test.mjs tests/update-lifecycle.test.mjs tests/update-full-app.test.mjs *> managed-update-windows.tap
           $result = $LASTEXITCODE
           Get-Content managed-update-windows.tap
           exit $result

@@ -145,7 +145,7 @@ function dataPath(home,dataDir){plainPath(dataDir);if(inside(home,dataDir)||insi
 export function snapshotJournal(home,dataDir){
  dataPath(home,dataDir);const name='backup-'+randomUUID(),dir=plainPath(path.join(home,'backups',name));fs.mkdirSync(dir,{recursive:true});const files=[];
  try{
-  for(const n of JOURNAL_FILES){const full=plainPath(path.join(dataDir,n));if(!fs.existsSync(full))continue;const st=fs.statSync(full);if(!st.isFile()||st.size>2*1024*1024*1024)fail('Journal backup exceeds its safe size');fs.copyFileSync(full,path.join(dir,n),fs.constants.COPYFILE_EXCL);const fd=fs.openSync(path.join(dir,n),'r');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}files.push({name:n,bytes:st.size,sha256:fileDigest(path.join(dir,n))});}
+  for(const n of JOURNAL_FILES){const full=plainPath(path.join(dataDir,n));if(!fs.existsSync(full))continue;const st=fs.statSync(full);if(!st.isFile()||st.size>2*1024*1024*1024)fail('Journal backup exceeds its safe size');fs.copyFileSync(full,path.join(dir,n),fs.constants.COPYFILE_EXCL);const fd=fs.openSync(path.join(dir,n),'r+');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}files.push({name:n,bytes:st.size,sha256:fileDigest(path.join(dir,n))});}
   atomicJson(path.join(dir,'backup.json'),{schema:'grindzone.cold-backup.v1',dataScope:digest(Buffer.from(path.resolve(dataDir))),files});return name;
  }catch(e){fs.rmSync(dir,{recursive:true,force:true});throw e;}
 }
@@ -157,7 +157,7 @@ export function restoreJournal(home,dataDir,name){
  // Preserve failed-candidate journal bytes separately; recovery never erases unrelated user files.
  const quarantine=path.join(dir,'failed-'+randomUUID());fs.mkdirSync(quarantine);
  for(const n of JOURNAL_FILES){const full=plainPath(path.join(dataDir,n));if(fs.existsSync(full))fs.copyFileSync(full,path.join(quarantine,n),fs.constants.COPYFILE_EXCL);}
- for(const n of JOURNAL_FILES){const full=plainPath(path.join(dataDir,n));if(seen.has(n)){const tmp=full+'.recover-'+randomUUID();fs.copyFileSync(path.join(dir,n),tmp,fs.constants.COPYFILE_EXCL);const fd=fs.openSync(tmp,'r');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(tmp,full);}else fs.rmSync(full,{force:true});}
+ for(const n of JOURNAL_FILES){const full=plainPath(path.join(dataDir,n));if(seen.has(n)){const tmp=full+'.recover-'+randomUUID();fs.copyFileSync(path.join(dir,n),tmp,fs.constants.COPYFILE_EXCL);const fd=fs.openSync(tmp,'r+');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(tmp,full);}else fs.rmSync(full,{force:true});}
  syncDir(dataDir);
 }
 export function beginActivation(home,dataDir,trust){

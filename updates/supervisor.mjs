@@ -45,9 +45,12 @@ export function spawnApp({directory,context,fingerprint,executable,spawnImpl=spa
  };
  return {child,nonce,send,ready,commit,stop,exit,isAlive:()=>!ended,result:()=>exitResult};
 }
-export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchBrowser=true,log=console.log,onStarted}={}){
+export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=portUnused,fetcher=fetch,checkInterval=3600000,launchBrowser=true,log=console.log,onStarted,expectedStaged}={}){
  home=plainPath(home);let unlock;
- try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){log('GrindZone is already running. Updates will apply on its next launch.');if(launchBrowser)openBrowser(context.port);return {status:'already_running'};}throw e;}
+ try{unlock=acquireLock(home);}catch(e){if(e.code==='UPDATE_LOCKED'){
+  if(expectedStaged)throw Error('GrindZone started while setup was completing. Close it and rerun this signed setup to activate the verified update.');
+  log('GrindZone is already running. Updates will apply on its next launch.');if(launchBrowser)openBrowser(context.port);return {status:'already_running'};
+ }throw e;}
  let runtime,timer,checking,shutting=false;const checkAbort=new AbortController();const signalHandlers=[];
  const check=()=>checking||(checking=checkAndStage(home,trust,{fetcher,signal:checkAbort.signal}).then(result=>{log(result.status==='staged'?'GrindZone update downloaded and verified. It will activate on the next launch.':result.status==='current'?'GrindZone is up to date.':'Update check unavailable; the installed version remains usable.');return result;}).finally(()=>{checking=null;}));
  const launch=async(revision)=>{
@@ -62,6 +65,10 @@ export async function supervise({home,trust,context,spawnRuntime=spawnApp,probe=
   await runtime.ready;await wait(1000);if(!runtime.isAlive())throw Error('The app failed its startup stability check');return runtime;
  };
  try{
+  if(expectedStaged){
+   const state=loadState(home);
+   if(!state.current||state.current===state.staged||state.staged!==expectedStaged.revision||state.highWater!==expectedStaged.sequence||state.pending||state.rejected.includes(expectedStaged.revision))throw Error('The verified setup update changed before activation.');
+  }
   // A manager killed unexpectedly leaves its child briefly draining over IPC. Never restore under it.
   for(let i=0;!await probe(context.port);i++){if(i>=10)throw Error('Another GrindZone copy is running. Close that app window before starting the managed copy.');await wait(500);}
   recoverActivation(home,context.dataDir);
