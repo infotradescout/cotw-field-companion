@@ -1,61 +1,46 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T231605Z-c8ce8b7e",
-  "createdAt": "2026-09-24T23:16:06.133762+00:00",
-  "outcome": "Hunt species gate implemented in isolated branch; default map and list carry no zone or route markers",
+  "checkpointId": "progress-20260924T232125Z-04d41231",
+  "createdAt": "2026-09-24T23:21:25.705188+00:00",
+  "outcome": "Native Hunt client requests species-scoped state and restores full state before leaving Hunt",
   "scope": [
-    "Hunt map species gate and verifier only"
+    "Native Hunt state scope and previously checkpointed species gate"
   ],
   "prohibitions": [
     "No owner install or production release; preserve journal and pairing"
   ],
   "progress": {
     "completedVerified": [
-      "Default All animals now prompts for species; selected species limits Hunt zones and route overlays; zone deep links select their animal; active-grind location view untouched"
+      "Added huntSpeciesOptions fallback, native-only query, view/reserve/species stale-response guards, loading transition, and deferred route/zone navigation"
     ],
     "changedUnverified": [
-      "Paired-phone browser verifier updated but not yet executed"
+      "Scoped client transitions have not yet run against new server contract in a browser"
     ],
     "proof": [
-      "Node targeted map-route and zone-window suite 21 passed, 0 failed; node syntax checks passed; diff check passed"
+      "Targeted map and zone suite 21 passed, 0 failed; app syntax and git diff check passed"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Run paired-phone hidden-zone verifier; integrate native-only scoped state API once server contract lands"
+    "nextSafeAction": "Cherry-pick a2d925f server scope, run combined tests and browser verifier, inspect screenshots"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-hunt-species-gate-20260924",
-    "headBefore": "155db71b33c2d76808111937d2ed36c952a5775e",
+    "headBefore": "b646d34dfb0f4a03a3693f9f2bac1cf8f01cfa6e",
     "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
+    "pushRequested": false,
+    "pushRemote": null,
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [
-      " M public/app.js",
-      " M public/zone-window.js",
-      " M tests/map-route.test.mjs",
-      " M tools/verify-hidden-zones.mjs"
+      " M public/app.js"
     ],
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [
     {
       "path": "public/app.js",
-      "sha256": "91209062e339e86ab1dff1093ed00e21ac1302d5b2f6a86f3a082e7df14f0800"
-    },
-    {
-      "path": "public/zone-window.js",
-      "sha256": "9679dc4860ef06ffc8a046342ab7d51572827aea06da15ea8c971ba895a6cd81"
-    },
-    {
-      "path": "tests/map-route.test.mjs",
-      "sha256": "9ebb8847e81a5f8b0d02a1cd1c294fb90eeaba5216e280fa7b362c5676ca9543"
-    },
-    {
-      "path": "tools/verify-hidden-zones.mjs",
-      "sha256": "f6498fa91f2e46c9abe914bc8d10aaf581e62032ffbe8bce329764283bfe40e0"
+      "sha256": "b058e3024503735c9c75c69ef7b96e1ed2f3c096d5be15d3a288a9cbdf541dea"
     }
   ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
