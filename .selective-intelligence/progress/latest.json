@@ -1,47 +1,40 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T232125Z-04d41231",
-  "createdAt": "2026-09-24T23:21:25.705188+00:00",
-  "outcome": "Native Hunt client requests species-scoped state and restores full state before leaving Hunt",
+  "checkpointId": "progress-20260924T232153Z-810ebda6",
+  "createdAt": "2026-09-24T23:21:53.483143+00:00",
+  "outcome": "Combined Hunt species gate and native state scope at source commit 9ae0500",
   "scope": [
-    "Native Hunt state scope and previously checkpointed species gate"
+    "Hunt species gate and native PC state scope"
   ],
   "prohibitions": [
-    "No owner install or production release; preserve journal and pairing"
+    "No owner install, journal changes, Sway or production release"
   ],
   "progress": {
     "completedVerified": [
-      "Added huntSpeciesOptions fallback, native-only query, view/reserve/species stale-response guards, loading transition, and deferred route/zone navigation"
+      "Cherry-picked backend scope commit a2d925f as 9ae0500 without conflicts; native Hunt query and legacy phone behavior composed"
     ],
     "changedUnverified": [
-      "Scoped client transitions have not yet run against new server contract in a browser"
+      "Browser navigation and synthetic paired-phone flow have not yet been executed"
     ],
     "proof": [
-      "Targeted map and zone suite 21 passed, 0 failed; app syntax and git diff check passed"
+      "Combined focused tests 44 passed, 0 failed, 0 skipped; syntax and diff checks passed"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Cherry-pick a2d925f server scope, run combined tests and browser verifier, inspect screenshots"
+    "nextSafeAction": "Run unchanged full source test suite and paired-phone UI verifier, then inspect map screenshots"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-hunt-species-gate-20260924",
-    "headBefore": "b646d34dfb0f4a03a3693f9f2bac1cf8f01cfa6e",
+    "headBefore": "9ae05000620df2c52dad4b1f83bab3147de4d31b",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [
-      " M public/app.js"
-    ],
+    "selectedStatusBefore": [],
     "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [
-    {
-      "path": "public/app.js",
-      "sha256": "b058e3024503735c9c75c69ef7b96e1ed2f3c096d5be15d3a288a9cbdf541dea"
-    }
-  ],
+  "savedFiles": [],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }
