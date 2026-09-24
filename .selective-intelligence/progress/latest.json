@@ -1,31 +1,31 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T204416Z-589f273b",
-  "createdAt": "2026-09-24T20:44:17.156508+00:00",
-  "outcome": "Integrated native GrindZone window and audited signed Store migration with active grinds and dense-map fixes",
+  "checkpointId": "progress-20260924T204755Z-659e8174",
+  "createdAt": "2026-09-24T20:47:56.167515+00:00",
+  "outcome": "Closed full-gate phone module and desktop package contract integration gaps",
   "scope": [
-    "GrindZone signed desktop candidate"
+    "GrindZone integrated release candidate"
   ],
   "prohibitions": [
-    "No live install until complete signed candidate verification; preserve journal, phone metadata and unrelated processes"
+    "No owner journal or phone metadata changes; no release publication without separate owner authorization"
   ],
   "progress": {
     "completedVerified": [
-      "Root integration head 79336c7; current owner installation remains ea4214c and closed, no journal or pairing mutation"
+      "Full suite at afcf1d: 940 passed, 2 failed, 2 skipped; fixes committed 4b79be5"
     ],
     "changedUnverified": [],
     "proof": [
-      "Combined map/grind focus 151/151; signed synthetic directed setup and migration/package focus 7/7"
+      "Affected phone relay and desktop package tests 22/22 pass on Windows; unchanged Windows updater gate 62/62"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Run unchanged Windows updater and native Linux full gates; verify production signer packaging path before release preparation"
+    "nextSafeAction": "Rerun native Linux full suite at exact pushed head, then verify production desktop builder"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "79336c7dea2f112aa303c0f4ca813d4190cf1ffa",
+    "headBefore": "4b79be5c4ef397016717bf6a0e9944ec5679e692",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
@@ -35,24 +35,12 @@
   },
   "savedFiles": [
     {
-      "path": "updates/install.mjs",
-      "sha256": "c057679c8cdb76fb5812e3361e615d372dc441b24543c0f522d7091864c77685"
+      "path": "cloud/server.mjs",
+      "sha256": "a5953db65b6126ad84b72c929717c00d5d619fecbbcc04b6ff5caa4be862c712"
     },
     {
-      "path": "updates/engine.mjs",
-      "sha256": "cb1e8a3639fd283efa634da53e54bd8f4d1c1de528896b96e15ff4b6be0031f5"
-    },
-    {
-      "path": "tools/build-managed-download.mjs",
-      "sha256": "a61f6a6ab4f153647f27ac5b8716e0283ee0b873291fbe0529068c8979e6c862"
-    },
-    {
-      "path": "public/map.js",
-      "sha256": "ec03a3ba86172cc2cfcbd1ce4c8bd1fe47f26b506f2742a83f6e8c2aaa0d881b"
-    },
-    {
-      "path": "public/grinds.js",
-      "sha256": "0e19bbbf19ec2b1f41eab21ad9fdae922c7d20ce07d7ff2739c16d1d1a8457f3"
+      "path": "tests/desktop-package.test.mjs",
+      "sha256": "4628c517a10e577658a01f13476db7ceba2f74eb7d1cbc96974bfab76c859a26"
     }
   ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
