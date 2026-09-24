@@ -32,7 +32,7 @@ let relay,app,browser;const errors=[],secrets=[];
 const proof={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),mode,at:new Date().toISOString(),passed:false,checks:[],physicalPhoneVerified:false,windowsLaunchVerified:false,realPlayerSaveVerified:false};
 const until=async(fn,label)=>{for(let i=0;i<160;i++){if(await fn())return;await new Promise(r=>setTimeout(r,100));}throw Error('Timed out: '+label);};
 const read=page=>page.evaluate(async()=>{const r=await fetch(new URL('api/herds?reserve=19',location.href),{cache:'no-store'});return {status:r.status,data:await r.json()};});
-const start=async base=>{const a=await createApp({dataDir,saveDir:save,port:0,interval:250,phoneRelayUrl:base,phoneEnrollmentToken:null,allowInsecureLoopback:mode==='local',feedbackUrl:null,githubFeedbackUrl:null});a.observer.zoneReference.close();a.observer.zoneReference=readyDiscoveryReader();return a;};
+const start=async base=>{const a=await createApp({dataDir,saveDir:save,port:0,interval:250,phoneRelayUrl:base,phoneEnrollmentToken:null,allowInsecurePhoneLoopback:mode==='local',feedbackUrl:null,githubFeedbackUrl:null});a.observer.zoneReference.close();a.observer.zoneReference=readyDiscoveryReader();return a;};
 try{
  if(mode==='local')relay=await createActivatedPhoneRelay({key:randomBytes(32),publicOrigin:'http://127.0.0.1:0/grindzone',allowInsecureLoopback:true});
  const base=relay?.origin||'https://sway-tips.onrender.com/grindzone';proof.relay=base;app=await start(base);
