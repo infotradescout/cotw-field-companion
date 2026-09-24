@@ -10,12 +10,16 @@ class Socket extends EventTarget{
  close(){this.readyState=3;this.dispatchEvent(new Event('close'));}
  receive(query){this.dispatchEvent(new MessageEvent('message',{data:JSON.stringify({type:'request',id:'request-12345678901234567890',operation:'locations',query})}));}
 }
-const page=()=>buildLocationHistory({harvests:[{id:'h1',timestamp:1700000000,species:'Deer'}],sourceStatus:'ok'});
+const page=()=>buildLocationHistory({harvests:[{id:'h1',timestamp:1700000000,species:'Deer'}],sessions:[{id:'running',startedAt:'2023-11-01T00:00:00.000Z',endedAt:null,pausedAt:null}],sourceStatus:'ok'});
 async function setup(t,readLocations){let writes=0;const b=createPhoneBridge({relayUrl:'https://example.test/grindzone',deviceToken:'synthetic-token',readState:()=>({}),readLocations,runCommand:()=>{writes++;throw Error('Not a read');},WebSocketImpl:Socket});await b.connect();t.after(()=>b.close());return {b,socket:Socket.current,writes:()=>writes};}
 test('location reads use the separate query path and explicit transport allowlist',async t=>{
  let query;const {socket,writes}=await setup(t,q=>{query=q;const d=page();d.private='SECRET';d.events[0].location.path='SECRET';return d;});
  socket.receive({reserve:'all',kind:'harvest',limit:20});await tick();
- assert.equal(query.kind,'harvest');assert.equal(writes(),0);assert.equal(socket.sent[0].status,200);assert.doesNotMatch(JSON.stringify(socket.sent),/SECRET|path/);
+ assert.equal(query.kind,'harvest');assert.equal(query.session,'active');assert.equal(writes(),0);assert.equal(socket.sent[0].status,200);assert.doesNotMatch(JSON.stringify(socket.sent),/SECRET|path/);
+});
+test('phone relay rejects a PC page that silently widens location scope',async t=>{
+ const {socket}=await setup(t,()=>({...page(),query:{...page().query,session:'older-grind'}}));
+ socket.receive({});await tick();assert.equal(socket.sent[0].status,503);
 });
 test('remote profile or path injection is rejected before the source callback',async t=>{
  let reads=0;const {socket,writes}=await setup(t,()=>{reads++;return page();});socket.receive({profile:'other',path:'../private'});await tick();

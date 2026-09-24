@@ -89,17 +89,31 @@ test('a stale legacy finish request cannot end a different newer grind',t=>{
  assert.deepEqual(store.item('synthetic',newer.id,'sessions'),newer);assert.equal(newer.endedAt,null);
 });
 
-test('stale or foreign grind identity never changes another active grind, including paused ones',t=>{
+test('stale or foreign grind identity never changes another grind, including paused ones',t=>{
  const store=db(t),at=clock(t);let s=store.command('synthetic',{op:'session.start',reserve:19});s=control(store,s,'update',{goal:5});
  for(const op of ['update','pause','resume','end']){
   conflict(()=>store.command('synthetic',{op:'session.'+op,id:'wrong-session',version:s.version}));
   conflict(()=>store.command('synthetic',{op:'session.'+op,id:s.id,version:1}));
   conflict(()=>store.command('other-profile',{op:'session.'+op,id:s.id,version:s.version}));
  }
- at(10);s=control(store,s,'pause');conflict(()=>store.command('synthetic',{op:'session.start',reserve:19}));
+ at(10);s=control(store,s,'pause');
  at(20);s=control(store,s,'end');const old=s;
  at(30);let other=store.command('synthetic',{op:'session.start',reserve:19});at(40);other=control(store,other,'pause');
- conflict(()=>control(store,old,'resume'));conflict(()=>control(store,old,'end'));assert.deepEqual(store.item('synthetic',other.id,'sessions'),other);
+ const continued=control(store,old,'resume');assert.equal(continued.endedAt,null);conflict(()=>control(store,old,'end'));assert.deepEqual(store.item('synthetic',other.id,'sessions'),other);
+});
+test('two grinds track independently and ambiguous legacy or encounter association never picks one',t=>{
+ const store=db(t),at=clock(t);
+ let first=store.command('synthetic',{op:'session.start',reserve:19,name:'First',targetSpecies:'Moose'});
+ at(10);let second=store.command('synthetic',{op:'session.start',reserve:1,name:'Second',targetSpecies:'Red Deer'});
+ assert.equal(store.journal('synthetic','sessions').filter(s=>!s.endedAt&&!s.pausedAt).length,2);
+ conflict(()=>store.command('synthetic',{op:'session.end'}));
+ assert.equal(store.command('synthetic',{op:'encounter.create',reserve:19,species:'Moose'}).sessionId,null,'overlap is not assigned to an arbitrary grind');
+ at(20);first=control(store,first,'pause');assert.equal(store.item('synthetic',second.id,'sessions').pausedAt,null);
+ assert.equal(store.command('synthetic',{op:'encounter.create',reserve:1,species:'Red Deer'}).sessionId,second.id);
+ at(30);first=control(store,first,'resume');assert.equal(first.pausedAt,null);assert.equal(second.version,1);
+ at(40);second=control(store,second,'end');assert.equal(store.item('synthetic',first.id,'sessions').endedAt,null);
+ const receipts=[receipt('before',5),receipt('shared',15),receipt('gap',25),receipt('after',35)];
+ assert.deepEqual([sessionHarvestSummary(first,receipts,Date.parse(iso(40))).total,sessionHarvestSummary(second,receipts).total],[3,3],'overlapping windows are independent and paused time stays excluded');
 });
 
 test('committed control retries run once and a different body cannot reuse that identity',t=>{

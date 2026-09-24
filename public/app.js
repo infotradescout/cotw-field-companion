@@ -118,7 +118,7 @@ async function markFeedbackRead(id){
  try{await postJSON(`/api/feedback/${encodeURIComponent(id)}/read`,{});await loadFeedbackInbox();toast('Feedback marked read.');}
  catch(error){toast(error.message,true);}
 }
-function activeSession(){return state.sessions.find(s=>!s.endedAt);}
+function activeSession(){const current=state.sessions.filter(s=>!s.endedAt);return current.length===1?current[0]:null;}
 function metric(label,value,detail){return `<div class="metric"><div class="label">${label}</div><div class="value">${value}</div><div class="detail">${detail}</div></div>`;}
 function warning(){const failed=state.observer.sources.filter(s=>s.status==='error');return !state.observer.connected?'<div class="callout warning"><strong>Save tracking is disconnected.</strong> Open Settings to check the PC connection.</div>':state.observer.error||failed.length?'<div class="callout warning"><strong>Waiting for a readable save.</strong> Showing your last good data. Tracking will retry automatically.</div>':'';}
 function updateHuntStatus(){if(!state)return;if($('#huntNotice'))$('#huntNotice').innerHTML=warning();

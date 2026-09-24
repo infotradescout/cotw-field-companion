@@ -14,19 +14,20 @@ const action=(label,kind,extra='',style='')=>`<button class="dashboard-action ${
 
 export function dashboardData(state,reserve){
  const sessions=state.sessions||[];
- const current=sessions.find(s=>!s.endedAt)||null;
+ const current=sessions.filter(s=>!s.endedAt).sort((a,b)=>Number(!!a.pausedAt)-Number(!!b.pausedAt)||Date.parse(b.startedAt)-Date.parse(a.startedAt))[0]||null;
+ const currentCount=sessions.filter(s=>!s.endedAt).length;
  const last=sessions.filter(s=>s.endedAt).slice().sort((a,b)=>Date.parse(b.endedAt)-Date.parse(a.endedAt))[0]||null;
  const grind=current||last;
  // A retained browser window is not the complete grind. Use the observer's durable session summary.
  const grindCount=grindTotal(grind);
  const recent=(state.harvests||[]).filter(h=>Number.isFinite(h.timestamp)&&Number.isFinite(new Date(h.timestamp*1000).getTime())).slice().sort((a,b)=>b.timestamp-a.timestamp).slice(0,3);
  const route=resolveRouteStops(state.route||[],state.zones||[]);
- return {current,last,grind,grindCount,recent,route,missingStops:route.filter(s=>!s.zone).length,reserveName:state.reserves?.find(r=>r.id===reserve)?.name||'Selected reserve',medals:medalCounts(state)};
+ return {current,currentCount,last,grind,grindCount,recent,route,missingStops:route.filter(s=>!s.zone).length,reserveName:state.reserves?.find(r=>r.id===reserve)?.name||'Selected reserve',medals:medalCounts(state)};
 }
 function grindMarkup(data){
  const {grind,current,grindCount}=data;
  if(!grind)return `<section class="dashboard-start"><div><strong>Grind counter</strong><span>Optional · count a session</span></div>${action('Start grind','session-start')}</section>`;
- return `<section class="dashboard-grind"><div class="dashboard-section-top"><span class="dashboard-kicker">${current?'CURRENT GRIND':'LAST GRIND'}</span>${current?`<span class="dashboard-live ${grind.pausedAt?'paused':''}">${grind.pausedAt?'Paused':'Tracking'}</span>`:'<span class="dashboard-meta">Finished</span>'}</div><div class="dashboard-grind-main"><div><h2>${esc(grind.name||'My grind')}</h2><span class="dashboard-meta">${current?'Started':'Finished'} ${when(current?grind.startedAt:grind.endedAt)}</span></div><div class="dashboard-grind-count"><strong${grindCount===null?' aria-label="Count unavailable"':''}>${number(grindCount)}</strong><span>harvests</span></div></div><div class="dashboard-grind-foot"><span>${grind.targetSpecies?speciesName(grind.targetSpecies):'All animals'} · all maps</span>${action('Open grind '+arrow,'grind-open',`data-id="${esc(grind.id)}"`,'text')}</div></section>`;
+ return `<section class="dashboard-grind"><div class="dashboard-section-top"><span class="dashboard-kicker">${current?data.currentCount>1?`${data.currentCount} CURRENT GRINDS`:'CURRENT GRIND':'LAST GRIND'}</span>${current?`<span class="dashboard-live ${grind.pausedAt?'paused':''}">${grind.pausedAt?'Paused':'Tracking'}</span>`:'<span class="dashboard-meta">Finished</span>'}</div><div class="dashboard-grind-main"><div><h2>${esc(grind.name||'My grind')}</h2><span class="dashboard-meta">${current?'Started':'Finished'} ${when(current?grind.startedAt:grind.endedAt)}</span></div><div class="dashboard-grind-count"><strong${grindCount===null?' aria-label="Count unavailable"':''}>${number(grindCount)}</strong><span>harvests</span></div></div><div class="dashboard-grind-foot"><span>${grind.targetSpecies?speciesName(grind.targetSpecies):'All animals'} · all maps</span>${action('Open grind '+arrow,'grind-open',`data-id="${esc(grind.id)}"`,'text')}</div></section>`;
 }
 function activityMarkup(data){
  return `<section class="dashboard-activity"><div class="dashboard-section-top"><div><h2>Recent activity</h2><span class="dashboard-meta">Saved harvests · all reserves</span></div>${action('See all '+arrow,'view-harvests','aria-label="See all harvests"','text')}</div>${data.recent.length?`<div class="dashboard-feed">${data.recent.map(h=>`<div class="dashboard-harvest"><span class="dashboard-activity-icon">${clock}</span><div><h3>${speciesName(h.species||'Unknown animal')}</h3><time datetime="${new Date(h.timestamp*1000).toISOString()}">${when(h.timestamp*1000)}</time></div><div class="dashboard-score"><strong>${Number.isFinite(h.score)?h.score.toFixed(2):'—'}</strong><span>Trophy score</span></div></div>`).join('')}</div>`:`<div class="dashboard-no-activity"><h3>Your next harvest will appear here</h3><p>Claim an animal and let the game save.</p>${action('Open hunt map '+arrow,'view-map','','primary')}</div>`}</section>`;

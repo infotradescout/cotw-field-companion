@@ -39,14 +39,16 @@ test('encounter attribution stores a snapshot, and deliberate journal exports re
  const exported=store.exportJournal(profile);assert.equal(exported.encounterZones[0].snapshot.x,zone.x);assert(exported.zoneHistory.length>0);
  assert.equal(exported['zone-tracking-location'],undefined);assert.doesNotMatch(JSON.stringify(exported),/deviceToken|activationKey/);
 });
-test('the actual reader exposes old durable harvests beyond its regular state window',async t=>{
+test('the actual reader scopes old durable harvests to a running grind beyond its regular state window',async t=>{
  const {store,observer,profile}=await setup(t),zone=observer.describeZones(observer.reserveZones(19))[0];
+ store.put(profile,'sessions',{id:'old-running',startedAt:'2023-11-01T00:00:00.000Z',endedAt:null,pausedAt:null});
  const rows=Array.from({length:700},(_,i)=>({id:'receipt'+i,timestamp:1700000000+i,speciesHash:zone.localizationHash,score:200,origin:'observed'}));store.importHarvests(profile,null,rows);
  const all=store.harvests(profile),old=all.find(h=>h.recordId==='receipt0');store.put(profile,'harvestZones',{id:'old-location',harvestId:old.id,zoneId:zone.id,reserve:19,basis:'player_selected_zone',snapshot:{...zone,capturedAt:new Date().toISOString()}});
  const page=observer.locationHistory({reserve:19});assert.equal(page.summary.savedHarvests,1);assert.equal(page.events[0].harvestId,old.id);assert.equal(page.events[0].location.x,zone.x);assert.equal(observer.state(19).harvests.length,500);
 });
 test('projection removes nested private fields while keeping readable event evidence',async t=>{
  const {store,observer,profile}=await setup(t);
+ store.put(profile,'sessions',{id:'running',startedAt:'2023-11-01T00:00:00.000Z',endedAt:null,pausedAt:null});
  const encounter=store.command(profile,{op:'encounter.create',reserve:19,species:'Whitetail Deer',x:12000,z:8000});
  const page=observer.locationHistory();page.secret='PRIVATE';page.events[0].account='PRIVATE';page.events[0].location.path='PRIVATE';page.facets.extra='PRIVATE';
  const out=projectLocationPage(page);assert.doesNotMatch(JSON.stringify(out),/PRIVATE|account|path/);assert.equal(out.events[0].encounterId,encounter.id);assert.equal(out.events[0].location.basis,'reported_point');
