@@ -1,62 +1,25 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260918T2148Z-a6323c5",
-  "createdAt": "2026-09-18T21:46:00.8346656Z",
-  "outcome": "Implemented and locally proved the COTW Companion public feedback form plus a private owner inbox boundary, refreshed the installed Windows package from the pushed branch, and verified the real local browser view. No hosted public feedback origin or Pages deployment is claimed.",
-  "scope": [
-    "public companion feedback intake",
-    "private owner notification inbox",
-    "local package refresh and browser proof",
-    "hosting inventory and product boundary"
-  ],
-  "prohibitions": [
-    "No public feedback delivery claim before a COTW-owned host, durable storage, owner auth, and a synthetic live journey are accepted.",
-    "Do not deploy COTW data into the separate Skill Gaming World service or any unrelated product service."
-  ],
+  "checkpointId": "progress-20260923-retained-population-recovery-live",
+  "releaseVerifiedAt": "2026-09-24T00:43:13.209525Z",
+  "outcome": "Restore readable stored animal populations hidden by a missing or mismatched companion herd index. This is a prerequisite repair, not completion of the full trophy-level/main-map gameplay correction.",
+  "previousCheckpoint": {"ref":"91baf1ac28b2f47594606f9688ff337c7d10d94d","path":".selective-intelligence/progress/latest.json","blob":"31b63b2898f61921cec0660823e4def2f7d61a7b","note":"Preserve the prior managed-installer repair, failed owner-installation report, screenshot intake, Xbox/account recovery, herd/location work and full Phase 1 scope. None is reset by this release."},
+  "repository": {"branch":"fix/hunting-workflow-20260918","runtimeRevision":"1cbef9b70f50650fa9c550b5e80461414405cb4b","integratedRevision":"59fdc727d4968c795322e4115c2fa8522bc93bf0","pullRequest":17,"merged":true,"runtimeComparisonChangedFiles":0,"appMainMerged":false,"checkpointCommit":"containing_commit"},
+  "deployment": {"hostRepository":"infotradescout/sway.tips","hostRevision":"27165181ee2fc56e55b8c40327e00e778570eb8a","hostPullRequests":[288,289],"serviceId":"srv-d8iarnldt1ts73f4ia6g","workspaceId":"tea-d191jph5pdvs73drglkg","firstLiveDeployment":"dep-daq6ttp5efls738sh50g","firstLiveAt":"2026-09-24T00:35:07.162385Z","publicVerificationDeployment":"dep-daq70q8jo6nc73dbkoog","publicVerificationFinishedAt":"2026-09-24T00:43:13.209525Z","status":"live"},
+  "verification": {
+    "native":{"tests":926,"passed":926,"failed":0,"skipped":0,"platform":"Hosted Linux, complete repository and production catalogs","firstCountAt":"2026-09-24T00:31:59.86857004Z","secondSourceMarkerAt":"2026-09-24T00:38:10.078834563Z","repeatsAreNotAdditionalCoverage":true},
+    "recoveryBrowser":{"localPassed":true,"livePassed":true,"localFinishedAt":"2026-09-24T00:32:01.800Z","liveStartedAt":"2026-09-24T00:39:59.330Z","liveFinishedAt":"2026-09-24T00:40:01.567Z","liveLog":"49d75735-1b0c-40d5-a0bd-10bf4df15494","scope":"Actual PC Insights and signed phone with retained synthetic binary population, no source file and no optional spawn area; visible animal/herd counts, original saved time, exact stored payload bytes, stable IDs, SQLite restart/reconnect, spoiler revocation and guest denial."},
+    "existingBrowserGates":{"localPassed":9,"livePassed":9,"lastLiveWorkflowFinishedAt":"2026-09-24T00:42:05.119Z","scope":"All existing enforced browser-play, herds, locations, saved-game, pairing, zone, discovery, cache and studio workflows retained. These and recovery use synthetic player data, not owner files."},
+    "publicPackage":{"checkedAt":"2026-09-24T00:42:19.411Z","log":"621c1348-9cf6-425f-8c3c-727685f3e2c2","signatureVerified":true,"bundleVerified":true,"installerVerified":true,"liveFeedVerified":true,"liveInstallerVerified":true},
+    "failurePreserved":{"deployment":"dep-daq6purbc2fs73fg79t0","source":"a525f9cb3228dd846a0ca85460038554d82742a6","status":"build_failed","reason":"The browser restored visible counts but a payload equality assertion used a pre-serialization object with area: undefined. The existing JSON Store omitted that property before recovery. The verifier now compares the actual pre-start persisted payload AND compressed database bytes; all count/ID/pairing/restart assertions remain. Runtime code was unchanged by the verifier correction."},
+    "ownerDataRead":false,"ownerExactCauseConfirmed":false,"ownerInstallationUpdated":false,"physicalWindowsVerified":false,"physicalPhoneVerified":false,"manualScreenshotReview":false
+  },
+  "managedPackage": {"sourceRevision":"1cbef9b70f50650fa9c550b5e80461414405cb4b","sequence":1790209597000,"filename":"GrindZone-Setup-Windows-x64.zip","bytes":36345634,"sha256":"d8abe5e15f5e4dc9e661aacd3629cb55dfc83e96256d268ced3e592ac9da71c2","bundleSha256":"8c0b0d80c9f3731fbc7fded0c4dd5f8c6d0a39b3be9a19390dad335e9cab3de7","signatureAlgorithm":"Ed25519","authenticodeSigned":false,"files":90,"playerDataIncluded":false,"privateKeyIncluded":false},
+  "ownerAcceptance": {"phase1Complete":false,"fullProductAccepted":false,"screenshotComplaintClosed":false,"exactDeviceCauseEstablished":false,"requiredGameplay":"Choose a reserve/species, see animal counts across supported trophy levels and separate difficulty levels, select a count, and inspect corresponding herds and zones on the main map."},
   "progress": {
-    "completedVerified": [
-      "Public build contains a bounded feedback form with an explicit endpoint seam and honest GitHub Issues fallback.",
-      "Local Companion owner inbox proxies only authenticated owner reads and mark-as-read calls; its token stays server-side.",
-      "Phone relay tests prove paired players never receive the project owner inbox.",
-      "npm test: 167 passed, 0 failed, 1 host-only symlink skip.",
-      "npm test --prefix cloud: 28 passed, 0 failed.",
-      "npm run build:web: 23 public files, privateDataIncluded false.",
-      "Portable staging produced 48 reviewed files and copied matching server.mjs and public/app.js hashes into the installed package.",
-      "Installed Windows Companion restarted from the reviewed package and the Feedback view was checked in the real browser."
-    ],
-    "changedUnverified": [
-      "The public Pages site has not accepted this branch; it still serves the prior main-line state.",
-      "The feedback origin is not deployed, so public submissions and owner notifications are not live-proven.",
-      "The Render workspace has 109 services but no COTW-owned service or COTW database. Its only gaming-named service is skill-gaming-world, a separate Next/Postgres product.",
-      "The GitHub Actions Quality check for this commit failed before any steps were reported; local gates pass, but CI acceptance remains open."
-    ],
-    "proof": [
-      "Local source identity: a6323c5273e7f93a67086ca7f184684de4b166af on fix/hunting-workflow-20260918.",
-      "Existing PR #2 updated to include the current scope and hosting boundary.",
-      "Render service and Postgres inventory was read-only; no provider mutation occurred.",
-      "Local installed browser screenshot and accessibility tree show the owner inbox honest-unavailable state without a loading loop."
-    ],
-    "externalEffects": [
-      "Pushed a6323c5 to origin/fix/hunting-workflow-20260918.",
-      "Updated existing GitHub PR #2 title and body.",
-      "Refreshed and restarted the local installed Companion only.",
-      "No Render service, database, Pages deployment, public endpoint, player data, or account data was changed."
-    ],
-    "nextSafeAction": "Select a COTW-owned host, durable storage, owner authentication, and provider-verified client identity. Then configure the feedback origin, run a synthetic public-submit to private-inbox journey, and separately accept the main-line Pages deployment after CI is understood."
-  },
-  "repository": {
-    "root": ".",
-    "rootKind": "repository_relative",
-    "branch": "fix/hunting-workflow-20260918",
-    "headBefore": "d00e962262cc9558013277b301e29c7f6827d391",
-    "checkpointCommit": "d00e962262cc9558013277b301e29c7f6827d391",
-    "pushRequested": true,
-    "pushRemote": "origin",
-    "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
-  },
-  "savedFiles": [],
-  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, player data, screenshots, and secrets are excluded"
+    "completedVerified":["Missing/source-mismatched herd indexes are rebuilt from retained decoded populations before scans; no new game save is required for that recovery. Original saved timestamps and payload bytes stay intact.","Absent optional spawn origins do not reject otherwise readable animals; a missing origin is not used to infer structural identity continuity. Existing unsupported history schemas are not overwritten. Failed transactions preserve sequence and source and retry.","Released the exact repair through the existing managed feed and matching package, and merged source into the working branch without content differences. No new host, environment, plan, key, provider or account changes."],
+    "stillOpen":["The cause on the owner's uninspected Windows device remains unproved. A screenshot showing career totals does not prove a readable current reserve population or a specific installed revision.","The complete Bronze/Silver/Gold/no-trophy and difficulty/main-map candidate is NOT part of this release. The original conversation artifact GrindZone-map-population-repair-source-and-evidence.zip remains preserved; the current seven-path continuation patch combines it with clearer availability diagnostics on this recovery baseline.","The combined pending map candidate passed 124 focused synthetic-data checks but has not passed full production-catalog/rendered PC/phone acceptance. The published hotfix's 62 local checks and 926 hosted suite are not proof of the pending map candidate.","All prior Xbox-first, actual harvest intake, account recovery, physical device, installer acceptance and Phase 1 requirements remain open. SI remediation follows accepted Phase 1."],
+    "doNotRepeat":["Do not tell the owner to enable spoilers: the screenshot already showed them enabled.","Do not delete or reset the journal, herd IDs, pairing or game saves to repair the derived index.","Do not call career trophy totals the current reserve population or claim the full trophy-level map has shipped.","Do not rerun unchanged release gates or restart updater/hosting work instead of continuing the remaining gameplay correction.","Do not use Desktop Commander or policy/credential workarounds; no such access was used here."],
+    "nextSafeAction":"Resume the preserved full trophy-band/difficulty/main-map candidate against this integrated baseline, retaining the new snapshot recovery. Execute the actual primary Hunt-screen workflow on PC and signed phone and check all category counts, same-animal filter intersections, shared-zone deduplication and source-refresh behavior before delivery. Use authorized local source-status evidence for any continued owner-device failure; do not infer it from career totals or synthetic tests."
+  }
 }
-

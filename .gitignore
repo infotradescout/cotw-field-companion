@@ -10,3 +10,4 @@ data/
 *.png
 *.jpg
 *.zip
+lib/herd-reference.json
