@@ -22,13 +22,17 @@ const profile=hash(save.toLowerCase()).slice(0,20),fileName='animal_population_1
 const bytes=fixture({...defs,group:{NeedZonePathGuids:'u32[]',Animals:'animal[]'}},'rootPopulation',pop([1,2]));
 const payload=normalizeFile(fileName,decodeSave(bytes));delete payload.herdProjectionVersion;
 const seed=new Store(path.join(dataDir,'journal.sqlite'));
-seed.saveSource(profile,fileName,{sha:hash(bytes),mtime:savedAt,checked:savedAt,status:'ok',error:null,payload});seed.set('settings:'+profile,{spoilers:true,terrain:false});seed.close();
+seed.saveSource(profile,fileName,{sha:hash(bytes),mtime:savedAt,checked:savedAt,status:'ok',error:null,payload});seed.set('settings:'+profile,{spoilers:true,terrain:false});
+// Compare with the persisted baseline: JSON intentionally omits an undefined optional field.
+const storedPayload=seed.source(profile,fileName).payload;
+const storedBytes=Buffer.from(seed.db.prepare('SELECT payload FROM sources WHERE profile=? AND name=?').get(profile,fileName).payload);
+seed.close();
 // Deliberately no game file: updating the app must not require recreating an old save.
 let relay,app,browser;const errors=[],secrets=[];
 const proof={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),mode,at:new Date().toISOString(),passed:false,checks:[],physicalPhoneVerified:false,windowsLaunchVerified:false,realPlayerSaveVerified:false};
 const until=async(fn,label)=>{for(let i=0;i<160;i++){if(await fn())return;await new Promise(r=>setTimeout(r,100));}throw Error('Timed out: '+label);};
 const read=page=>page.evaluate(async()=>{const r=await fetch(new URL('api/herds?reserve=19',location.href),{cache:'no-store'});return {status:r.status,data:await r.json()};});
-const start=async base=>{const a=await createApp({dataDir,saveDir:save,port:0,interval:250,phoneRelayUrl:base,phoneEnrollmentToken:null,allowInsecurePhoneLoopback:mode==='local',feedbackUrl:null,githubFeedbackUrl:null});a.observer.zoneReference.close();a.observer.zoneReference=readyDiscoveryReader();return a;};
+const start=async base=>{const a=await createApp({dataDir,saveDir:save,port:0,interval:250,phoneRelayUrl:base,phoneEnrollmentToken:null,allowInsecureLoopback:mode==='local',feedbackUrl:null,githubFeedbackUrl:null});a.observer.zoneReference.close();a.observer.zoneReference=readyDiscoveryReader();return a;};
 try{
  if(mode==='local')relay=await createActivatedPhoneRelay({key:randomBytes(32),publicOrigin:'http://127.0.0.1:0/grindzone',allowInsecureLoopback:true});
  const base=relay?.origin||'https://sway-tips.onrender.com/grindzone';proof.relay=base;app=await start(base);
@@ -45,7 +49,7 @@ try{
  await phone.goto(base+'/#insights');await phone.locator('[data-population-species]').first().waitFor();assert.equal(await phone.locator('[data-population-species] [data-label="Animals"]').innerText(),'2');assert.equal((await read(phone)).data.herds[0].id,id);
  await app.close();app=null;app=await start(base);await until(async()=>{try{return (await read(phone)).data?.summary?.animals===2;}catch{return false;}},'existing phone reconnects');
  await phone.reload({waitUntil:'domcontentloaded'});await phone.locator('[data-population-species]').first().waitFor();value=(await read(phone)).data;assert.equal(value.herds[0].id,id);assert.equal(value.savedAt,savedAt);
- assert.equal(app.store.source(profile,fileName).sha,hash(bytes));assert.deepEqual(app.store.source(profile,fileName).payload,payload);assert.equal(app.store.harvests(profile).length,0);
+ assert.equal(app.store.source(profile,fileName).sha,hash(bytes));assert.deepEqual(app.store.source(profile,fileName).payload,storedPayload);assert.deepEqual(Buffer.from(app.store.db.prepare('SELECT payload FROM sources WHERE profile=? AND name=?').get(profile,fileName).payload),storedBytes);assert.equal(app.store.harvests(profile).length,0);
  proof.checks.push('The signed phone shows the same retained counts and ID; an actual app/SQLite restart reconnects the existing pairing without a new game save, a fabricated harvest, or replacing source bytes.');
  for(const width of [390,320]){await phone.setViewportSize({width,height:844});assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);}
  mkdirSync(output,{recursive:true});await phone.locator('gz-herds').scrollIntoViewIfNeeded();await phone.screenshot({path:path.join(output,mode+'-herd-recovery.png'),fullPage:false});
