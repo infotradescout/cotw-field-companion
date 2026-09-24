@@ -73,15 +73,18 @@ test('grind filters use tracking windows and exclude pause time',()=>{
  f.sessions=[{id:'g',startedAt:instant,endedAt:null,pausedAt:null,periods:[{startedAt:instant,endedAt:'2026-09-20T12:01:00.000Z'},{startedAt:'2026-09-20T12:02:00.000Z',endedAt:null}]}];f.now=Date.parse('2026-09-20T12:03:00.000Z');
  const d=build(f,{session:'g'});assert.deepEqual(new Set(d.events.map(r=>r.harvestId)),new Set(['during','resumed']));assert.equal(d.summary.total,2);
 });
-test('default location scope is the deduplicated union of running grinds, with no all-history fallback',()=>{
+test('default location scope is the deduplicated union of current grinds, with no all-history fallback',()=>{
  const f=fixture();f.harvests=[h('before',stamp-10),h('one',stamp+10),h('overlap',stamp+30),h('two',stamp+70),h('paused',stamp+110),h('after',stamp+150)];
  f.sessions=[{id:'one',startedAt:instant,endedAt:null,pausedAt:null,periods:[{startedAt:instant,endedAt:null}]},{id:'two',startedAt:new Date((stamp+20)*1000).toISOString(),endedAt:null,pausedAt:null,periods:[{startedAt:new Date((stamp+20)*1000).toISOString(),endedAt:'2026-09-20T12:01:40.000Z'},{startedAt:'2026-09-20T12:02:20.000Z',endedAt:null}]}];
  f.now=Date.parse('2026-09-20T12:02:00.000Z');
  const both=build(f);assert.equal(both.query.session,'active');assert.deepEqual(new Set(both.events.map(r=>r.harvestId)),new Set(['one','overlap','two','paused']));assert.equal(both.summary.total,4,'overlap appears only once in the combined view');
  assert.deepEqual(new Set(build(f,{session:'two'}).events.map(r=>r.harvestId)),new Set(['overlap','two']));
- f.sessions[0].pausedAt='2026-09-20T12:01:30.000Z';f.sessions[0].periods[0].endedAt=f.sessions[0].pausedAt;
- assert.deepEqual(new Set(build(f).events.map(r=>r.harvestId)),new Set(['overlap','two']));
+ f.sessions[0].pausedAt='2026-09-20T12:00:50.000Z';f.sessions[0].periods[0].endedAt=f.sessions[0].pausedAt;
+ assert.deepEqual(new Set(build(f).events.map(r=>r.harvestId)),new Set(['one','overlap','two']),'pausing preserves earlier locations but adds none during the pause');
+ assert.deepEqual(new Set(build(f,{session:'one'}).events.map(r=>r.harvestId)),new Set(['one','overlap']));
  f.sessions[1].endedAt='2026-09-20T12:03:00.000Z';f.sessions[1].periods[1].endedAt=f.sessions[1].endedAt;
+ assert.deepEqual(new Set(build(f).events.map(r=>r.harvestId)),new Set(['one','overlap']));
+ f.sessions[0].endedAt='2026-09-20T12:03:00.000Z';f.sessions[0].pausedAt=null;
  assert.equal(build(f).summary.total,0);assert.equal(build(f).journalEventTotal,0);
  assert.throws(()=>build(f,{session:'one'}),error=>error.status===409);
  assert.throws(()=>build(f,{session:'two'}),error=>error.status===409);

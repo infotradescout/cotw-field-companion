@@ -10,10 +10,11 @@ test('private grind scope is attached without guessing a current reserve',()=>{
  const html=huntLocationsView({app:{name:'GrindZone',startedAt:'source'},settings:{terrain:false},sessions:[{id:'grind-19',endedAt:null,pausedAt:null}]},{sessionId:'grind-19'});
  assert.match(html,/data-session="grind-19"/);assert.match(html,/data-terrain="false"/);assert.doesNotMatch(html,/data-reserve/);
 });
-test('the shared Harvests location view uses running grinds, and inactive details do not load locations',()=>{
+test('the shared Harvests location view uses current grinds, and finished details do not load locations',()=>{
  const state={app:{name:'GrindZone'},sessions:[{id:'paused',endedAt:null,pausedAt:'2026-09-20T12:00:00Z'},{id:'finished',endedAt:'2026-09-20T12:00:00Z',pausedAt:null}]};
  assert.match(huntLocationsView(state),/data-session="active"/);
- for(const sessionId of ['paused','finished','missing']){
+ assert.match(huntLocationsView(state,{sessionId:'paused'}),/data-session="paused"/);
+ for(const sessionId of ['finished','missing']){
   const html=huntLocationsView(state,{sessionId});assert.doesNotMatch(html,/<gz-hunt-locations/);assert.match(html,/journal is preserved/);
  }
 });
