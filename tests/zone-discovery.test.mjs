@@ -17,6 +17,17 @@ test('all three schedule types are resolved from population path IDs, not discov
  assert.ok(result.zones.every(z=>z.discovery==='undiscovered'&&z.source==='population_path_reference'&&z.locationAccuracy==='reference_area'));
  assert.equal(result.zones[1].start,8);assert.equal(result.zones[1].end,12);assert.equal(result.zones[2].end,0);
 });
+test('a chosen species projects only its assigned population groups',()=>{
+ const input=raw(),pop=population();
+ input.areas.test_duck={population_name:'Test duck',layers:{spawn:{a:area(101)},feed:{b:area(102)},drink:{c:area(103)},rest:{d:area(104)}}};
+ input.population_info[45103783]={start_times:[0,8,12],need_types:{'0.0':1,'8.0':2,'12.0':3}};
+ pop.populations.push({hash:'45103783',groups:[{area:101,paths:[102,103,104],animals:[{sex:1}]}]});
+ const scope={population:pop,catalog:normalizeZoneReference(input,provenance),reference:{populations:{...reference.populations,45103783:{name:'Mallard',key:'mallard'}}}};
+ const all=view(scope),deer=view({...scope,species:'Whitetail Deer'}),duck=view({...scope,species:'Mallard'});
+ assert.equal(all.zones.length,6);assert.equal(deer.zones.length,3);assert.equal(duck.zones.length,3);
+ assert.ok(deer.zones.every(z=>z.species==='Whitetail Deer'));
+ assert.ok(duck.zones.every(z=>z.species==='Mallard'));
+});
 test('a discovered zone is not duplicated while undiscovered activities remain',()=>{
  const result=view({discoveredZones:[{id:'saved:19:3:1',reserve:19,source:'save'}]});assert.equal(result.zones.length,2);assert.ok(!result.zones.some(z=>z.id==='saved:19:3:1'));
 });

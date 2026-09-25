@@ -112,7 +112,11 @@ export async function createApp({managedGate=null,dataDir,saveDir=null,port=4783
       }
       if(req.method==='GET'&&url.pathname==='/api/herds')return json(200,projectHerdView(observer.herdView(herdSearchParams(url.searchParams))));
       if(req.method==='GET'&&url.pathname==='/api/locations')return json(200,observer.locationHistory(locationSearchParams(url.searchParams)));
-      if(req.method==='GET'&&url.pathname==='/api/state')return json(200,observer.state(reserveId(url.searchParams.get('reserve')??19)));
+      if(req.method==='GET'&&url.pathname==='/api/state'){
+        const speciesValues=url.searchParams.getAll('huntSpecies');
+        if(speciesValues.length>1||speciesValues.length===1&&(!speciesValues[0]||speciesValues[0].length>120||/[\x00-\x1f\x7f]/.test(speciesValues[0])))throw Object.assign(Error('Invalid Hunt species'),{status:400});
+        return json(200,observer.state(reserveId(url.searchParams.get('reserve')??19),speciesValues.length?{huntSpecies:speciesValues[0]}:undefined));
+      }
       if(req.method==='GET'&&url.pathname==='/api/export'){
         res.writeHead(200,{...headers,'Content-Type':'application/json','Content-Disposition':'attachment; filename="COTW-field-journal.json"'});return res.end(JSON.stringify(store.exportJournal(observer.profile),null,2));
       }

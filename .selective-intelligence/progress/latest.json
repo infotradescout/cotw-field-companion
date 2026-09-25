@@ -1,42 +1,55 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260924T213651Z-e054cf04",
-  "createdAt": "2026-09-24T21:36:52.397307+00:00",
-  "outcome": "Shallow Render build fixture repaired at source commit 57a268e",
+  "checkpointId": "progress-20260924T233153Z-5274b918",
+  "createdAt": "2026-09-24T23:31:53.304138+00:00",
+  "outcome": "Synthetic native Hunt and paired-phone browser verifier passed with clear default and species-selected screenshots",
   "scope": [
-    "GrindZone signed native desktop release"
+    "Hunt species gate, native scope, phone cache compatibility"
   ],
   "prohibitions": [
-    "Preserve owner journal and pairing; no owner install until signed release is live"
+    "No owner install, journal changes or production release"
   ],
   "progress": {
     "completedVerified": [
-      "Both migration tests use pinned old Store preimage; old and new contract hashes unchanged"
+      "Default Map places layer off with session-persistent toggle; cache hook updated for stale request guard; verifier covers all-animal lightweight state, selected species, full Stats refetch, phone pairing and spoiler flow"
     ],
     "changedUnverified": [],
     "proof": [
-      "Windows targeted migration tests 5 pass, 0 fail; one-commit shallow clone has no old Git object and storage migration test 4 pass"
+      "Paired-phone/PC browser verifier passed 8 checks in local mode; screenshots saved in C:\\Users\\flavo\\Documents\\Codex\\2026-09-24\\grindzone-hunt-species-evidence; pinned herd reference generated and npm ci --prefix cloud completed"
     ],
-    "externalEffects": [
-      "Source PR 19 branch pushed at 57a268e; Sway PR 291 merged but Render deploy failed before publication"
-    ],
-    "doNotRepeat": [
-      "Do not retry failed Render deploy at e6d7; host pin must advance to 57a268e"
-    ],
-    "nextSafeAction": "Review corrective Sway host pin PR, obtain exact merge/deploy approval, verify live signed release, then update owner install through Computer Use"
+    "externalEffects": [],
+    "doNotRepeat": [],
+    "nextSafeAction": "Run full source test gate after pinned herd-reference generation and cloud dependency setup; inspect exact failures, then push draft PR"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
-    "branch": "fix/grindzone-map-performance-20260924",
-    "headBefore": "57a268e79318a46caf6568ac04474302e4931212",
+    "branch": "fix/grindzone-hunt-species-gate-20260924",
+    "headBefore": "26e0270124f343734ba4f50178abab7a7472174b",
     "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
+    "pushRequested": false,
+    "pushRemote": null,
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 1
+    "selectedStatusBefore": [
+      " M cloud/phone-cache-client.mjs",
+      " M public/app.js",
+      " M tools/verify-hidden-zones.mjs"
+    ],
+    "unrelatedChangeCountExcluded": 0
   },
-  "savedFiles": [],
+  "savedFiles": [
+    {
+      "path": "public/app.js",
+      "sha256": "6a50406ea458249d9da9a785cda1c6120708392f557068b41398be9d24043190"
+    },
+    {
+      "path": "cloud/phone-cache-client.mjs",
+      "sha256": "a293955245454bc911ad6cee417991055e9c75ca1636ce16e9e0f523256bd114"
+    },
+    {
+      "path": "tools/verify-hidden-zones.mjs",
+      "sha256": "5d03b197f2df27f48783127b7a5001a7ac6cf3b1bc341bddb5ecf8f24c84acf9"
+    }
+  ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }

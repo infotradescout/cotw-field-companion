@@ -4,6 +4,7 @@ export const CACHE_DATABASE='GrindZone.private-phone-progress.v1';
 export const CACHE_MAX_RESERVES=3;
 export const CACHE_MAX_BYTES=2*1024*1024;
 export const CACHE_RETENTION_MS=7*86400000;
+export const CACHE_HUNT_REFRESH_MS=5*60000;
 const plain=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const validReserve=v=>Number.isInteger(v)&&v>=0&&v<=999;
 const validScope=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{43}$/.test(v);
@@ -20,7 +21,7 @@ export function cacheAuthority(bootstrap,now=Date.now()){
 }
 /** Only an existing, authenticated phone projection is accepted. No credentials are copied. */
 export function snapshotState(value,reserve){
- if(!plain(value)||value.selectedReserve!==reserve||!validReserve(reserve)||value.phone?.mode!=='live_relay'||!plain(value.settings)||!Array.isArray(value.zones)||!Array.isArray(value.sessions)||!Array.isArray(value.reserves))throw fail('The live phone view is not valid for this reserve.',409,true);
+  if(!plain(value)||value.selectedReserve!==reserve||!validReserve(reserve)||value.phone?.mode!=='live_relay'||!plain(value.settings)||!Array.isArray(value.zones)||!Array.isArray(value.sessions)||!Array.isArray(value.reserves)||Array.isArray(value.huntSpeciesOptions))throw fail('A complete live phone view is required for this reserve.',409,true);
  const snapshot=Object.fromEntries(stateFields.filter(k=>Object.hasOwn(value,k)).map(k=>[k,value[k]]));
  const o=value.observer||{};
  snapshot.observer={connected:o.connected===true,busy:false,lastCycle:typeof o.lastCycle==='string'?o.lastCycle:null,readOnly:true,error:o.error?'The source needed attention when this copy was saved.':null,sources:Array.isArray(o.sources)?o.sources.map(s=>({name:s.name,mtime:s.mtime,checked:s.checked,status:s.status,error:s.error?'Source needed attention':null})):[]};
@@ -57,7 +58,7 @@ export class BrowserSnapshotStore{
  async edit(change){
   const db=await this.open();return new Promise((resolve,reject)=>{
    const tx=db.transaction('cache','readwrite'),store=tx.objectStore('cache'),r=store.get('root');let result,error;
-   r.onsuccess=()=>{try{const next=change(r.result??null);result=next.result;if(next.root===null)store.delete('root');else store.put(next.root,'root');}catch(e){error=e;tx.abort();}};
+    r.onsuccess=()=>{try{const next=change(r.result??null);result=next.result;if(next.root===null)store.delete('root');else if(next.root!==undefined)store.put(next.root,'root');}catch(e){error=e;tx.abort();}};
    tx.oncomplete=()=>resolve(result);tx.onabort=tx.onerror=()=>reject(error||fail('Could not save private progress. Storage may be full or blocked.'));
   });
  }
@@ -65,18 +66,18 @@ export class BrowserSnapshotStore{
 }
 
 export class PhoneSnapshotCache{
- constructor({store=new BrowserSnapshotStore(),fetchImpl=(...args)=>fetch(...args),now=Date.now}={}){
-  this.store=store;this.fetch=fetchImpl;this.now=now;this.authority=null;this.readOnly=false;this.cachedAt=null;this.expiresAt=null;this.enabled=false;this.records=[];this.storageError='';this.latest=null;
+  constructor({store=new BrowserSnapshotStore(),fetchImpl=(...args)=>fetch(...args),now=Date.now}={}){
+   this.store=store;this.fetch=fetchImpl;this.now=now;this.authority=null;this.readOnly=false;this.cachedAt=null;this.expiresAt=null;this.enabled=false;this.records=[];this.storageError='';this.latest=null;this.fullRefresh=null;this.fullRefreshAttempt=new Map();this.spoilersRevokedAt=0;this.spoilersDenied=false;
  }
- async request(url,token){
-  const response=await this.fetch(url,{cache:'no-store',headers:token?{'X-Companion-Token':token}:{}});
+  async request(url,token,{signal}={}){
+   const response=await this.fetch(url,{cache:'no-store',headers:token?{'X-Companion-Token':token}:{},...(signal?{signal}:{})});
   let data;try{data=await response.json();}catch{throw fail('The phone service returned an unreadable response.',response.status);}
   if(!response.ok)throw Object.assign(fail(data?.error||'Request failed',response.status,[401,403].includes(response.status)),{cacheScope:response.headers.get('x-grindzone-cache-scope')});
   return {response,data};
  }
  async bind(bootstrap){
   const authority=cacheAuthority(bootstrap,this.now());
-  if(this.authority?.scope!==authority?.scope){this.latest=null;this.readOnly=false;this.cachedAt=null;}
+   if(this.authority?.scope!==authority?.scope){this.latest=null;this.readOnly=false;this.cachedAt=null;this.fullRefreshAttempt.clear();this.spoilersRevokedAt=0;this.spoilersDenied=false;}
   this.authority=authority;
   if(!authority){this.enabled=false;return;}
   try{
@@ -95,14 +96,16 @@ export class PhoneSnapshotCache{
   try{const {response,data}=await this.request('/api/bootstrap',token);const metadata={...data,phone:{...data.phone,cache:{scope:response.headers.get('x-grindzone-cache-scope'),expiresAt:Number(response.headers.get('x-grindzone-cache-expires'))}}};await this.bind(metadata);return data;}
   catch(error){if([401,403].includes(error.status)){await this.invalidate();error.cacheDenied=true;}throw error;}
  }
- async get(url,{token}={}){
-  if(/\/api\/bootstrap(?:\?|$)/.test(url))return this.authenticate(token);
-  if(!/\/api\/state(?:\?|$)/.test(url))return (await this.request(url,token)).data;
-  const bootstrap=await this.authenticate(token),authority=this.authority,startedAt=this.now();
-  const reserve=Number(new URL(url,'https://grindzone.invalid').searchParams.get('reserve')??bootstrap.selectedReserve??19);
-  if(!validReserve(reserve))throw fail('Invalid reserve',400);
-  let permit=null;
-  if(authority)try{const root=await this.store.read();if(root?.enabled&&root.scope===authority.scope)permit={scope:root.scope,epoch:root.epoch};}catch{}
+  async get(url,{token}={}){
+   if(/\/api\/bootstrap(?:\?|$)/.test(url))return this.authenticate(token);
+   if(!/\/api\/state(?:\?|$)/.test(url))return (await this.request(url,token)).data;
+   const bootstrap=await this.authenticate(token),authority=this.authority,startedAt=this.now();
+   const requestUrl=new URL(url,'https://grindzone.invalid'),scoped=requestUrl.searchParams.has('huntSpecies');
+   const reserve=Number(requestUrl.searchParams.get('reserve')??bootstrap.selectedReserve??19);
+   if(!validReserve(reserve))throw fail('Invalid reserve',400);
+   let root=null;
+   if(authority)try{root=await this.store.read();}catch(error){this.storageError=error.message;}
+   const observedEpoch=root?.scope===authority?.scope?root.epoch:null;
   let result;
   try{result=await this.request(url,token);}catch(error){
    if([401,403].includes(error.status)){await this.invalidate();error.cacheDenied=true;throw error;}
@@ -113,42 +116,104 @@ export class PhoneSnapshotCache{
    this.latest=null;this.readOnly=true;this.cachedAt=Date.parse(saved.phone.cachedAt);this.expiresAt=Date.parse(saved.phone.expiresAt);return saved;
   }
   const {response,data}=result;
-  if(authority&&response.headers.get('x-grindzone-cache-scope')!==authority.scope){await this.invalidate();throw fail('The paired source changed. Reload before continuing.',409,true);}
-  if(data?.selectedReserve!==reserve)throw fail('The phone received a different reserve. Retry before continuing.',409,true);
-  this.readOnly=false;this.cachedAt=null;this.expiresAt=null;
-  this.latest={state:data,authority,startedAt};
-  if(authority&&permit)try{await this.save(data,reserve,authority,permit,startedAt);}catch(error){this.storageError=error.message;}
-  return data;
- }
- async save(state,reserve,authority,permit,startedAt){
+   if(authority&&response.headers.get('x-grindzone-cache-scope')!==authority.scope){await this.invalidate();throw fail('The paired source changed. Reload before continuing.',409,true);}
+   if(data?.selectedReserve!==reserve)throw fail('The phone received a different reserve. Retry before continuing.',409,true);
+   this.readOnly=false;this.cachedAt=null;this.expiresAt=null;
+   const spoilers=data.settings?.spoilers===true;
+   if(!spoilers){this.spoilersRevokedAt=Math.max(this.spoilersRevokedAt,startedAt);this.spoilersDenied=true;}
+   let mode=null;
+   if(authority)try{mode=await this.reconcileSpoilerMode(authority,observedEpoch,spoilers);if(mode){this.storageError='';if(!spoilers||startedAt>this.spoilersRevokedAt)this.spoilersDenied=false;}}catch(error){this.storageError=spoilers?error.message:'Private copy revocation could not be saved. Saved views remain unavailable until storage recovers.';}
+   this.latest=!scoped&&mode&&!this.spoilersDenied?{state:data,authority,startedAt,guardEpoch:mode.epoch}:null;
+   if(authority&&mode?.permit){
+    if(scoped){
+     const previous=root?.records?.find(r=>r.reserve===reserve);
+     if(mode.changed)this.fullRefreshAttempt.delete(authority.scope+':'+reserve);
+     if(mode.changed||!previous||startedAt-previous.capturedAt>=CACHE_HUNT_REFRESH_MS)this.refreshCompleteCopy(requestUrl,token,reserve,authority,mode.permit,startedAt,spoilers);
+    }else try{await this.save(data,reserve,authority,mode.permit,startedAt);}catch(error){this.storageError=error.message;}
+   }
+   return data;
+  }
+  async reconcileSpoilerMode(authority,observedEpoch,spoilers){
+   const outcome=await this.store.edit(root=>{
+    if(this.authority?.scope!==authority.scope||root&&root.scope!==authority.scope)return {root:undefined,result:null};
+    if(spoilers){
+     if((root?.epoch??null)!==observedEpoch)return {root:undefined,result:null};
+     if(!root)return {root:undefined,result:{epoch:null,permit:null,changed:false}};
+     if(root.spoilerMode===true)return {root:undefined,result:{epoch:root.epoch,permit:root.enabled?{scope:authority.scope,epoch:root.epoch}:null,changed:false}};
+     const epoch=newEpoch();return {root:{...root,epoch,spoilerMode:true},result:{epoch,permit:root.enabled?{scope:authority.scope,epoch}:null,changed:true}};
+    }
+    const records=root?.enabled?(root.records||[]).filter(r=>r.state?.settings?.spoilers!==true):[];
+    const changed=!root||root.spoilerMode!==false||records.length!==(root.records||[]).length;
+    if(!changed)return {root:undefined,result:{epoch:root.epoch,permit:root.enabled?{scope:authority.scope,epoch:root.epoch}:null,changed:false}};
+    const epoch=newEpoch(),next={schema:CACHE_SCHEMA,scope:authority.scope,expiresAt:authority.expiresAt,enabled:root?.enabled===true,epoch,spoilerMode:false,records};
+    return {root:next,result:{epoch,permit:next.enabled?{scope:authority.scope,epoch}:null,changed:true}};
+   });
+   if(outcome?.changed)this.records=(await this.store.read())?.records?.map(r=>({reserve:r.reserve,capturedAt:r.capturedAt,expiresAt:r.expiresAt}))||[];
+   return outcome;
+  }
+  refreshCompleteCopy(requestUrl,token,reserve,authority,permit,startedAt,spoilers){
+   const key=authority.scope+':'+reserve;
+   if(this.fullRefresh||startedAt-(this.fullRefreshAttempt.get(key)??-Infinity)<CACHE_HUNT_REFRESH_MS)return;
+   this.fullRefreshAttempt.set(key,startedAt);
+   const full=new URL(requestUrl);full.searchParams.delete('huntSpecies');
+   const task=(async()=>{
+    try{
+     const {response,data}=await this.request(full.pathname+full.search,token,{signal:AbortSignal.timeout(15000)});
+     if(this.authority?.scope!==authority.scope||response.headers.get('x-grindzone-cache-scope')!==authority.scope||data?.selectedReserve!==reserve||Array.isArray(data.huntSpeciesOptions)||data.settings?.spoilers!==spoilers)return;
+     await this.save(data,reserve,authority,permit,startedAt);
+    }catch(error){if(this.authority?.scope===authority.scope&&error.status!==503&&error.status!==504)this.storageError='Private copy could not refresh. Live Hunt access is unchanged.';}
+   })();
+   this.fullRefresh=task;
+   void task.finally(()=>{if(this.fullRefresh===task)this.fullRefresh=null;});
+  }
+  async save(state,reserve,authority,permit,startedAt){
   const data=snapshotState(state,reserve),now=this.now(),expiresAt=Math.min(now+CACHE_RETENTION_MS,authority.expiresAt);
   const record={schema:CACHE_SCHEMA,scope:authority.scope,reserve,capturedAt:now,startedAt,expiresAt,state:data};
   const saved=await this.store.edit(root=>{
-   if(!root?.enabled||root.scope!==permit.scope||root.epoch!==permit.epoch||this.authority?.scope!==authority.scope)return {root,result:false};
-   let records=(root.records||[]).filter(r=>r.expiresAt>now);
+    if(!root?.enabled||root.scope!==permit.scope||root.epoch!==permit.epoch||this.authority?.scope!==authority.scope||root.spoilerMode!==undefined&&root.spoilerMode!==(data.settings?.spoilers===true)||data.settings?.spoilers===true&&startedAt<this.spoilersRevokedAt)return {root:undefined,result:false};
+    let records=(root.records||[]).filter(r=>r.expiresAt>now);
    // Turning spoilers off removes hidden information from ALL saved reserves, not just the open map.
    if(data.settings?.spoilers!==true)records=records.filter(r=>r.state?.settings?.spoilers!==true);
    const previous=records.find(r=>r.reserve===reserve);
    if(previous?.startedAt>startedAt)return {root,result:false};
    records=[record,...records.filter(r=>r.reserve!==reserve)].sort((a,b)=>b.capturedAt-a.capturedAt).slice(0,CACHE_MAX_RESERVES);
-   return {root:{...root,records},result:true};
+    const spoilers=data.settings?.spoilers===true,epoch=root.spoilerMode===spoilers?root.epoch:newEpoch();
+    return {root:{...root,epoch,spoilerMode:spoilers,records},result:true};
   });
   if(saved){this.storageError='';this.records=(await this.store.read())?.records?.map(r=>({reserve:r.reserve,capturedAt:r.capturedAt,expiresAt:r.expiresAt}))||[];}
   return saved;
  }
  async read(reserve,authority=this.authority){
-  try{const root=await this.store.read();return root?.enabled&&root.scope===authority?.scope?storedView(root.records?.find(r=>r.reserve===reserve),authority,reserve,this.now()):null;}catch(error){this.storageError=error.message;return null;}
+  try{
+   if(this.spoilersDenied){
+    const mode=await this.reconcileSpoilerMode(authority,null,false);
+    if(!mode)return null;
+    this.spoilersDenied=false;this.storageError='';
+   }
+   const root=await this.store.read();return root?.enabled&&root.scope===authority?.scope?storedView(root.records?.find(r=>r.reserve===reserve),authority,reserve,this.now()):null;
+  }catch(error){this.storageError=this.spoilersDenied?'Private copy revocation could not be saved. Saved views remain unavailable until storage recovers.':error.message;return null;}
  }
  async enable(state){
   const live=this.latest,authority=this.authority;
-  if(!authority||this.readOnly||live?.state!==state||live.authority?.scope!==authority.scope||this.now()-live.startedAt>60000)throw fail('Reconnect and refresh this reserve before keeping a private copy.',409);
-  // Verify before enabling; storage errors must not report a successful copy.
-  snapshotState(state,state.selectedReserve);
-  const epoch=newEpoch();
-  await this.store.edit(()=>({root:{schema:CACHE_SCHEMA,scope:authority.scope,enabled:true,epoch,records:[]},result:null}));
+  if(!authority||this.readOnly||this.spoilersDenied||live?.state!==state||live.authority?.scope!==authority.scope||this.now()-live.startedAt>60000)throw fail('Reconnect and refresh this reserve before keeping a private copy.',409);
+   // Verify before enabling; storage errors must not report a successful copy.
+   snapshotState(state,state.selectedReserve);
+   const epoch=newEpoch();
+   await this.store.edit(root=>{
+    if(root&&root.scope!==authority.scope)throw fail('The paired source changed. Reload before keeping a copy.',409,true);
+    if(root?.enabled)throw fail('Private copies changed in another tab. Refresh Settings before keeping a copy.',409);
+    if((root?.epoch??null)!==live.guardEpoch||root?.spoilerMode!==undefined&&root.spoilerMode!==(state.settings?.spoilers===true))throw fail('Private copies changed in another tab. Refresh Settings before keeping a copy.',409);
+    return {root:{schema:CACHE_SCHEMA,scope:authority.scope,enabled:true,epoch,spoilerMode:state.settings?.spoilers===true,records:[]},result:null};
+   });
   this.enabled=true;
   try{if(!await this.save(state,state.selectedReserve,authority,{scope:authority.scope,epoch},live.startedAt))throw fail('Cache settings changed in another tab.');}
-  catch(error){await this.forget().catch(()=>{});throw error;}
+  catch(error){
+   await this.store.edit(root=>root?.scope===authority.scope&&root.epoch===epoch?{root:{...root,enabled:false,epoch:newEpoch(),records:[]},result:null}:{root:undefined,result:null}).catch(()=>{});
+   const current=await this.store.read().catch(()=>null);
+   this.enabled=current?.enabled===true&&current.scope===authority.scope;
+   this.records=this.enabled?(current.records||[]).map(r=>({reserve:r.reserve,capturedAt:r.capturedAt,expiresAt:r.expiresAt})):[];
+   throw error;
+  }
  }
  notice(){return this.readOnly?'PC unavailable · saved '+stamp(this.cachedAt)+' · read only. No actions are queued.':'Tracking PC unavailable. Reconnecting automatically…';}
  warning(){return `<div class="callout warning phone-saved-notice"><strong>Saved view · read only</strong><p>Last received ${esc(stamp(this.cachedAt))}. Game-save timestamps are unchanged. Reconnect the PC for current progress or edits.</p></div>`;}
