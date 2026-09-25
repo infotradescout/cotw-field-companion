@@ -68,9 +68,13 @@ try{
  assert.equal(createHash('sha256').update(readFileSync(log)).digest('hex'),createHash('sha256').update(bytes).digest('hex'));
  proof.checks.push('Reconnecting restores live controls without replay; deleting phone copies disables capture and preserves the actual PC journal and game-save bytes');
  await enableCache(phone);
+ const sourceAScope=(await cacheRoot(phone)).scope;
  const save2=path.join(root,'other-save');mkdirSync(save2);writeFileSync(path.join(save2,'hunting_log_adf'),makeHarvest([]));
  second=await createApp({...options,saveDir:save2,dataDir:path.join(root,'other-journal'),port:0});await post(second,'/api/phone/enable',{consent:true});const pair2=await post(second,'/api/phone/pair',{});secrets.push(new URL(pair2.url).hash.slice(6));
- await phone.goto(pair2.url,{waitUntil:'domcontentloaded'});await phone.locator('#pair').click();await phone.waitForURL(u=>u.pathname==='/grindzone/'&&u.hash==='#map');await phone.locator('#fieldMap').waitFor();assert.equal(await cacheRoot(phone),null);
+ await phone.goto(pair2.url,{waitUntil:'domcontentloaded'});await phone.locator('#pair').click();await phone.waitForURL(u=>u.pathname==='/grindzone/'&&u.hash==='#map');await phone.locator('#fieldMap').waitFor();
+ const sourceBGuard=await cacheRoot(phone);assert.notEqual(sourceBGuard.scope,sourceAScope);assert.equal(sourceBGuard.enabled,false);assert.deepEqual(sourceBGuard.records,[]);
+ assert.deepEqual(Object.keys(sourceBGuard).sort(),['enabled','epoch','expiresAt','records','schema','scope','spoilerMode']);
+ assert.doesNotMatch(JSON.stringify(sourceBGuard),/Private cached grind|saved:19/);
  await second.close();second=null;await phone.reload({waitUntil:'domcontentloaded'});await phone.getByRole('heading',{name:'Companion unavailable',exact:true}).waitFor();assert.doesNotMatch(await phone.locator('#content').innerText(),/Private cached grind/);
  const guest=await browser.newContext({serviceWorkers:'block'});assert.equal((await guest.request.get(base+'/api/bootstrap')).status(),401);await guest.close();
  proof.checks.push('Pairing the same browser to a second real source removes the first source’s private cache; offline source B never receives source A progress, and unpaired browsers remain denied');
