@@ -43,10 +43,12 @@ try{
  await pc.goto(app.url+'/#settings');await pc.locator('[data-action="phone-enable"]').click();await pc.locator('#modal input[name="consent"]').check();await pc.locator('#submitDialog').click();await pc.locator('[data-phone-link]').waitFor();
  const link=await pc.locator('[data-phone-link]').inputValue();secrets.push(new URL(link).hash.slice(6));
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'}),phone=await context.newPage();phone.on('pageerror',e=>errors.push(e.message));
+ const phoneStateRequests=[];phone.on('request',request=>{const url=new URL(request.url());if(url.pathname==='/grindzone/api/state')phoneStateRequests.push(url.searchParams.get('huntSpecies'));});
  await phone.goto(link);await phone.locator('#pair').click();await phone.waitForURL(u=>u.pathname==='/grindzone/'&&u.hash==='#map');await phone.locator('#fieldMap').waitFor();
  assert.equal(await phone.locator('.zone-card').count(),0);
  assert.equal(await phone.locator('#fieldMap [data-zone],#fieldMap [data-zone-cluster]').count(),0);
  assert.match(await phone.locator('#zoneList').innerText(),/Choose an animal/);
+ assert.ok(phoneStateRequests.includes('all'),'paired Hunt asks for the lightweight all-animal scope');
  const phoneState=()=>phone.evaluate(async()=>{const r=await fetch('/grindzone/api/state?reserve=19',{cache:'no-store'});if(!r.ok)throw Error('Phone state '+r.status);return r.json();});
  let p=await phoneState();assert.equal(p.zones.length,1);assert.equal(referenceRequests,0);assert.equal(p.zones[0].source,'save');
  proof.checks.push('Actual PC and paired phone start with discoveries only and no public-reference request');
@@ -130,8 +132,10 @@ try{
  proof.checks.push('A failed reserve switch shows an unavailable panel without stale map or equipment and recovers on return');
  await pc.goto(app.url+'/#settings');await pc.locator('#spoilerSetting').waitFor();
  assert.equal(await phone.locator('.zone-card').count(),0,'spoilers do not reveal all-animal markers');
- await phone.locator('#filterSpecies').selectOption('Whitetail Deer');
+ const phoneSpeciesResponse=phone.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/grindzone/api/state'&&url.searchParams.get('huntSpecies')==='Whitetail Deer';});
+ await phone.locator('#filterSpecies').selectOption('Whitetail Deer');const phoneSpeciesState=await (await phoneSpeciesResponse).json();
  await phone.locator('.zone-card[data-discovery="undiscovered"]').first().waitFor({state:'attached'});
+ assert.equal(phoneSpeciesState.zones.length,3);assert.ok(phoneSpeciesState.huntSpeciesOptions.includes('Whitetail Deer'));
  await phone.locator('#filterSpecies').selectOption('all');
  assert.equal(await phone.locator('.zone-card').count(),0,'returning to Choose an animal clears the list');
  assert.equal(await phone.locator('#fieldMap [data-zone],#fieldMap [data-zone-cluster]').count(),0,'returning to Choose an animal clears map locations');
@@ -143,7 +147,12 @@ try{
  await phone.locator('[data-action="workspace-tab"][data-panel="zones"]').click();await phone.locator('.zone-card').click();await phone.locator('#mapDetail').waitFor();assert.match(await phone.locator('#mapDetail').textContent(),/Undiscovered zone area/);
  assert.equal(await phone.locator('#fieldMap g[data-discovery="undiscovered"]').count()>0,true);
  assert.equal(await phone.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
- proof.checks.push('Spoiler consent reveals assigned feeding/resting areas, preserves discovered drinking zone, and labels phone map/list/detail without overflow');
+ const fullPhoneResponse=phone.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/grindzone/api/state'&&!url.searchParams.has('huntSpecies');});
+ await phone.evaluate(()=>{location.hash='#career';});await fullPhoneResponse;await phone.locator('.career-screen').waitFor();
+ const backToHunt=phone.waitForResponse(response=>{const url=new URL(response.url());return url.pathname==='/grindzone/api/state'&&url.searchParams.get('huntSpecies')==='Whitetail Deer';});
+ await phone.evaluate(()=>{location.hash='#map';});await backToHunt;await phone.locator('.zone-card[data-discovery="undiscovered"]').first().waitFor({state:'attached'});
+ await phone.locator('[data-action="workspace-tab"][data-panel="zones"]').click();await phone.locator('.zone-card[data-discovery="undiscovered"]').first().click();await phone.locator('#mapDetail [data-action="route"]').waitFor();
+ proof.checks.push('Paired Hunt requests a scoped species, restores full state before Stats, and returns to scoped Hunt with feeding/resting areas and no overflow');
  const hidden=p.zones.find(z=>z.need==='feeding').id;
  await phone.locator('#mapDetail [data-action="route"]').click();await until(async()=> (await phoneState()).route.includes(hidden));
  await phone.locator('#mapDetail [data-action="zone-track"]').click();await until(async()=> (await phoneState()).zoneTracking.active);

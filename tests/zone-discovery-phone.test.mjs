@@ -10,6 +10,15 @@ test('phone discovery metadata is bounded, selected-reserve scoped and excludes 
  assert.deepEqual(projectZoneDiscovery(discovery,true,20),{status:'reference_unavailable',reserve:20});
  assert.equal(projectZoneDiscovery({...discovery,hiddenZones:Infinity},true,19).hiddenZones,undefined);
 });
+test('a species-gated phone view preserves selection and route-scope statuses',()=>{
+ const s=state();s.zoneActivity.discovery={status:'selection_required',reserve:19,hiddenZones:0};
+ s.zoneHistory=[{id:'reference:19:2:0',reserve:19,status:'scope_limited',reason:'unconfirmed',snapshot:{name:'SECRET OTHER ANIMAL',x:12345,z:54321}}];
+ const projected=projectZoneData(s);
+ assert.equal(projected.zoneActivity.discovery.status,'selection_required');
+ assert.equal(projected.zoneHistory[0].status,'scope_limited');
+ assert.equal(projected.zoneHistory[0].snapshot,null);
+ assert.doesNotMatch(JSON.stringify(projected),/SECRET OTHER ANIMAL|12345|54321/);
+});
 test('spoilers off withholds hidden counts before reading the hidden metadata',()=>{
  const trap=new Proxy({},{get(){throw Error('Hidden metadata touched');}});
  assert.deepEqual(projectZoneDiscovery(trap,false,19),{status:'disabled',reserve:19});

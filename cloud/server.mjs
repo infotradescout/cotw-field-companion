@@ -108,8 +108,10 @@ export async function createPhoneRelay({key,publicOrigin,port=0,host='127.0.0.1'
       }
       if(req.method==='GET'&&['/api/state','/api/export'].includes(url.pathname)){
         const reserve=Number(url.searchParams.get('reserve')??sessionReserve.get(session.sid)?.reserve??19);if(!Number.isInteger(reserve)||reserve<0||reserve>999)return json(res,400,{error:'Invalid reserve'});
+        const speciesValues=url.pathname==='/api/state'?url.searchParams.getAll('huntSpecies'):[];
+        if(speciesValues.length>1||speciesValues.length===1&&(!speciesValues[0]||speciesValues[0].length>120||/[\x00-\x1f\x7f]/.test(speciesValues[0])))return json(res,400,{error:'Invalid Hunt species'});
         if(sessionReserve.size<2048||sessionReserve.has(session.sid))sessionReserve.set(session.sid,{reserve,expiresAt:session.exp});
-        const result=await relay(peers.get(session.deviceId),url.pathname==='/api/state'?'state':'export',{reserve});
+        const result=await relay(peers.get(session.deviceId),url.pathname==='/api/state'?'state':'export',{reserve,...(speciesValues.length?{huntSpecies:speciesValues[0]}:{})});
         if(url.pathname==='/api/state')result.reserves=(result.reserves??[]).map(r=>({...catalogs.maps.reserves.find(x=>x.id===r.id),...r,poi:r.id===reserve?(catalogs.maps.reserves.find(x=>x.id===r.id)?.poi??[]).map(p=>{const key='place:poi:'+hash(JSON.stringify([r.id,p.kind,p.x,p.z])),matches=r.poi?.filter(x=>x.renameId===key)??[],duplicates=(catalogs.maps.reserves.find(x=>x.id===r.id)?.poi??[]).filter(x=>x.kind===p.kind&&x.x===p.x&&x.z===p.z).length;if(matches.length!==1||duplicates!==1)return {...p,canRename:false,renameId:null};const saved=matches[0],customLabel=typeof saved.customLabel==='string'&&saved.customLabel.length<=120?saved.customLabel:null;return {...p,renameId:key,canRename:saved.canRename===true,renameUnavailableReason:saved.renameUnavailableReason??null,originalLabel:p.label,customLabel,label:customLabel||p.label};}):[]}));
         return json(res,200,result,url.pathname==='/api/export'?{'Content-Disposition':'attachment; filename="COTW-phone-view.json"'}:{});
       }
