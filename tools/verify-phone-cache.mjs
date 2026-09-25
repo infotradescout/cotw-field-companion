@@ -38,10 +38,12 @@ try{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'}),phone=await context.newPage();phone.on('pageerror',e=>errors.push(e.message));
  let commands=0;phone.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname.endsWith('/api/command'))commands++;});
  await phone.goto(pair.url,{waitUntil:'domcontentloaded'});await phone.locator('#pair').click();await phone.waitForURL(u=>u.pathname==='/grindzone/'&&u.hash==='#map');await phone.locator('#fieldMap').waitFor();
- assert.equal(await cacheRoot(phone),null);
+ const guard=await cacheRoot(phone);assert.equal(guard.enabled,false);assert.deepEqual(guard.records,[]);
+ assert.deepEqual(Object.keys(guard).sort(),['enabled','epoch','expiresAt','records','schema','scope','spoilerMode']);
+ assert.doesNotMatch(JSON.stringify(guard),/Private cached grind|saved:19/);
  await enableCache(phone);let saved=await cacheRoot(phone);assert.equal(saved.enabled,true);assert.equal(saved.records.length,1);assert.equal(saved.records[0].reserve,19);
  assert.doesNotMatch(JSON.stringify(saved),new RegExp(root.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));assert.equal('token'in saved.records[0].state,false);assert.equal('profile'in saved.records[0].state,false);
- proof.checks.push('Actual signed pairing starts without private data persistence; explicit trusted-device consent saves only the permitted phone view');
+ proof.checks.push('Actual signed pairing stores no player progress before consent; explicit trusted-device consent saves only the permitted phone view');
  await wait(1100);const bytes=makeHarvest([harvest(Math.floor(Date.now()/1000),200)]);writeFileSync(log,bytes);
  await phone.goto(base+'/#grinds',{waitUntil:'domcontentloaded'});await phone.waitForFunction(()=>document.querySelector('.grind-total strong')?.textContent.trim()==='1',{},{timeout:20000});
  for(let i=0;i<40;i++){saved=await cacheRoot(phone);if(saved.records[0]?.state.harvestCount===1)break;await wait(250);}assert.equal(saved.records[0].state.harvestCount,1);

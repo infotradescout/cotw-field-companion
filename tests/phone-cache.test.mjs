@@ -25,9 +25,9 @@ test('snapshot excludes credentials, private profile and observer folder while p
 test('non-phone, mismatched reserve and oversized views are rejected',()=>{
  assert.throws(()=>snapshotState({...state(),phone:{mode:'cached_snapshot'}},19));assert.throws(()=>snapshotState(state(1),19));assert.throws(()=>snapshotState({...state(),harvests:['x'.repeat(3*1024*1024)]},19));assert.throws(()=>snapshotState({...state(),huntSpeciesOptions:['Mallard']},19),/complete live/);
 });
-test('normal live reads persist no player data before opt-in',async()=>{const f=fixture();await f.cache.get('/api/state?reserve=19');assert.equal(f.store.root,null);assert.equal(f.cache.enabled,false);assert.equal(f.cache.readOnly,false);});
+test('normal live reads persist only a revocation guard before opt-in',async()=>{const f=fixture();await f.cache.get('/api/state?reserve=19');assert.deepEqual(Object.keys(f.store.root).sort(),['enabled','epoch','expiresAt','records','schema','scope','spoilerMode']);assert.equal(f.store.root.enabled,false);assert.deepEqual(f.store.root.records,[]);assert.equal(f.cache.enabled,false);assert.equal(f.cache.readOnly,false);});
 test('consent stores the actual most recent authenticated state, never an arbitrary supplied state',async()=>{
- const f=fixture();await f.cache.get('/api/state?reserve=19');await assert.rejects(f.cache.enable(state()));assert.equal(f.store.root,null);await f.keep();assert.equal(f.store.root.enabled,true);assert.equal(f.store.root.records.length,1);
+ const f=fixture();await f.cache.get('/api/state?reserve=19');await assert.rejects(f.cache.enable(state()));assert.equal(f.store.root.enabled,false);assert.deepEqual(f.store.root.records,[]);await f.keep();assert.equal(f.store.root.enabled,true);assert.equal(f.store.root.records.length,1);
 });
 test('an offline PC returns the same saved grind with unmistakable read-only and stale-pressure state',async()=>{
  const f=fixture();await f.keep();f.setStatus(503);const cached=await f.cache.get('/api/state?reserve=19');assert.equal(f.cache.readOnly,true);assert.equal(cached.sessions[0].id,'synthetic-grind');assert.equal(cached.phone.mode,'cached_snapshot');assert.equal(cached.observer.connected,false);assert.equal(cached.zoneTracking.active,false);assert.equal(cached.huntingPressure.stale,true);assert.match(f.cache.notice(),/read only/);
@@ -148,4 +148,41 @@ test('failed consent save cannot erase a cache changed by another tab',async()=>
  assert.equal(f.store.root.epoch,'newer-tab-epoch');
  assert.equal(f.store.root.enabled,true);
  assert.equal(f.store.root.spoilerMode,false);
+});
+test('a second tab revoking spoilers blocks rich consent while the cache is disabled',async()=>{
+ const f=fixture();f.setView(state(19,true));
+ const stale=new PhoneSnapshotCache({store:f.store,fetchImpl:f.cache.fetch,now:()=>NOW});
+ const rich=await stale.get('/api/state?reserve=19');assert.equal(f.store.root,null);
+ f.setTime(NOW+1000);f.setView(state(19,false));f.setScopedView({...state(19,false),huntSpeciesOptions:['Mallard'],zones:[]});
+ await f.cache.get('/api/state?reserve=19&huntSpecies=all');
+ assert.equal(f.store.root.enabled,false);assert.equal(f.store.root.spoilerMode,false);assert.deepEqual(f.store.root.records,[]);
+ assert.deepEqual(Object.keys(f.store.root).sort(),['enabled','epoch','expiresAt','records','schema','scope','spoilerMode']);
+ await assert.rejects(stale.enable(rich),/changed in another tab/);
+ assert.equal(f.store.root.enabled,false);assert.deepEqual(f.store.root.records,[]);
+});
+test('a delayed rich response cannot undo a disabled-cache revocation',async()=>{
+ const f=fixture();f.setView(state(19,true));
+ let arrived,release;const seen=new Promise(resolve=>arrived=resolve),hold=new Promise(resolve=>release=resolve);
+ const stale=new PhoneSnapshotCache({store:f.store,fetchImpl:async url=>{
+  const response=await f.cache.fetch(url);
+  if(url.includes('/api/state')){arrived();await hold;}
+  return response;
+ },now:()=>NOW});
+ const pending=stale.get('/api/state?reserve=19');await seen;
+ f.setTime(NOW+1000);f.setView(state(19,false));f.setScopedView({...state(19,false),huntSpeciesOptions:['Mallard'],zones:[]});
+ await f.cache.get('/api/state?reserve=19&huntSpecies=all');release();
+ const old=await pending;assert.equal(old.settings.spoilers,true);
+ assert.equal(stale.latest,null);assert.equal(f.store.root.spoilerMode,false);
+ await assert.rejects(stale.enable(old),/Reconnect and refresh/);
+});
+test('failed spoiler revocation denies offline rich fallback until storage recovers and purges it',async()=>{
+ const f=fixture();f.setView(state(19,true));await f.keep();assert.equal(f.store.root.records[0].state.settings.spoilers,true);
+ const edit=f.store.edit.bind(f.store);let blocked=true;f.store.edit=change=>blocked?Promise.reject(Error('Storage blocked')):edit(change);
+ f.setTime(NOW+1000);f.setView(state(19,false));f.setScopedView({...state(19,false),huntSpeciesOptions:['Mallard'],zones:[]});
+ const live=await f.cache.get('/api/state?reserve=19&huntSpecies=all');assert.equal(live.settings.spoilers,false);
+ assert.equal(f.cache.spoilersDenied,true);assert.match(f.cache.settings(),/revocation could not be saved/);
+ f.setStatus(503);await assert.rejects(f.cache.get('/api/state?reserve=19&huntSpecies=all'),/no saved copy/);
+ assert.equal(f.store.root.records[0].state.settings.spoilers,true,'blocked storage has not falsely claimed durable removal');
+ blocked=false;await assert.rejects(f.cache.get('/api/state?reserve=19&huntSpecies=all'),/no saved copy/);
+ assert.equal(f.cache.spoilersDenied,false);assert.equal(f.store.root.spoilerMode,false);assert.deepEqual(f.store.root.records,[]);
 });
