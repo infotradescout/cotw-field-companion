@@ -35,10 +35,10 @@ export class PhoneAccessUI {
   }
   async load(){
     if(this.loading)return this.loading;
-    this.loading=(async()=>{try{const r=await fetch('/api/phone/status',{cache:'no-store'});if(!r.ok)throw Error('Could not check phone access.');this.info=await r.json();if(!this.info.enabled||this.info.status!=='connected')this.clearPair();}catch(e){this.error=e.message;}finally{this.loading=null;this.draw();}})();return this.loading;
+    this.loading=(async()=>{const previous=JSON.stringify([this.info,this.error,this.pairing?.url,this.expired]);try{const r=await fetch('/api/phone/status',{cache:'no-store'});if(!r.ok)throw Error('Could not check phone access.');this.info=await r.json();this.error='';if(!this.info.enabled||this.info.status!=='connected')this.clearPair();}catch(e){this.error=e.message;}finally{this.loading=null;if(previous!==JSON.stringify([this.info,this.error,this.pairing?.url,this.expired]))this.draw();}})();return this.loading;
   }
   async post(action,body={}){return this.request('/api/phone/'+action,body);}
-  async run(action){if(this.busy)return;this.busy=true;this.error='';this.draw();try{return await action();}catch(e){this.error=e.message;throw e;}finally{this.busy=false;await this.load();}}
+  async run(action){if(this.busy)return;this.busy=true;this.error='';this.draw();try{return await action();}catch(e){this.error=e.message;throw e;}finally{this.busy=false;await this.load();this.draw();}}
   async enable(){return this.run(async()=>{this.info=await this.post('enable',{consent:true});await this.newPair();});}
   async newPair(){
     // The service invalidates the previous code when issuing a new one. Never leave it on screen during a retry.
