@@ -117,6 +117,15 @@ try{
  await page.waitForFunction(()=>document.querySelector('#huntNotice')?.innerHTML==='',null,{timeout:8000});
  await page.unroute('**/api/state?**',warningState);
  proof.checks.push('An unchanged Hunt tracking warning kept its DOM node across polling, then disappeared when connection state recovered');
+ const offline=await browser.newPage(),offlineErrors=[];
+ offline.on('pageerror',error=>offlineErrors.push(error.message));
+ await offline.route('**/api/state?**',route=>route.abort());
+ await offline.goto(app.url+'/#home',{waitUntil:'domcontentloaded'});
+ await offline.locator('#content h1').filter({hasText:'Companion unavailable'}).waitFor();
+ await offline.evaluate(()=>{location.hash='settings';});
+ await sleep(100);
+ assert.deepEqual(offlineErrors,[],'changing views during a missing state must not throw');
+ proof.checks.push('A view change while the state request is unavailable did not throw during reconnect');
  assert.deepEqual(errors,[]);
  proof.passed=true;
 }catch(error){proof.error=String(error.stack||error);process.exitCode=1;}
